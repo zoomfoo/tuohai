@@ -3,11 +3,11 @@ package v1
 import (
 	"bytes"
 	"encoding/json"
+	// "io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	// "strings"
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
@@ -103,7 +103,7 @@ func PushHook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
 			bot_id = ctx.Param("bot_id")
-			// o      = new(http.Request)
+			o      = new(http.Request)
 		)
 
 		bot, err := models.GetBotById(bot_id)
@@ -120,85 +120,58 @@ func PushHook() gin.HandlerFunc {
 			return
 		}
 
-		bo_info, err := json.Marshal(bot)
+		log.Println(app.AppURL)
+		targetURL, err := url.Parse(app.AppURL)
 		if err != nil {
 			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
 			return
 		}
 
-		data, err := ioutil.ReadAll(ctx.Request.Body)
+		bot_info, err := json.Marshal(bot)
 		if err != nil {
 			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
 			return
 		}
+
+		val := url.Values{"bot_info": []string{string(bot_info)}}
 		buf := &bytes.Buffer{}
-		buf.Write([]byte((url.Values{"bot_info": []string{string(bo_info)}}).Encode()))
+		*o = *ctx.Request
+		o.URL = targetURL
+		o.Method = "POST"
+
+		tarbody, err := ioutil.ReadAll(o.Body)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			return
+		}
+
+		buf.Write(tarbody)
 		buf.Write([]byte("&"))
-		buf.Write(data)
+		buf.Write([]byte(val.Encode()))
+		o.Body = ioutil.NopCloser(buf)
 
-		request, err := http.NewRequest("POST", app.AppURL, buf)
+		o.Proto = "HTTP/1.1"
+		o.ProtoMajor = 1
+		o.ProtoMinor = 1
+		o.Close = false
+		o.ContentLength = 0
+		transport := http.DefaultTransport
+		res, err := transport.RoundTrip(o)
 		if err != nil {
-			console.StdLog.Error(err)
+			log.Printf("http: proxy error: %v", err)
+			// ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			renderJSON(ctx, struct{}{}, http.StatusInternalServerError, "回调服务器返回 StatusInternalServerError")
 			return
 		}
 
-		client, err := http.DefaultClient.Do(request)
-		if err != nil {
-			console.StdLog.Error(err)
-			return
+		if res.StatusCode == http.StatusOK {
+			renderJSON(ctx, "ok")
+		} else {
+			renderJSON(ctx, res.StatusCode, 1, res.Status)
 		}
-		read_data, _ := ioutil.ReadAll(client.Body)
-		defer client.Body.Close()
-		log.Println(string(read_data))
-		renderJSON(ctx, "ok")
-		// log.Println(app.AppURL)
-		// targetURL, err := url.Parse(app.AppURL)
-		// if err != nil {
-		// 	log.Println(err)
-		// 	return
-		// }
-
-		// *o = *ctx.Request
-		// o.URL = targetURL
-		// o.Method = "POST"
-		// //
-
-		// log.Println(*o)
-		// if q := o.URL.RawQuery; q != "" {
-		// 	o.URL.RawPath = o.URL.Path + "?" + q
-		// } else {
-		// 	o.URL.RawPath = o.URL.Path
-		// }
-
-		// o.URL.RawQuery = targetURL.RawQuery
-
-		// o.Proto = "HTTP/1.1"
-		// o.ProtoMajor = 1
-		// o.ProtoMinor = 1
-		// o.Close = false
-
-		// transport := http.DefaultTransport
-		// res, err := transport.RoundTrip(o)
-
-		// if err != nil {
-		// 	log.Printf("http: proxy error: %v", err)
-		// 	ctx.Writer.WriteHeader(http.StatusInternalServerError)
-		// 	return
-		// }
-
-		// hdr := ctx.Writer.Header()
-
-		// for k, vv := range res.Header {
-		// 	for _, v := range vv {
-		// 		hdr.Add(k, v)
-		// 	}
-		// }
-
-		// ctx.Writer.WriteHeader(res.StatusCode)
-
-		// if res.Body != nil {
-		// 	io.Copy(ctx.Writer, res.Body)
-		// }
 	}
 }
 

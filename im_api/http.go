@@ -3,7 +3,7 @@ package im_api
 import (
 	// "net/http/pprof"
 	// "time"
-	"io/ioutil"
+	// "io/ioutil"
 	"log"
 	"net/http"
 
@@ -44,16 +44,13 @@ func newHTTPServer() *gin.Engine {
 	}
 
 	router.POST("/wangyang1", func(ctx *gin.Context) {
-		data, err := ioutil.ReadAll(ctx.Request.Body)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		log.Println(ctx.Request.Header.Get("bbb"))
+		log.Println(ctx.PostForm("aa"))
 		log.Println(ctx.PostForm("bot_info"))
-		log.Println("----")
-		defer ctx.Request.Body.Close()
-		ctx.String(200, "%s", data)
+		log.Println("aaa")
+		// data, _ := ioutil.ReadAll(ctx.Request.Body)
+		// defer ctx.Request.Body.Close()
+		// log.Println(string(data))
+		ctx.String(200, "%s", "ok")
 	})
 	Debug(router)
 	return router
