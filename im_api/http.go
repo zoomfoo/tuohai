@@ -50,6 +50,8 @@ func newHTTPServer() *gin.Engine {
 			return
 		}
 		log.Println(ctx.Request.Header.Get("bbb"))
+		log.Println(ctx.PostForm("bot_info"))
+		log.Println("----")
 		defer ctx.Request.Body.Close()
 		ctx.String(200, "%s", data)
 	})

@@ -1,13 +1,16 @@
 package v1
 
 import (
-	"io"
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	// "strings"
+	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
-	"time"
 	"tuohai/internal/console"
 	"tuohai/internal/convert"
 	httplib "tuohai/internal/http"
@@ -100,7 +103,7 @@ func PushHook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
 			bot_id = ctx.Param("bot_id")
-			o      = new(http.Request)
+			// o      = new(http.Request)
 		)
 
 		bot, err := models.GetBotById(bot_id)
@@ -117,53 +120,85 @@ func PushHook() gin.HandlerFunc {
 			return
 		}
 
-		log.Println(app.AppURL)
-		targetURL, err := url.Parse(app.AppURL)
+		bo_info, err := json.Marshal(bot)
 		if err != nil {
-			log.Println(err)
+			console.StdLog.Error(err)
 			return
 		}
 
-		*o = *ctx.Request
-		o.URL = targetURL
-		o.Method = "POST"
-
-		log.Println(*o)
-		if q := o.URL.RawQuery; q != "" {
-			o.URL.RawPath = o.URL.Path + "?" + q
-		} else {
-			o.URL.RawPath = o.URL.Path
-		}
-
-		o.URL.RawQuery = targetURL.RawQuery
-
-		o.Proto = "HTTP/1.1"
-		o.ProtoMajor = 1
-		o.ProtoMinor = 1
-		o.Close = false
-
-		transport := http.DefaultTransport
-		res, err := transport.RoundTrip(o)
-
+		data, err := ioutil.ReadAll(ctx.Request.Body)
 		if err != nil {
-			log.Printf("http: proxy error: %v", err)
-			ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			console.StdLog.Error(err)
+			return
+		}
+		buf := &bytes.Buffer{}
+		buf.Write([]byte((url.Values{"bot_info": []string{string(bo_info)}}).Encode()))
+		buf.Write([]byte("&"))
+		buf.Write(data)
+
+		request, err := http.NewRequest("POST", app.AppURL, buf)
+		if err != nil {
+			console.StdLog.Error(err)
 			return
 		}
 
-		hdr := ctx.Writer.Header()
-
-		for k, vv := range res.Header {
-			for _, v := range vv {
-				hdr.Add(k, v)
-			}
+		client, err := http.DefaultClient.Do(request)
+		if err != nil {
+			console.StdLog.Error(err)
+			return
 		}
+		read_data, _ := ioutil.ReadAll(client.Body)
+		defer client.Body.Close()
+		log.Println(string(read_data))
+		renderJSON(ctx, "ok")
+		// log.Println(app.AppURL)
+		// targetURL, err := url.Parse(app.AppURL)
+		// if err != nil {
+		// 	log.Println(err)
+		// 	return
+		// }
 
-		ctx.Writer.WriteHeader(res.StatusCode)
+		// *o = *ctx.Request
+		// o.URL = targetURL
+		// o.Method = "POST"
+		// //
 
-		if res.Body != nil {
-			io.Copy(ctx.Writer, res.Body)
-		}
+		// log.Println(*o)
+		// if q := o.URL.RawQuery; q != "" {
+		// 	o.URL.RawPath = o.URL.Path + "?" + q
+		// } else {
+		// 	o.URL.RawPath = o.URL.Path
+		// }
+
+		// o.URL.RawQuery = targetURL.RawQuery
+
+		// o.Proto = "HTTP/1.1"
+		// o.ProtoMajor = 1
+		// o.ProtoMinor = 1
+		// o.Close = false
+
+		// transport := http.DefaultTransport
+		// res, err := transport.RoundTrip(o)
+
+		// if err != nil {
+		// 	log.Printf("http: proxy error: %v", err)
+		// 	ctx.Writer.WriteHeader(http.StatusInternalServerError)
+		// 	return
+		// }
+
+		// hdr := ctx.Writer.Header()
+
+		// for k, vv := range res.Header {
+		// 	for _, v := range vv {
+		// 		hdr.Add(k, v)
+		// 	}
+		// }
+
+		// ctx.Writer.WriteHeader(res.StatusCode)
+
+		// if res.Body != nil {
+		// 	io.Copy(ctx.Writer, res.Body)
+		// }
 	}
 }
 
