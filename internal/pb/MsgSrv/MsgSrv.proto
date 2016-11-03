@@ -1,0 +1,41 @@
+syntax="proto3";
+package MsgSrv;
+
+import "tuohai/internal/pb/IM_Message/IM.Message.proto";
+//import "tuohai/internal/pb/IM_Login/IM.Login.proto";
+
+option optimize_for = LITE_RUNTIME;
+
+
+service MsgLogic{
+	// msg process logic
+	rpc SendMsg (IM.Message.IMMsgData) returns (IM.Message.IMMsgDataAck) {}
+	rpc DispatchMsg (IM.Message.IMMsgData) returns (SendRst) {}
+	rpc DispatchNotify (SendNotifyReq) returns (SendRst) {}
+ }
+
+service MsgSender{
+	// send to reciever
+	rpc SendTo (IM.Message.IMMsgData) returns (SendRst) {}
+}
+
+service Nofifier{
+	rpc SendNotify(SendNotifyReq) returns (SendRst) {}
+}
+
+enum NotifyType{
+	NOTIFY_TYPE_KICK_CLIENT = 0;
+	NOTIFY_TYPE_READ_ACK = 1;
+	NOTIFY_TYPE_GROUP_NOTIFY = 2;
+}
+
+message SendNotifyReq{
+	NotifyType notify_type = 1;
+	string content = 2;
+	string rcv_id = 3;
+}
+
+message SendRst{
+	int32 code = 1;
+	string msg = 2;
+}

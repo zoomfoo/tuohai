@@ -1,0 +1,10 @@
+syntax='proto3';
+package IM.Other;
+option optimize_for = LITE_RUNTIME;
+
+//service id: 0x0007
+
+message IMHeartBeat{
+	//cmd id:  		0x0701
+}
+
