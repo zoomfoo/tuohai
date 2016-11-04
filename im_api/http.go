@@ -47,9 +47,9 @@ func newHTTPServer() *gin.Engine {
 	}
 
 	router.POST("/wangyang1", func(ctx *gin.Context) {
-		log.Println(ctx.PostForm("aa"))
+		log.Println(ctx.PostForm("content"))
 		log.Println(ctx.PostForm("bot_info"))
-		log.Println(ctx.Request.Form)
+		// log.Println(ctx.Request.Form)
 		// data, _ := ioutil.ReadAll(ctx.Request.Body)
 		// defer ctx.Request.Body.Close()
 		// log.Println(string(data))

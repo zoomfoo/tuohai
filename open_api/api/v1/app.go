@@ -121,7 +121,6 @@ func PushHook() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
 			bot_id = ctx.Param("bot_id")
-			o      = new(http.Request)
 		)
 
 		bot, err := models.GetBotById(bot_id)
@@ -139,7 +138,6 @@ func PushHook() gin.HandlerFunc {
 		}
 
 		log.Println(app.AppURL)
-		targetURL, err := url.Parse(app.AppURL)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
@@ -153,48 +151,36 @@ func PushHook() gin.HandlerFunc {
 			return
 		}
 
-		val := url.Values{"bot_info": []string{string(bot_info)}}
-		// buf := &bytes.Buffer{}
-		*o = *ctx.Request
-		o.URL = targetURL
-		o.Method = "POST"
-
-		tarbody, err := ioutil.ReadAll(o.Body)
+		tarbody, err := ioutil.ReadAll(ctx.Request.Body)
+		defer ctx.Request.Body.Close()
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
 			return
 		}
 
-		log.Println(ctx.ContentType())
-		// switch ctx.ContentType() {
-		// case "multipart/form-data":
-		// case "application/x-www-form-urlencoded":
-		// case "application/xml":
-		// 	val.Add("content", string(tarbody))
-		// 	o.Body = ioutil.NopCloser(strings.NewReader(val.Encode()))
-		// 	log.Println(val.Encode())
-		// default:
+		val := url.Values{
+			"bot_info": []string{string(bot_info)},
+			"content":  []string{string(tarbody)},
+		}
 
-		// }
-		log.Println(string(tarbody))
-		val.Add("content", string(tarbody))
-		o.Body = ioutil.NopCloser(strings.NewReader(val.Encode()))
-		log.Println(val.Encode())
-
-		o.Proto = "HTTP/1.1"
-		o.ProtoMajor = 1
-		o.ProtoMinor = 1
-		o.Close = false
-		o.ContentLength = 0
-		o.Header.Add("Content-Type", "text/plain")
-		transport := http.DefaultTransport
-		res, err := transport.RoundTrip(o)
+		payload := strings.NewReader(val.Encode())
+		req, err := http.NewRequest("POST", app.AppURL, payload)
 		if err != nil {
-			console.StdLog.Errorf("http: proxy error: %v", err)
-			renderJSON(ctx, struct{}{}, http.StatusInternalServerError, "回调服务器返回 StatusInternalServerError")
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
 			return
 		}
+
+		req.Header.Add("content-type", "application/x-www-form-urlencoded")
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			return
+		}
+		defer res.Body.Close()
 
 		if res.StatusCode == http.StatusOK {
 			renderJSON(ctx, "ok")
