@@ -187,7 +187,7 @@ func PushHook() gin.HandlerFunc {
 		o.ProtoMinor = 1
 		o.Close = false
 		o.ContentLength = 0
-		o.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		o.Header.Add("Content-Type", "text/plain")
 		transport := http.DefaultTransport
 		res, err := transport.RoundTrip(o)
 		if err != nil {
