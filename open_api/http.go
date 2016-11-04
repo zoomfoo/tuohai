@@ -13,14 +13,17 @@ func newHTTPServer() *gin.Engine {
 
 	version1 := router.Group("v1")
 	{
-		version1.GET("/apps", v1.AppList())
-
-		bot := version1.Group("bot", SessionAuth())
+		bot := version1.Group("bots", SessionAuth())
 		{
-			bot.GET("/list", v1.BotList())
-			bot.POST("/create", v1.CreateBot())
-			bot.PUT("/update", v1.UpdateBot())
-			bot.DELETE("/delete", v1.DeleteBot())
+			bot.GET("/", v1.BotList())
+			bot.POST("/", v1.CreateBot())
+			bot.PUT("/:botid", v1.UpdateBot())
+			bot.DELETE("/:bot_id", v1.DeleteBot())
+		}
+
+		app := version1.Group("apps")
+		{
+			app.GET("/", v1.Apps())
 		}
 
 		//从第三方接到的webhook
@@ -34,10 +37,10 @@ func newHTTPServer() *gin.Engine {
 
 func SessionAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if ctx.Request.Header.Get("token") != "123456789" {
-			ctx.Abort()
-		} else {
-			ctx.Next()
-		}
+		// if ctx.Request.Header.Get("token") != "123456789" {
+		// ctx.Abort()
+		// } else {
+		// ctx.Next()
+		// }
 	}
 }

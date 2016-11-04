@@ -148,6 +148,20 @@ func CreateGroup() gin.HandlerFunc {
 	}
 }
 
+func UserInfo() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		uid := ctx.Param("uid")
+		user, err := models.GetTblUserById(uid)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 0, "未找到数据")
+			return
+		}
+
+		renderJSON(ctx, user)
+	}
+}
+
 func renderJSON(ctx *gin.Context, json interface{}, err_status ...interface{}) {
 	switch len(err_status) {
 	case 0:

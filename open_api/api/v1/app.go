@@ -1,13 +1,13 @@
 package v1
 
 import (
-	"bytes"
+	// "bytes"
 	"encoding/json"
-	// "io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
@@ -15,30 +15,48 @@ import (
 	"tuohai/internal/convert"
 	httplib "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
+	"tuohai/internal/uuid"
 	"tuohai/models"
 )
 
-func AppList() gin.HandlerFunc {
+func BotList() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		bots, err := models.GetBots()
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "远程服务器错误")
+			return
+		}
+		renderJSON(ctx, bots)
+	}
+}
+
+func Apps() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		apps, err := models.Apps()
 		if err != nil {
 			console.StdLog.Error(err)
-			ctx.JSON(http.StatusOK, map[string]interface{}{"no": "no"})
+			renderJSON(ctx, []int{}, 1, "远程服务器错误")
 			return
 		}
-		ctx.JSON(http.StatusOK, apps)
-	}
-}
-
-func BotList() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-
+		renderJSON(ctx, apps)
 	}
 }
 
 func CreateBot() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		// var bot models.Bot
+		// if err := ctx.Bind(&bot); err != nil {
+		// 	console.StdLog.Error(err)
+		// 	renderJSON(ctx, struct{}{}, 1, err)
+		// 	return
+		// }
 
+		// bot.CreateTime = time.Now().Unix()
+		// bot.UpTime = time.Now().Unix()
+
+		log.Println(uuid.NewV4())
+		renderJSON(ctx, "")
 	}
 }
 
@@ -136,7 +154,7 @@ func PushHook() gin.HandlerFunc {
 		}
 
 		val := url.Values{"bot_info": []string{string(bot_info)}}
-		buf := &bytes.Buffer{}
+		// buf := &bytes.Buffer{}
 		*o = *ctx.Request
 		o.URL = targetURL
 		o.Method = "POST"
@@ -148,21 +166,32 @@ func PushHook() gin.HandlerFunc {
 			return
 		}
 
-		buf.Write(tarbody)
-		buf.Write([]byte("&"))
-		buf.Write([]byte(val.Encode()))
-		o.Body = ioutil.NopCloser(buf)
+		log.Println(ctx.ContentType())
+		// switch ctx.ContentType() {
+		// case "multipart/form-data":
+		// case "application/x-www-form-urlencoded":
+		// case "application/xml":
+		// 	val.Add("content", string(tarbody))
+		// 	o.Body = ioutil.NopCloser(strings.NewReader(val.Encode()))
+		// 	log.Println(val.Encode())
+		// default:
+
+		// }
+		log.Println(string(tarbody))
+		// val.Add("content", string(tarbody))
+		o.Body = ioutil.NopCloser(strings.NewReader(val.Encode()))
+		log.Println(val.Encode())
 
 		o.Proto = "HTTP/1.1"
 		o.ProtoMajor = 1
 		o.ProtoMinor = 1
 		o.Close = false
 		o.ContentLength = 0
+		o.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		transport := http.DefaultTransport
 		res, err := transport.RoundTrip(o)
 		if err != nil {
-			log.Printf("http: proxy error: %v", err)
-			// ctx.Writer.WriteHeader(http.StatusInternalServerError)
+			console.StdLog.Errorf("http: proxy error: %v", err)
 			renderJSON(ctx, struct{}{}, http.StatusInternalServerError, "回调服务器返回 StatusInternalServerError")
 			return
 		}
@@ -170,7 +199,7 @@ func PushHook() gin.HandlerFunc {
 		if res.StatusCode == http.StatusOK {
 			renderJSON(ctx, "ok")
 		} else {
-			renderJSON(ctx, res.StatusCode, 1, res.Status)
+			renderJSON(ctx, struct{}{}, 1, res.Status)
 		}
 	}
 }

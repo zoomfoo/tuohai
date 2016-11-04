@@ -5,8 +5,8 @@ import "time"
 type Bot struct {
 	Id         string    `gorm:"column:id" json:"id"`
 	Idx        int       `gorm:"column:idx" json:"-"`
-	Name       string    `gorm:"column:name" json:"name"`
-	Icon       string    `gorm:"column:icon" json:"icon"`
+	Name       string    `gorm:"column:name" json:"name" form:"name" binding:"required"`
+	Icon       string    `gorm:"column:icon" json:"icon" form:""`
 	CreatorId  string    `gorm:"column:creator_id" json:"creator_id"`
 	ChannelId  string    `gorm:"column:channel_id" json:"channel_id"`
 	AppId      string    `gorm:"column:app_id" json:"app_id"`
@@ -25,3 +25,13 @@ func GetBotById(bot_id string) (*Bot, error) {
 	err := db.Find(&b, "id = ? and state = 1", bot_id).Error
 	return &b, err
 }
+
+func GetBots() ([]Bot, error) {
+	var b []Bot
+	err := db.Find(&b, "state = 1").Error
+	return b, err
+}
+
+// func CreateBot(b *Bot) error {
+// 	err := db.Create(b).Error
+// }

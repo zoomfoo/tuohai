@@ -3,9 +3,9 @@ package models
 import ()
 
 type TblUser struct {
-	Id    int    `gorm:"column:id"`
-	Uuid  string `gorm:"column:uuid"`
-	Uname string `gorm:"column:uname"`
+	Id    int    `gorm:"column:id" json:"-"`
+	Uuid  string `gorm:"column:uuid" json:"uuid"`
+	Uname string `gorm:"column:uname" json:"name"`
 }
 
 func (t *TblUser) TableName() string {

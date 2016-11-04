@@ -41,12 +41,15 @@ func newHTTPServer() *gin.Engine {
 
 		//获取所有未读消息
 		version1.GET("/unreads", v1.Unreads())
+
+		//获取用户信息
+		version1.GET("/user/:uid", v1.UserInfo())
 	}
 
 	router.POST("/wangyang1", func(ctx *gin.Context) {
 		log.Println(ctx.PostForm("aa"))
 		log.Println(ctx.PostForm("bot_info"))
-		log.Println("aaa")
+		log.Println(ctx.Request.Form)
 		// data, _ := ioutil.ReadAll(ctx.Request.Body)
 		// defer ctx.Request.Body.Close()
 		// log.Println(string(data))
