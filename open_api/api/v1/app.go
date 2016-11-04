@@ -115,7 +115,7 @@ func PushMsg() gin.HandlerFunc {
 
 		log.Println(*msg)
 
-		httplib.SendLogicMsg("127.0.0.1:5004", msg)
+		httplib.SendLogicMsg("127.0.0.1:9003", msg)
 		renderJSON(ctx, "ok")
 	}
 }
