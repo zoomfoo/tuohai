@@ -76,15 +76,9 @@ func PushMsg() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
 			bot_id       = ctx.Param("bot_id")
-			content      = ctx.PostForm("content")
 			msg_type     = "message"
 			msg_sub_type = "bot_msg"
 		)
-
-		if content == "" {
-			renderJSON(ctx, struct{}{}, 1, "未找到 content参数。")
-			return
-		}
 
 		bot, err := models.GetBotById(bot_id)
 		if err != nil {
@@ -103,15 +97,24 @@ func PushMsg() gin.HandlerFunc {
 			return
 		}
 
+		data, err := ioutil.ReadAll(ctx.Request.Body)
+		defer ctx.Request.Body.Close()
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "读取body失败")
+			return
+		}
+
 		msg := &IM_Message.IMMsgData{
 			Type:       msg_type,
 			Subtype:    msg_sub_type,
 			From:       bot.Id,
 			To:         bot.ChannelId,
-			MsgData:    []byte(content),
+			MsgData:    data,
 			CreateTime: convert.ToStr(time.Now().Unix()),
 		}
+
 		log.Println(*msg)
+
 		httplib.SendLogicMsg("127.0.0.1:5004", msg)
 		renderJSON(ctx, "ok")
 	}
