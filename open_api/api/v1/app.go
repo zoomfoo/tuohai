@@ -178,7 +178,7 @@ func PushHook() gin.HandlerFunc {
 
 		// }
 		log.Println(string(tarbody))
-		// val.Add("content", string(tarbody))
+		val.Add("content", string(tarbody))
 		o.Body = ioutil.NopCloser(strings.NewReader(val.Encode()))
 		log.Println(val.Encode())
 
