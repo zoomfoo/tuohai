@@ -19,7 +19,6 @@ func newHTTPServer() *gin.Engine {
 
 	version1 := router.Group("v1", LoginAuth())
 	{
-
 		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 		//列出IM常用的信息
 		version1.GET("/im/profile", v1.Profile(ctx))

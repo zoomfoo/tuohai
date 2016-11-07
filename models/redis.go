@@ -177,7 +177,7 @@ func IsGroupMember(gid, uid int) (bool, error) {
 		return false, err
 	}
 
-	res, err := redis.Int(c.Do("hexists", fmt.Sprintf("group_member_%d", gid), uid))
+	res, err := redis.Int(c.Do("hexists", fmt.Sprintf("group:member:%d", gid), uid))
 	if err != nil {
 		return false, err
 	}
