@@ -220,7 +220,7 @@ func UserInfo() gin.HandlerFunc {
 
 func Friends() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		token := ctx.MustGet("token").(string)
+		// token := ctx.MustGet("token").(string)
 
 	}
 }

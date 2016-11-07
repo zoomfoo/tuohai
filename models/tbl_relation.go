@@ -18,5 +18,5 @@ func (r *Relation) TableName() string {
 func Friends(uuid string) ([]Relation, error) {
 	var r []Relation
 	err := db.Find(&r, "status = 0 and (small_id == ? and big_id = ?)", uuid, uuid).Error
-	return &r, err
+	return r, err
 }
