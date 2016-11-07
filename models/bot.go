@@ -26,9 +26,9 @@ func GetBotById(bot_id string) (*Bot, error) {
 	return &b, err
 }
 
-func GetBots() ([]Bot, error) {
+func GetBots(id []string) ([]Bot, error) {
 	var b []Bot
-	err := db.Find(&b, "state = 1").Error
+	err := db.Find(&b, "state = 1 and channel_id in (?)", id).Error
 	return b, err
 }
 

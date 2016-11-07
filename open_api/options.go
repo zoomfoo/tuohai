@@ -23,6 +23,8 @@ type Options struct {
 
 	ConnLogicRPCAddress string
 
+	IMAPI_HOST string
+
 	Logger *console.Console
 }
 
@@ -39,7 +41,9 @@ func NewOptions() *Options {
 
 		ConnLogicRPCAddress: util.Config("open_api", "ConnLogicRPCAddress"),
 
-		Logger: console.New(*log.New(os.Stderr, "open_api ", log.Ldate|log.Ltime|log.Lmicroseconds)),
+		IMAPI_HOST: util.Config("open_api", "IMAPI_HOST"),
+
+		Logger: console.New(*log.New(os.Stderr, "open_api-", log.Ldate|log.Ltime|log.Lmicroseconds)),
 	}
 	return Opts
 }

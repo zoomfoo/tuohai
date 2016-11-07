@@ -19,9 +19,22 @@ import (
 	"tuohai/models"
 )
 
-func BotList() gin.HandlerFunc {
+func BotList(api_host string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		bots, err := models.GetBots()
+		token := ctx.MustGet("token").(string)
+		u := api_host + "/v1/groups?session_token=" + token
+		gs, err := httplib.Groups(u)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "远程服务器错误")
+			return
+		}
+
+		var id []string
+		for _, g := range gs {
+			id = append(id, g.Gid)
+		}
+		bots, err := models.GetBots(id)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "远程服务器错误")

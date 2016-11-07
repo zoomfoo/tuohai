@@ -1,6 +1,8 @@
 package open_api
 
 import (
+	"net/http"
+
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/internal/console"
 	"tuohai/open_api/api/v1"
@@ -16,7 +18,7 @@ func newHTTPServer() *gin.Engine {
 	{
 		bot := version1.Group("bots", SessionAuth())
 		{
-			bot.GET("", v1.BotList())
+			bot.GET("", v1.BotList(Opts.IMAPI_HOST))
 			bot.POST("", v1.CreateBot())
 			bot.PUT("/:botid", v1.UpdateBot())
 			bot.DELETE("/:bot_id", v1.DeleteBot())
@@ -44,10 +46,13 @@ func AccessControlAllowOrigin() gin.HandlerFunc {
 
 func SessionAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// if ctx.Request.Header.Get("token") != "123456789" {
-		// ctx.Abort()
-		// } else {
-		// ctx.Next()
-		// }
+		if token := ctx.Query("session_token"); token == "" {
+			ctx.Abort()
+			ctx.JSON(http.StatusUnauthorized, gin.H{"err_code": 1, "data": "无权限访问"})
+		} else {
+			ctx.Set("token", token)
+			ctx.Next()
+		}
+		return
 	}
 }
