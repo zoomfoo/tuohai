@@ -14,17 +14,23 @@ import (
 func Profile(c context.Context) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		go func() {
-			for {
-				select {
-				case <-c.Done():
-					return
-				default:
-				}
-			}
-		}()
-
-		renderJSON(ctx, 0, nil)
+		// go func() {
+		// 	for {
+		// 		select {
+		// 		case <-c.Done():
+		// 			return
+		// 		default:
+		// 		}
+		// 	}
+		// }()
+		token := ctx.MustGet("token").(string)
+		user, err := models.GetTblUserById(token)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 0, "未找到数据")
+			return
+		}
+		renderJSON(ctx, user)
 	}
 }
 
@@ -210,7 +216,7 @@ func UserInfo() gin.HandlerFunc {
 		user, err := models.GetTblUserById(uid)
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 0, "未找到数据")
+			renderJSON(ctx, []int{}, 1, "未找到数据")
 			return
 		}
 
@@ -220,8 +226,39 @@ func UserInfo() gin.HandlerFunc {
 
 func Friends() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// token := ctx.MustGet("token").(string)
+		token := ctx.MustGet("token").(string)
+		r, err := models.Friends(token)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "未找到数据")
+			return
+		}
+		fmt.Println(r)
+		var list []interface{}
+		for _, rel := range r {
+			user_uuid := ""
+			switch token {
+			case rel.SmallId:
+				user_uuid = rel.BigId
+			case rel.BigId:
+				user_uuid = rel.SmallId
+			}
 
+			user, err := models.GetTblUserById(user_uuid)
+			if err != nil {
+				console.StdLog.Error(err)
+			}
+			list = append(list, gin.H{
+				"f_id":   rel.BigId,
+				"f_name": user.Uname,
+			})
+		}
+
+		if len(list) == 0 {
+			renderJSON(ctx, []int{})
+			return
+		}
+		renderJSON(ctx, list)
 	}
 }
 

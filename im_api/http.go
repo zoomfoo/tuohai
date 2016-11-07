@@ -15,6 +15,8 @@ func newHTTPServer() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(console.Logger())
+	router.Use(AccessControlAllowOrigin())
+
 	version1 := router.Group("v1", LoginAuth())
 	{
 
@@ -67,6 +69,13 @@ func LoginAuth() gin.HandlerFunc {
 			ctx.Next()
 		}
 		return
+	}
+}
+
+func AccessControlAllowOrigin() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.Next()
+		ctx.Header("Access-Control-Allow-Origin", "*")
 	}
 }
 
