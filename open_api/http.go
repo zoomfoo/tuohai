@@ -16,8 +16,8 @@ func newHTTPServer() *gin.Engine {
 	{
 		bot := version1.Group("bots", SessionAuth())
 		{
-			bot.GET("/", v1.BotList())
-			bot.POST("/", v1.CreateBot())
+			bot.GET("", v1.BotList())
+			bot.POST("", v1.CreateBot())
 			bot.PUT("/:botid", v1.UpdateBot())
 			bot.DELETE("/:bot_id", v1.DeleteBot())
 		}
