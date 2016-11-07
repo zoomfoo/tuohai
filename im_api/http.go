@@ -74,8 +74,8 @@ func LoginAuth() gin.HandlerFunc {
 
 func AccessControlAllowOrigin() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		ctx.Writer.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx.Next()
-		ctx.Header("Access-Control-Allow-Origin", "*")
 	}
 }
 

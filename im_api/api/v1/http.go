@@ -233,24 +233,24 @@ func Friends() gin.HandlerFunc {
 			renderJSON(ctx, []int{}, 1, "未找到数据")
 			return
 		}
-		fmt.Println(r)
+
 		var list []interface{}
 		for _, rel := range r {
-			user_uuid := ""
+			f_uuid := ""
 			switch token {
 			case rel.SmallId:
-				user_uuid = rel.BigId
+				f_uuid = rel.BigId
 			case rel.BigId:
-				user_uuid = rel.SmallId
+				f_uuid = rel.SmallId
 			}
 
-			user, err := models.GetTblUserById(user_uuid)
+			fuser, err := models.GetTblUserById(f_uuid)
 			if err != nil {
 				console.StdLog.Error(err)
 			}
 			list = append(list, gin.H{
-				"f_id":   rel.BigId,
-				"f_name": user.Uname,
+				"f_name": fuser.Uname,
+				"f_uuid": fuser.Uuid,
 			})
 		}
 
