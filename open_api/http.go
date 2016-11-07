@@ -22,10 +22,7 @@ func newHTTPServer() *gin.Engine {
 			bot.DELETE("/:bot_id", v1.DeleteBot())
 		}
 
-		app := version1.Group("apps")
-		{
-			app.GET("/", v1.Apps())
-		}
+		version1.GET("/apps", v1.Apps())
 
 		//从第三方接到的webhook
 		version1.POST("/hook/:bot_id", v1.PushHook())
