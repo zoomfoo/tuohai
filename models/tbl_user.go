@@ -22,6 +22,12 @@ func GetTblUserById(uuid string) (*TblUser, error) {
 	return user, err
 }
 
+func GetTblUserByIds(uuids []string) ([]TblUser, error) {
+	var users []TblUser
+	err := db.Find(&users, "uuid in (?)", uuids).Error
+	return users, err
+}
+
 func Login(uname, pwd string) (*TblUser, error) {
 	var user TblUser
 	err := db.Find(&user, "uname = ? and passwd = ?", uname, pwd).Error

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/internal/console"
@@ -212,15 +213,18 @@ func CreateGroup() gin.HandlerFunc {
 
 func UserInfo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		uid := ctx.Param("uid")
-		user, err := models.GetTblUserById(uid)
+		uids := ctx.Param("uid")
+
+		uid := strings.Split(uids, ",")
+
+		user, err := models.GetTblUserByIds(uid)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")
 			return
 		}
-
 		renderJSON(ctx, user)
+		return
 	}
 }
 
