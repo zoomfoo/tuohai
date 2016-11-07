@@ -1,11 +1,10 @@
 package im_api
 
 import (
-	// "net/http/pprof"
-	// "time"
-	// "io/ioutil"
-	"log"
+	"context"
 	"net/http"
+	"net/http/pprof"
+	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/api/v1"
@@ -18,8 +17,10 @@ func newHTTPServer() *gin.Engine {
 	router.Use(console.Logger())
 	version1 := router.Group("v1", LoginAuth())
 	{
+
+		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 		//列出IM常用的信息
-		version1.GET("/im/profile", v1.Profile())
+		version1.GET("/im/profile", v1.Profile(ctx))
 
 		//获取群组列表 √
 		version1.GET("/groups", v1.Groups())
@@ -44,17 +45,14 @@ func newHTTPServer() *gin.Engine {
 
 		//获取用户信息
 		version1.GET("/user/:uid", v1.UserInfo())
+
+		//获取好友列表
+		version1.GET("/friends", v1.Friends())
 	}
 
-	router.POST("/wangyang1", func(ctx *gin.Context) {
-		log.Println(ctx.PostForm("content"))
-		log.Println(ctx.PostForm("bot_info"))
-		// log.Println(ctx.Request.Form)
-		// data, _ := ioutil.ReadAll(ctx.Request.Body)
-		// defer ctx.Request.Body.Close()
-		// log.Println(string(data))
-		ctx.String(200, "%s", "ok")
-	})
+	//登录
+	router.POST("/login", v1.Login())
+
 	Debug(router)
 	return router
 }
@@ -73,14 +71,37 @@ func LoginAuth() gin.HandlerFunc {
 }
 
 func Debug(router *gin.Engine) {
-	// r := router.Group("/im/sys/debug")
-	// r.GET("/pprof", pprof.Index)
-	// r.GET("/pprof/cmdline", pprof.Cmdline)
-	// r.GET("/pprof/symbol", pprof.Symbol)
-	// r.POST("/pprof/symbol", pprof.Symbol)
-	// r.GET("/pprof/profile", pprof.Profile)
-	// r.GET("/pprof/heap", pprof.Handler("heap"))
-	// r.GET("/pprof/goroutine", pprof.Handler("goroutine"))
-	// r.GET("/pprof/block", pprof.Handler("block"))
-	// r.GET("/pprof/threadcreate", pprof.Handler("threadcreate"))
+
+	r := router.Group("/im/sys/debug")
+	r.GET("/pprof", func(ctx *gin.Context) {
+		pprof.Index(ctx.Writer, ctx.Request)
+	})
+	r.GET("/pprof/cmdline", func(ctx *gin.Context) {
+		pprof.Cmdline(ctx.Writer, ctx.Request)
+	})
+	r.GET("/pprof/symbol", func(ctx *gin.Context) {
+		pprof.Symbol(ctx.Writer, ctx.Request)
+	})
+	r.POST("/pprof/symbol", func(ctx *gin.Context) {
+		pprof.Symbol(ctx.Writer, ctx.Request)
+	})
+	r.GET("/pprof/profile", func(ctx *gin.Context) {
+		pprof.Profile(ctx.Writer, ctx.Request)
+	})
+	r.GET("/pprof/heap", func(ctx *gin.Context) {
+		pprof.Handler("heap")
+	})
+
+	r.GET("/goroutine", func(ctx *gin.Context) {
+		pprof.Handler("goroutine").ServeHTTP(ctx.Writer, ctx.Request)
+	})
+	r.GET("/block", func(ctx *gin.Context) {
+		pprof.Handler("block").ServeHTTP(ctx.Writer, ctx.Request)
+	})
+	r.GET("/heap", func(ctx *gin.Context) {
+		pprof.Handler("heap").ServeHTTP(ctx.Writer, ctx.Request)
+	})
+	r.GET("/threadcreate", func(ctx *gin.Context) {
+		pprof.Handler("threadcreate").ServeHTTP(ctx.Writer, ctx.Request)
+	})
 }

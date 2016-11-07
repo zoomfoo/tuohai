@@ -23,6 +23,7 @@ func New(opts *Options) *ImApi {
 func (api *ImApi) Main() {
 	httpListener, err := net.Listen("tcp", api.Opts.HTTPAddress)
 	if err != nil {
+		fmt.Println("ERROR: ", err)
 		os.Exit(1)
 	}
 

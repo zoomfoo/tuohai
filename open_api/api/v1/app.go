@@ -45,18 +45,30 @@ func Apps() gin.HandlerFunc {
 
 func CreateBot() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// var bot models.Bot
-		// if err := ctx.Bind(&bot); err != nil {
-		// 	console.StdLog.Error(err)
-		// 	renderJSON(ctx, struct{}{}, 1, err)
-		// 	return
-		// }
+		var bot models.Bot
+		if err := ctx.Bind(&bot); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, err)
+			return
+		}
 
-		// bot.CreateTime = time.Now().Unix()
-		// bot.UpTime = time.Now().Unix()
-
-		log.Println(uuid.NewV4())
-		renderJSON(ctx, "")
+		err := models.CreateBot(&models.Bot{
+			Id:         uuid.NewV4().String(),
+			Name:       bot.Name,
+			Icon:       bot.Icon,
+			CreatorId:  bot.CreatorId,
+			ChannelId:  bot.ChannelId,
+			AppId:      bot.AppId,
+			State:      1,
+			CreateTime: time.Now(),
+			UpTime:     time.Now(),
+			IsPub:      bot.IsPub,
+		})
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, "no", 1)
+		}
+		renderJSON(ctx, "ok")
 	}
 }
 

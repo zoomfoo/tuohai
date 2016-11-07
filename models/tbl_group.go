@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -16,35 +17,45 @@ const (
 	Quit          //已经退出群
 )
 
+var RecordNotFound = errors.New("record not found")
+
 type TblGroup struct {
-	Id          int      `gorm:"column:id"`
-	Gid         string   `gorm:"column:gid"`
-	Gname       string   `gorm:"column:gname"`
-	Creator     string   `gorm:"column:creator"`
-	Admincnt    uint8    `gorm:"column:admincnt"`
-	Membercnt   uint     `gorm:"column:membercnt"`
-	Version     uint     `gorm:"column:version"`
-	IsPublic    uint8    `gorm:"column:is_public"`
-	CreatedTime uint     `gorm:"column:created_time"`
-	UpdatedTime uint     `gorm:"column:updated_time"`
-	GroupMems   []string `json:"group_member_list" gorm:"-"`
+	Id          int      `gorm:"column:id" json:"-"`
+	Gid         string   `gorm:"column:gid" json:"gid"`
+	Gname       string   `gorm:"column:gname" json:"g_name"`
+	Creator     string   `gorm:"column:creator" json:"creator"`
+	Admincnt    uint8    `gorm:"column:admincnt" json:"admin_cnt"`
+	Membercnt   uint     `gorm:"column:membercnt" json:"mem_cnt"`
+	Version     uint     `gorm:"column:version" json:"version"`
+	IsPublic    uint8    `gorm:"column:is_public" json:"is_public"`
+	CreatedTime uint     `gorm:"column:created_time" json:"time"`
+	UpdatedTime uint     `gorm:"column:updated_time" json:"-"`
+	GroupMems   []string `gorm:"-" json:"members" `
 }
 
 func (t *TblGroup) TableName() string {
 	return "tbl_group"
 }
 
-// AddTblGroup insert a new TblGroup into database and returns
-// last inserted Id on success.
 func AddTblGroup(m *TblGroup) error {
 	return db.Create(m).Error
 }
 
-// GetTblGroupById retrieves TblGroup by Id. Returns error if
-// Id doesn't exist
+//
 func GetTblGroupById(gid string) (*TblGroup, error) {
 	g := &TblGroup{}
 	err := db.Find(g, "gid = ?", gid).Error
+	if err != nil {
+		return nil, err
+	}
+	mems, err := GroupMemsId(g.Gid)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, mem := range mems {
+		g.GroupMems = append(g.GroupMems, mem.Member)
+	}
 	return g, err
 }
 
@@ -137,23 +148,4 @@ func CreateGroup(g *TblGroup) (*TblGroup, error) {
 
 		return group, nil
 	}
-}
-
-// GetAllTblGroup retrieves all TblGroup matches certain condition. Returns empty list if
-// no records exist
-func GetAllTblGroup(query map[string]string, fields []string, sortby []string, order []string,
-	offset int64, limit int64) (ml []interface{}, err error) {
-	return nil, nil
-}
-
-// UpdateTblGroup updates TblGroup by Id and returns error if
-// the record to be updated doesn't exist
-func UpdateTblGroupById(m *TblGroup) (err error) {
-	return nil
-}
-
-// DeleteTblGroup deletes TblGroup by Id and returns error if
-// the record to be deleted doesn't exist
-func DeleteTblGroup(id int) (err error) {
-	return nil
 }

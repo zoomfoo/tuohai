@@ -1,16 +1,28 @@
 package v1
 
 import (
-	// "fmt"
+	"context"
+	"fmt"
 	"net/http"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/internal/console"
+	"tuohai/internal/util"
 	"tuohai/models"
 )
 
-func Profile() gin.HandlerFunc {
+func Profile(c context.Context) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+
+		go func() {
+			for {
+				select {
+				case <-c.Done():
+					return
+				default:
+				}
+			}
+		}()
 
 		renderJSON(ctx, 0, nil)
 	}
@@ -49,24 +61,49 @@ func Group() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
 		token := ctx.MustGet("token").(string)
-		group, err := models.GetTblGroupById(gid)
+		wg := &util.WaitGroupWrapper{}
+
+		var (
+			group *models.TblGroup
+			user  *models.TblUser
+			err   error
+		)
+		wg.Add(2)
+		wg.Wrap(func() {
+			group, err = models.GetTblGroupById(gid)
+			wg.Done()
+		})
+
+		wg.Wrap(func() {
+			user, err = models.GetTblUserById(token)
+			wg.Done()
+		})
+
+		wg.Wait()
+
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 0, "未找到数据")
+			fmt.Println(err.Error(), err == models.RecordNotFound, models.RecordNotFound.Error())
+			if err.Error() == models.RecordNotFound.Error() {
+				renderJSON(ctx, struct{}{})
+				return
+			}
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误!")
 			return
 		}
 
-		user, err := models.GetTblUserById(token)
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 0, "未找到数据")
+		if group == nil {
+			renderJSON(ctx, struct{}{})
 			return
 		}
 
 		ig, err := models.IsGroupMember(group.Id, user.Id)
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 0, "未找到数据")
+			if err == models.RecordNotFound {
+				renderJSON(ctx, struct{}{})
+			}
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误!")
 			return
 		}
 
@@ -89,10 +126,29 @@ func Sessions() gin.HandlerFunc {
 		sessions, err := models.GetTblSessionById(ctx.MustGet("token").(string))
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 0, "未找到数据")
+		}
+
+		if sessions == nil {
+			renderJSON(ctx, []int{}, 1, "未找到数据")
 			return
 		}
-		renderJSON(ctx, sessions)
+
+		var list []gin.H
+		for _, session := range sessions {
+			history, err := models.GetLastHistory(session.To)
+			if err != nil {
+				console.StdLog.Error(err)
+			}
+			list = append(list, gin.H{
+				"sid":  session.Sid,
+				"fr":   session.From,
+				"to":   session.To,
+				"mid":  history.MsgId,
+				"data": history.MsgData,
+				"time": history.CreatedAt,
+			})
+		}
+		renderJSON(ctx, list)
 	}
 }
 
@@ -159,6 +215,33 @@ func UserInfo() gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, user)
+	}
+}
+
+func Friends() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		token := ctx.MustGet("token").(string)
+
+	}
+}
+
+func Login() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		uname := ctx.PostForm("user_name")
+		pwd := ctx.PostForm("user_pwd")
+		user, err := models.Login(uname, pwd)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "用户名或密码错误")
+			return
+		}
+		if user.Id > 0 {
+			renderJSON(ctx, user)
+			return
+		} else {
+			renderJSON(ctx, struct{}{}, 0, "用户名或密码错误")
+			return
+		}
 	}
 }
 
