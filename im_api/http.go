@@ -62,7 +62,7 @@ func newHTTPServer() *gin.Engine {
 
 func LoginAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if token := ctx.Request.Header.Get("session_token"); token == "" {
+		if token := ctx.Query("session_token"); token == "" {
 			ctx.Abort()
 			ctx.JSON(http.StatusUnauthorized, gin.H{"err_code": 1, "data": "无权限访问"})
 		} else {
