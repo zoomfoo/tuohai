@@ -33,6 +33,9 @@ func BotList() gin.HandlerFunc {
 
 func Apps() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		ctx.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+		ctx.Writer.Header().Add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
+		ctx.Writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Depth, User-Agent, X-File-Size, X-Requested-With, X-Requested-By, If-Modified-Since, X-File-Name, Cache-Control, Token, session_token")
 		apps, err := models.Apps()
 		if err != nil {
 			console.StdLog.Error(err)
