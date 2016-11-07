@@ -103,7 +103,7 @@ func Group() gin.HandlerFunc {
 			return
 		}
 
-		ig, err := models.IsGroupMember(group.Id, user.Id)
+		ig, err := models.IsGroupMember(group.Gid, user.Uuid)
 		if err != nil {
 			console.StdLog.Error(err)
 			if err == models.RecordNotFound {

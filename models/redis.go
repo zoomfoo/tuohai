@@ -169,7 +169,7 @@ func QuitGroup(gid uint32, uids []uint32) (bool, error) {
 	return true, nil
 }
 
-func IsGroupMember(gid, uid int) (bool, error) {
+func IsGroupMember(gid, uid string) (bool, error) {
 	c := rpool.Get()
 	defer c.Close()
 
@@ -177,7 +177,7 @@ func IsGroupMember(gid, uid int) (bool, error) {
 		return false, err
 	}
 
-	res, err := redis.Int(c.Do("hexists", fmt.Sprintf("group:member:%d", gid), uid))
+	res, err := redis.Int(c.Do("hexists", fmt.Sprintf("group:member:%s", gid), uid))
 	if err != nil {
 		return false, err
 	}
