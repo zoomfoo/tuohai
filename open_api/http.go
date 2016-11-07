@@ -9,6 +9,7 @@ import (
 func newHTTPServer() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
+	router.Use(AccessControlAllowOrigin())
 	router.Use(console.Logger())
 
 	version1 := router.Group("v1")
@@ -33,6 +34,15 @@ func newHTTPServer() *gin.Engine {
 	}
 
 	return router
+}
+
+func AccessControlAllowOrigin() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.Writer.Header().Add("Access-Control-Allow-Origin", "*")
+		ctx.Writer.Header().Add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
+		ctx.Writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Depth, User-Agent, X-File-Size, X-Requested-With, X-Requested-By, If-Modified-Since, X-File-Name, Cache-Control, Token, session_token")
+		ctx.Next()
+	}
 }
 
 func SessionAuth() gin.HandlerFunc {
