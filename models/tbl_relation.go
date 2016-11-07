@@ -1,5 +1,9 @@
 package models
 
+import (
+	"tuohai/internal/convert"
+)
+
 type Relation struct {
 	Id        int    `gorm:"column:id"`
 	Rid       string `gorm:"column:rid"`
@@ -17,7 +21,19 @@ func (r *Relation) TableName() string {
 
 func Friends(uuid string) ([]Relation, error) {
 	var r []Relation
-	// err := db.Find(&r, "small_id = ? and big_id = ?", uuid, uuid).Error
-	err := db.Raw("SELECT * FROM newim.tbl_relation where status = 0 and (small_id = 'abc' or big_id = 'abc')").Find(&r).Error
+	err := db.Raw("SELECT * FROM newim.tbl_relation where status = 0 and (small_id = ? or big_id = ?)", uuid, uuid).Find(&r).Error
 	return r, err
+}
+
+func Friend(token, fuuid string) (*Relation, error) {
+	var rel Relation
+	small, big := "", ""
+	if convert.RuneAccumulation(token) > convert.RuneAccumulation(fuuid) {
+		small, big = fuuid, token
+	} else {
+		small, big = token, fuuid
+	}
+
+	err := db.Find(&rel, "status = 0 and small_id = ? and big_id = ?", small, big).Error
+	return &rel, err
 }

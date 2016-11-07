@@ -262,6 +262,36 @@ func Friends() gin.HandlerFunc {
 	}
 }
 
+func Friend() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		f_uuid := ctx.Param("f_uuid")
+		token := ctx.MustGet("token").(string)
+		rel, err := models.Friend(token, f_uuid)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "未找到数据")
+			return
+		}
+
+		switch token {
+		case rel.SmallId:
+			f_uuid = rel.BigId
+		case rel.BigId:
+			f_uuid = rel.SmallId
+		}
+
+		fuser, err := models.GetTblUserById(f_uuid)
+		if err != nil {
+			console.StdLog.Error(err)
+		}
+
+		renderJSON(ctx, gin.H{
+			"f_name": fuser.Uname,
+			"f_uuid": fuser.Uuid,
+		})
+	}
+}
+
 func Login() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		uname := ctx.PostForm("user_name")

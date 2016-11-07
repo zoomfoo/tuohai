@@ -50,6 +50,7 @@ func newHTTPServer() *gin.Engine {
 
 		//获取好友列表
 		version1.GET("/friends", v1.Friends())
+		version1.GET("/friends/:f_uuid", v1.Friend())
 	}
 
 	//登录
