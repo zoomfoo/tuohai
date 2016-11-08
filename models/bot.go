@@ -13,7 +13,7 @@ type Bot struct {
 	State      int       `gorm:"column:state" json:"state" form:"state"`
 	CreateTime time.Time `gorm:"column:create_time" json:"-" form:"-"`
 	UpTime     time.Time `gorm:"column:up_time" json:"-" form:"-"`
-	IsPub      int       `gorm:"column:is_pub" json:"is_pub" form:"is_pub" binding:"required"`
+	IsPub      int       `gorm:"column:is_pub" json:"is_pub" form:"-"`
 }
 
 func (b *Bot) TableName() string {
