@@ -20,7 +20,7 @@ func newHTTPServer() *gin.Engine {
 		{
 			bot.GET("", v1.BotList(Opts.IMAPI_HOST))
 
-			bot.POST("", v1.CreateBot(Opts.WebHookHOST))
+			bot.POST("", v1.CreateBot(Opts.WebHookHOST, Opts.ConnLogicRPCAddress))
 			bot.PUT("/:botid", v1.UpdateBot())
 			bot.DELETE("/:bot_id", v1.DeleteBot())
 		}
@@ -30,7 +30,7 @@ func newHTTPServer() *gin.Engine {
 		//从第三方接到的webhook
 		version1.POST("/hook/:bot_id", v1.PushHook())
 		//接受消息推送
-		version1.POST("/push_msg/:bot_id", v1.PushMsg())
+		version1.POST("/push_msg/:bot_id", v1.PushMsg(Opts.ConnLogicRPCAddress))
 	}
 
 	return router

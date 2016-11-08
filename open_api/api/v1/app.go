@@ -56,9 +56,13 @@ func Apps() gin.HandlerFunc {
 	}
 }
 
-func CreateBot(WebHookHOST string) gin.HandlerFunc {
+func CreateBot(WebHookHOST, ConnLogicRPCAddress string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var bot models.Bot
+		var (
+			bot          models.Bot
+			msg_type     = "message"
+			msg_sub_type = "bot_add"
+		)
 		if err := ctx.Bind(&bot); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, err)
@@ -81,7 +85,26 @@ func CreateBot(WebHookHOST string) gin.HandlerFunc {
 		err := models.CreateBot(b)
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 1)
+			renderJSON(ctx, struct{}{}, 1, "创建失败")
+			return
+		}
+
+		app, err := models.GetAppById(b.AppId)
+		if err != nil {
+			console.StdLog.Error(err)
+		}
+
+		msg := &IM_Message.IMMsgData{
+			Type:       msg_type,
+			Subtype:    msg_sub_type,
+			From:       b.Id,
+			To:         b.ChannelId,
+			MsgData:    []byte(app.Name + " 服务已创建"),
+			CreateTime: convert.ToStr(time.Now().Unix()),
+		}
+
+		if _, err := httplib.SendLogicMsg(ConnLogicRPCAddress, msg); err != nil {
+			console.StdLog.Error(err)
 		}
 
 		renderJSON(ctx, gin.H{"web_hook": WebHookHOST + b.Id})
@@ -100,7 +123,7 @@ func DeleteBot() gin.HandlerFunc {
 	}
 }
 
-func PushMsg() gin.HandlerFunc {
+func PushMsg(ConnLogicRPCAddress string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
 			bot_id       = ctx.Param("bot_id")
@@ -128,6 +151,7 @@ func PushMsg() gin.HandlerFunc {
 		data, err := ioutil.ReadAll(ctx.Request.Body)
 		defer ctx.Request.Body.Close()
 		if err != nil {
+			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "读取body失败")
 			return
 		}
@@ -141,9 +165,12 @@ func PushMsg() gin.HandlerFunc {
 			CreateTime: convert.ToStr(time.Now().Unix()),
 		}
 
-		log.Println(*msg)
+		if _, err := httplib.SendLogicMsg(ConnLogicRPCAddress, msg); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "push消息失败")
+			return
+		}
 
-		httplib.SendLogicMsg("127.0.0.1:9003", msg)
 		renderJSON(ctx, "ok")
 	}
 }
