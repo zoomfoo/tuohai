@@ -293,6 +293,7 @@ func Friend() gin.HandlerFunc {
 		renderJSON(ctx, gin.H{
 			"f_name": fuser.Uname,
 			"f_uuid": fuser.Uuid,
+			"rid":    rel.Rid,
 		})
 	}
 }
