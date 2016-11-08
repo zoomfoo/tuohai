@@ -19,7 +19,8 @@ func newHTTPServer() *gin.Engine {
 		bot := version1.Group("bots", SessionAuth())
 		{
 			bot.GET("", v1.BotList(Opts.IMAPI_HOST))
-			bot.POST("", v1.CreateBot())
+
+			bot.POST("", v1.CreateBot(Opts.WebHookHOST))
 			bot.PUT("/:botid", v1.UpdateBot())
 			bot.DELETE("/:bot_id", v1.DeleteBot())
 		}

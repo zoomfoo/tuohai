@@ -56,7 +56,7 @@ func Apps() gin.HandlerFunc {
 	}
 }
 
-func CreateBot() gin.HandlerFunc {
+func CreateBot(WebHookHOST string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var bot models.Bot
 		if err := ctx.Bind(&bot); err != nil {
@@ -65,7 +65,7 @@ func CreateBot() gin.HandlerFunc {
 			return
 		}
 
-		err := models.CreateBot(&models.Bot{
+		b := &models.Bot{
 			Id:         uuid.NewV4().String(),
 			Name:       bot.Name,
 			Icon:       bot.Icon,
@@ -76,12 +76,15 @@ func CreateBot() gin.HandlerFunc {
 			CreateTime: time.Now(),
 			UpTime:     time.Now(),
 			IsPub:      bot.IsPub,
-		})
+		}
+
+		err := models.CreateBot(b)
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, "no", 1)
+			renderJSON(ctx, struct{}{}, 1)
 		}
-		renderJSON(ctx, "ok")
+
+		renderJSON(ctx, gin.H{"web_hook": WebHookHOST + b.Id})
 	}
 }
 
