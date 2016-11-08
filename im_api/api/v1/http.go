@@ -255,6 +255,7 @@ func Friends() gin.HandlerFunc {
 			list = append(list, gin.H{
 				"f_name": fuser.Uname,
 				"f_uuid": fuser.Uuid,
+				"rid":    rel.Rid,
 			})
 		}
 
