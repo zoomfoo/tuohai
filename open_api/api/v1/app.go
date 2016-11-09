@@ -78,6 +78,13 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress, ApiHost string) gin.HandlerFunc
 			return
 		}
 
+		bappid, _ := models.GetAppById(bot.AppId)
+		if bappid.Id == "" {
+			console.StdLog.Error(errors.New("未找到app_id"))
+			renderJSON(ctx, []int{}, 1, "未找到app_id")
+			return
+		}
+
 		u := ApiHost + "/v1/groups?session_token=" + token
 		gs, err := httplib.Groups(u)
 		if err != nil {
