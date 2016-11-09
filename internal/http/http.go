@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -82,7 +83,7 @@ func Groups(URL string) ([]models.TblGroup, error) {
 
 func Users(URL string) (*models.TblUser, error) {
 	var js struct {
-		Data *models.TblUser `json:"data"`
+		Data []models.TblUser `json:"data"`
 	}
 
 	data, err := get(URL)
@@ -94,5 +95,8 @@ func Users(URL string) (*models.TblUser, error) {
 		return nil, err
 	}
 
-	return js.Data, nil
+	if len(js.Data) == 0 {
+		return nil, fmt.Errorf("返回解析到的错误数据: %v ", js)
+	}
+	return &js.Data[0], nil
 }

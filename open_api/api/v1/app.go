@@ -4,6 +4,7 @@ import (
 	// "bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -71,10 +72,17 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress, ApiHost string) gin.HandlerFunc
 		}
 
 		token := ctx.MustGet("token").(string)
-
 		if bot.CreatorId != token {
 			console.StdLog.Error(errors.New("操作者必须等于创建者"))
 			renderJSON(ctx, []int{}, 1, "操作者必须等于创建者")
+			return
+		}
+
+		//去im_api获取用户信息
+		user, err := httplib.Users(fmt.Sprintf("%s/v1/user/%s?session_token=%s", ApiHost, token, token))
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "无效的token")
 			return
 		}
 
@@ -111,7 +119,7 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress, ApiHost string) gin.HandlerFunc
 			Id:         uuid.NewV4().String(),
 			Name:       bot.Name,
 			Icon:       bot.Icon,
-			CreatorId:  token,
+			CreatorId:  user.Uuid,
 			ChannelId:  bot.ChannelId,
 			AppId:      bot.AppId,
 			State:      1,
@@ -136,7 +144,7 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress, ApiHost string) gin.HandlerFunc
 			Subtype:    msg_sub_type,
 			From:       b.Id,
 			To:         b.ChannelId,
-			MsgData:    []byte(app.Name + " 服务已创建"),
+			MsgData:    []byte(fmt.Sprintf("%s创建了%s服务", user.Uname, app.Name)),
 			CreateTime: convert.ToStr(time.Now().Unix()),
 		}
 
