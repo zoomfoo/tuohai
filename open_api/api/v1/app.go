@@ -80,8 +80,8 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress, ApiHost string) gin.HandlerFunc
 
 		bappid, _ := models.GetAppById(bot.AppId)
 		if bappid.Id == "" {
-			console.StdLog.Error(errors.New("未找到app_id"))
-			renderJSON(ctx, []int{}, 1, "未找到app_id")
+			console.StdLog.Error(errors.New("无效的app_id"))
+			renderJSON(ctx, []int{}, 1, "无效的app_id")
 			return
 		}
 
@@ -144,7 +144,17 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress, ApiHost string) gin.HandlerFunc
 			console.StdLog.Error(err)
 		}
 
-		renderJSON(ctx, gin.H{"web_hook": WebHookHOST + b.Id})
+		renderJSON(ctx, gin.H{
+			"web_hook":    WebHookHOST + b.Id,
+			"id":          bot.Id,
+			"name":        bot.Name,
+			"icon":        bot.Icon,
+			"creator_id":  bot.CreatorId,
+			"channel_id":  bot.ChannelId,
+			"app_id":      bot.AppId,
+			"create_time": bot.CreateTime,
+			"is_pub":      bot.IsPub,
+		})
 	}
 }
 
