@@ -79,3 +79,20 @@ func Groups(URL string) ([]models.TblGroup, error) {
 
 	return js.Data, nil
 }
+
+func Users(URL string) (*models.TblUser, error) {
+	var js struct {
+		Data *models.TblUser `json:"data"`
+	}
+
+	data, err := get(URL)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(data, &js); err != nil {
+		return nil, err
+	}
+
+	return js.Data, nil
+}

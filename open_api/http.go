@@ -20,7 +20,7 @@ func newHTTPServer() *gin.Engine {
 		{
 			bot.GET("", v1.BotList(Opts.IMAPI_HOST))
 
-			bot.POST("", v1.CreateBot(Opts.WebHookHOST, Opts.ConnLogicRPCAddress))
+			bot.POST("", v1.CreateBot(Opts.WebHookHOST, Opts.ConnLogicRPCAddress, Opts.IMAPI_HOST))
 			bot.PUT("/:botid", v1.UpdateBot())
 			bot.DELETE("/:bot_id", v1.DeleteBot())
 		}

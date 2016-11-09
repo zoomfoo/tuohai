@@ -3,6 +3,7 @@ package v1
 import (
 	// "bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -56,7 +57,7 @@ func Apps() gin.HandlerFunc {
 	}
 }
 
-func CreateBot(WebHookHOST, ConnLogicRPCAddress string) gin.HandlerFunc {
+func CreateBot(WebHookHOST, ConnLogicRPCAddress, ApiHost string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
 			bot          models.Bot
@@ -69,11 +70,41 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress string) gin.HandlerFunc {
 			return
 		}
 
+		token := ctx.MustGet("token").(string)
+
+		if bot.CreatorId != token {
+			console.StdLog.Error(errors.New("操作者必须等于创建者"))
+			renderJSON(ctx, []int{}, 1, "操作者必须等于创建者")
+			return
+		}
+
+		u := ApiHost + "/v1/groups?session_token=" + token
+		gs, err := httplib.Groups(u)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "远程服务器错误")
+			return
+		}
+
+		isgroup := false
+		for _, g := range gs {
+			if bot.ChannelId == g.Gid {
+				isgroup = true
+			}
+		}
+
+		if !isgroup {
+			//用户不属于群主
+			console.StdLog.Error(errors.New("用户当前不在这个群组"))
+			renderJSON(ctx, []int{}, 1, "用户当前不在这个群组")
+			return
+		}
+
 		b := &models.Bot{
 			Id:         uuid.NewV4().String(),
 			Name:       bot.Name,
 			Icon:       bot.Icon,
-			CreatorId:  bot.CreatorId,
+			CreatorId:  token,
 			ChannelId:  bot.ChannelId,
 			AppId:      bot.AppId,
 			State:      1,
@@ -82,8 +113,7 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress string) gin.HandlerFunc {
 			IsPub:      bot.IsPub,
 		}
 
-		err := models.CreateBot(b)
-		if err != nil {
+		if err := models.CreateBot(b); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "创建失败")
 			return
