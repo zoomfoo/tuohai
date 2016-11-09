@@ -397,3 +397,7 @@ func TestNewV5(t *testing.T) {
 		t.Errorf("UUIDv3 generated same UUIDs for sane names in different namespaces: %s and %s", u1, u4)
 	}
 }
+
+func TestNewV400(t *testing.T) {
+	t.Log(NewV4().String())
+}

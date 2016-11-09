@@ -144,7 +144,7 @@ func CreateBot(WebHookHOST, ConnLogicRPCAddress, ApiHost string) gin.HandlerFunc
 			Subtype:    msg_sub_type,
 			From:       b.Id,
 			To:         b.ChannelId,
-			MsgData:    []byte(fmt.Sprintf("%s创建了%s服务", user.Uname, app.Name)),
+			MsgData:    []byte(fmt.Sprintf("%s 创建了 %s 服务", user.Uname, app.Name)),
 			CreateTime: convert.ToStr(time.Now().Unix()),
 		}
 
