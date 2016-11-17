@@ -19,28 +19,29 @@ func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
 	}
 	// 获取消息未读数
 	key := "msg:unread:cnt:" + cid + ":" + msgid + ":" + origin
-	cnt, err := redis.Int(c.Do("GET", key))
+	cnt, err := c.Do("GET", key)
 	if err != nil {
 		log.Println(err)
 		return 0, nil, err
 	}
+	cc, _ := redis.Int(cnt, nil)
 	// 获取消息未读人员列表
 	key = "msg:unread:list:" + cid + ":" + msgid + ":" + origin
-	unlist, err := redis.Strings(c.Do("SMEMBERS", key))
+	unlist, err := c.Do("SMEMBERS", key)
 	if err != nil {
 		log.Println(err)
 		return 0, nil, err
 	}
-	res["unread"] = unlist
+	res["unread"], _ = redis.Strings(unlist, nil)
 	// 获取消息已读人员列表
 	key = "msg:read:list:" + cid + ":" + msgid + ":" + origin
-	rlist, err := redis.Strings(c.Do("SMEMBERS", key))
+	rlist, err := c.Do("SMEMBERS", key)
 	if err != nil {
 		log.Println(err)
 		return 0, nil, err
 	}
-	res["read"] = rlist
-	return cnt, res, nil
+	res["read"], _ = redis.Strings(rlist, nil)
+	return cc, res, nil
 }
 
 func SimpleUnread(userid, sid int) int {
