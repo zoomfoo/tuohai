@@ -7,6 +7,42 @@ import (
 	"strconv"
 )
 
+func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
+	// TODO 需要校验origin是否是当前用户，如果不是则返回空
+	res := make(map[string][]string)
+	c := rpool.Get()
+	defer c.Close()
+
+	if _, err := c.Do("select", "1"); err != nil {
+		log.Println(err)
+		return 0, nil, err
+	}
+	// 获取消息未读数
+	key := "msg:unread:cnt:" + cid + ":" + msgid + ":" + origin
+	cnt, err := redis.Int(c.Do("GET", key))
+	if err != nil {
+		log.Println(err)
+		return 0, nil, err
+	}
+	// 获取消息未读人员列表
+	key = "msg:unread:list:" + cid + ":" + msgid + ":" + origin
+	unlist, err := redis.Strings(c.Do("SMEMBERS", key))
+	if err != nil {
+		log.Println(err)
+		return 0, nil, err
+	}
+	res["unread"] = unlist
+	// 获取消息已读人员列表
+	key = "msg:read:list:" + cid + ":" + msgid + ":" + origin
+	rlist, err := redis.Strings(c.Do("SMEMBERS", key))
+	if err != nil {
+		log.Println(err)
+		return 0, nil, err
+	}
+	res["read"] = rlist
+	return cnt, res, nil
+}
+
 func SimpleUnread(userid, sid int) int {
 	return SimpleUnreads(userid)[strconv.Itoa(sid)]
 }
