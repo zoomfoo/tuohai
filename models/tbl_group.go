@@ -20,17 +20,17 @@ const (
 var RecordNotFound = errors.New("record not found")
 
 type TblGroup struct {
-	Id          int      `gorm:"column:id" json:"-"`
-	Gid         string   `gorm:"column:gid" json:"gid"`
-	Gname       string   `gorm:"column:gname" json:"g_name"`
-	Creator     string   `gorm:"column:creator" json:"creator"`
-	Admincnt    uint8    `gorm:"column:admincnt" json:"admin_cnt"`
-	Membercnt   uint     `gorm:"column:membercnt" json:"mem_cnt"`
-	Version     uint     `gorm:"column:version" json:"version"`
-	IsPublic    uint8    `gorm:"column:is_public" json:"is_public"`
-	CreatedTime uint     `gorm:"column:created_time" json:"time"`
-	UpdatedTime uint     `gorm:"column:updated_time" json:"-"`
-	GroupMems   []string `gorm:"-" json:"members" `
+	Id        int      `gorm:"column:id" json:"-"`
+	Gid       string   `gorm:"column:gid" json:"gid"`
+	Gname     string   `gorm:"column:gname" json:"g_name"`
+	Creator   string   `gorm:"column:creator" json:"creator"`
+	Admincnt  uint8    `gorm:"column:admincnt" json:"admin_cnt"`
+	Membercnt uint     `gorm:"column:membercnt" json:"mem_cnt"`
+	Version   uint     `gorm:"column:version" json:"version"`
+	IsPublic  uint8    `gorm:"column:is_public" json:"is_public"`
+	CreatedAt uint     `gorm:"column:created_at" json:"time"`
+	UpdatedAt uint     `gorm:"column:updated_at" json:"-"`
+	GroupMems []string `gorm:"-" json:"members" `
 }
 
 func (t *TblGroup) TableName() string {
@@ -69,8 +69,8 @@ func CreateGroup(g *TblGroup) (*TblGroup, error) {
 
 	g.Membercnt = uint(len(g.GroupMems))
 	g.Admincnt = 0
-	g.CreatedTime = uint(now)
-	g.UpdatedTime = uint(now)
+	g.CreatedAt = uint(now)
+	g.UpdatedAt = uint(now)
 	g.Version = 1
 
 	resg := tx.Create(g)
