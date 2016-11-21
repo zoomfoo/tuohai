@@ -51,9 +51,8 @@ func newHTTPServer() *gin.Engine {
 		version1.GET("/friends", v1.Friends())
 		version1.GET("/friends/:f_uuid", v1.Friend())
 
-		//文件上传
-		version1.POST("/files", v1.UploadFile())
-		version1.GET("/files", v1.Files())
+		// 获取消息未读详情信息
+		version1.GET("/readinfo/:cid/:msgid/:origin", v1.MessageRead())
 	}
 
 	//登录

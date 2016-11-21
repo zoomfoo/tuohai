@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"gopkg.in/gin-gonic/gin.v1"
@@ -181,7 +182,21 @@ func RemoveSession() gin.HandlerFunc {
 
 func MessageRead() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		cid := ctx.Param("cid")
+		msgid := ctx.Param("msgid")
+		origin := ctx.Param("origin")
+		fmt.Printf("get read info.cid:%s,msgid:%s,origin:%s\n", cid, msgid, origin)
+		cnt, res, err := models.MsgReadInfo(cid, msgid, origin)
+		if err != nil {
+			renderJSON(ctx, map[string]string{}, 1, "查数据出现问题")
+		} else {
+			renderJSON(ctx, map[string]string{
+				"cnt":    strconv.Itoa(cnt),
+				"read":   strings.Join(res["read"], ","),
+				"unread": strings.Join(res["unread"], ","),
+			})
+		}
+		return
 	}
 }
 
@@ -203,7 +218,7 @@ func CreateGroup() gin.HandlerFunc {
 		g, err := models.CreateGroup(&group)
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 0, "未找到数据")
+			renderJSON(ctx, []int{}, 1, "未找到数据")
 			return
 		}
 
