@@ -45,10 +45,10 @@ func Groups() gin.HandlerFunc {
 			return
 		}
 
-		var groups []models.TblGroup
+		var groups []models.Group
 		for _, mems := range mems_groups {
 
-			group, err := models.GetTblGroupById(mems.GroupId)
+			group, err := models.GetGroupById(mems.GroupId)
 			if err != nil {
 				console.StdLog.Error(err)
 			}
@@ -71,13 +71,13 @@ func Group() gin.HandlerFunc {
 		wg := &util.WaitGroupWrapper{}
 
 		var (
-			group *models.TblGroup
+			group *models.Group
 			user  *models.TblUser
 			err   error
 		)
 		wg.Add(2)
 		wg.Wrap(func() {
-			group, err = models.GetTblGroupById(gid)
+			group, err = models.GetGroupById(gid)
 			wg.Done()
 		})
 
@@ -130,7 +130,7 @@ func UpdateGroup() gin.HandlerFunc {
 
 func Sessions() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sessions, err := models.GetTblSessionById(ctx.MustGet("token").(string))
+		sessions, err := models.GetSessionById(ctx.MustGet("token").(string))
 		if err != nil {
 			console.StdLog.Error(err)
 		}
@@ -162,7 +162,7 @@ func Sessions() gin.HandlerFunc {
 func Messages() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		sid := ctx.Param("sid")
-		msg, err := models.GetTblMsgById(sid)
+		msg, err := models.GetMsgById(sid)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, "未找到数据")
@@ -193,7 +193,7 @@ func Unreads() gin.HandlerFunc {
 
 func CreateGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var group models.TblGroup
+		var group models.Group
 		if err := ctx.Bind(&group); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, err)
@@ -315,6 +315,18 @@ func Login() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 0, "用户名或密码错误")
 			return
 		}
+	}
+}
+
+func UploadFile() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+	}
+}
+
+func Files() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
 	}
 }
 

@@ -13,7 +13,7 @@ type program struct {
 
 func main() {
 	if err := svc.Run(&program{}); err != nil {
-		log.Print("ERROR：")
+		log.Print("ERROR: ")
 		log.Fatal(err)
 	}
 }

@@ -147,7 +147,17 @@ func Subscribers(m chan redis.Message, key string) {
 	}
 }
 
-func QuitGroup(gid uint32, uids []uint32) (bool, error) {
+func GetGroupMem(gid string) ([]string, error) {
+	c := rpool.Get()
+	defer c.Close()
+	if _, err := c.Do("select", "5"); err != nil {
+		return []string{}, err
+	}
+
+	return redis.Strings(c.Do("hgetall", fmt.Sprintf("group:member:%s", gid)))
+}
+
+func QuitGroup(gid string, member []string) (bool, error) {
 	c := rpool.Get()
 	defer c.Close()
 
@@ -155,17 +165,14 @@ func QuitGroup(gid uint32, uids []uint32) (bool, error) {
 		return false, err
 	}
 
-	var args = []interface{}{fmt.Sprintf("group_member_%d", gid)}
-	for _, uid := range uids {
-		args = append(args, uid)
+	var args = []interface{}{fmt.Sprintf("group:member:%s", gid)}
+	for _, m := range member {
+		args = append(args, m)
 	}
 
 	if b, err := c.Do("hdel", args...); err != nil {
 		return false, err
-	} else {
-		log.Println(b)
 	}
-
 	return true, nil
 }
 

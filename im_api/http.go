@@ -35,7 +35,7 @@ func newHTTPServer() *gin.Engine {
 		//获取session列表 √
 		version1.GET("/sessions", v1.Sessions())
 		//删除session
-		version1.DELETE("/sessions/:sid", v1.RemoveSession())
+		version1.DELETE("/sessions/:sid", v1.RemoveSession()) //no
 		//获取消息历史记录 √
 		version1.GET("/sessions/:sid/messages", v1.Messages())
 		//消息已读确认 这个read 在restfull中为名词
@@ -50,6 +50,10 @@ func newHTTPServer() *gin.Engine {
 		//获取好友列表
 		version1.GET("/friends", v1.Friends())
 		version1.GET("/friends/:f_uuid", v1.Friend())
+
+		//文件上传
+		version1.POST("/files", v1.UploadFile())
+		version1.GET("/files", v1.Files())
 	}
 
 	//登录
