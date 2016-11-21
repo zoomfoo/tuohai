@@ -21,12 +21,12 @@ type Message struct {
 type Msgrecord struct {
 	FromId      uint32 `json:"user_id"`
 	SessionType int8   `json:"session_type"`
-	ToId        uint32 `json:"session_id"`
+	ToId        string `json:"session_id"`
 	MsgIdBegin  uint32 `json:"msg_id_begin"`
 	MsgCnt      uint32 `json:"msg_cnt"`
 }
 
-func (t *Msg) TableName() string {
+func (t *Message) TableName() string {
 	return fmt.Sprintf("tbl_msg_%d", convert.RuneAccumulation(t.To)%16)
 }
 
@@ -35,7 +35,7 @@ func GetMsgById(record *Msgrecord) ([]Message, error) {
 		msgs []Message
 	)
 
-	err := db.Table((&Message{To: to}).TableName()).
+	err := db.Table((&Message{To: record.ToId}).TableName()).
 		Where("`to` = ? and msg_id <=? order by created_at desc, id desc limit ?", record.ToId, record.MsgIdBegin, record.MsgCnt).
 		Scan(&msgs).Error
 	return msgs, err

@@ -14,4 +14,5 @@ func newHTTPServer() *gin.Engine {
 	{
 		version1.POST("/upload", v1.Upload())
 	}
+	return router
 }

@@ -1,6 +1,12 @@
 package models
 
+import ()
+
 type FileType int8
+
+type TransactHandle interface {
+	Path() (string, error)
+}
 
 const (
 	FileTypeImage      FileType = 1
@@ -44,7 +50,7 @@ func (file *FileInfo) GetFilesInfo(to []string, ftype FileType) ([]FileInfo, err
 		return nil, err
 	}
 	for i := 0; i < len(infos); i++ {
-		if f.Type == FileTypeImage {
+		if file.Type == FileTypeImage {
 			infos[i].GetImage()
 		}
 	}
@@ -61,6 +67,19 @@ func (file *FileInfo) GetImage() error {
 	return nil
 }
 
-func WriteFileToDB(file *FileInfo) {
+func WriteFileToDB(file *FileInfo, transact TransactHandle) error {
+	tx := db.Begin()
 
+	if path, err := transact.Path(); err != nil {
+		tx.Rollback()
+		return err
+	} else {
+		file.Path = path
+	}
+
+	if err := tx.Create(file).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }

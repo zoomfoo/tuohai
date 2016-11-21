@@ -1,7 +1,5 @@
 package file_api
 
-package im_api
-
 import (
 	"fmt"
 	"log"
@@ -36,7 +34,7 @@ func NewOptions() *Options {
 		DbHost: "120.27.45.244:3306",
 		DbUser: "root",
 		DbPwd:  "yzjmysql",
-		DbName: "newim",
+		DbName: "fileadmin",
 
 		RedisHost: "127.0.0.1:6379",
 		RedisPwd:  "",

@@ -21,7 +21,7 @@ func New(opts *Options) *FileApi {
 }
 
 func (file *FileApi) Main() {
-	httpListener, err := net.Listen("tcp", api.Opts.HTTPAddress)
+	httpListener, err := net.Listen("tcp", Opts.HTTPAddress)
 	if err != nil {
 		fmt.Println("ERROR: ", err)
 		os.Exit(1)

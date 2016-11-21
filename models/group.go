@@ -18,6 +18,10 @@ const (
 	Quit          //已经退出群
 )
 
+const (
+	DelGroup = 1 //删除群
+)
+
 var RecordNotFound = errors.New("record not found")
 
 type Group struct {
@@ -262,7 +266,12 @@ func DismissGroup(gid string) error {
 		return err
 	}
 
-	mems := GroupMemsId(gid)
+	mems, err := GroupMemsId(gid)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	for i := 0; i < len(mems); i++ {
 		mlist = append(mlist, mems[i].Member)
 	}

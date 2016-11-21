@@ -1,4 +1,4 @@
-package file_api
+package main
 
 import (
 	"log"
@@ -23,6 +23,8 @@ func (p *program) Init() error {
 }
 
 func (p *program) Start() error {
+	opts := api.NewOptions()
+	api.New(opts).Main()
 	return nil
 }
 

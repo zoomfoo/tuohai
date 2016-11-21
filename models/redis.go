@@ -207,7 +207,7 @@ func QuitGroup(gid string, member []string) (bool, error) {
 		args = append(args, m)
 	}
 
-	if b, err := c.Do("hdel", args...); err != nil {
+	if _, err := c.Do("hdel", args...); err != nil {
 		return false, err
 	}
 	return true, nil
