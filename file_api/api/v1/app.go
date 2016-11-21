@@ -2,6 +2,7 @@ package v1
 
 import (
 	// "errors"
+	"bytes"
 	"path/filepath"
 	"time"
 
@@ -21,13 +22,19 @@ func Upload() gin.HandlerFunc {
 		}
 		to := ctx.PostForm("to")
 		creator := ctx.PostForm("creator")
+
+		suffix := filepath.Ext(h.Filename)
+
+		buf := &bytes.Buffer{}
+		buf.ReadFrom(f)
+
 		finfo := &models.FileInfo{
 			Id:       uuid.NewV4().String(),
 			To:       to,
 			Name:     h.Filename,
-			Size:     0,
+			Size:     len(buf.Bytes()),
 			Type:     0,
-			Ext:      filepath.Ext(h.Filename),
+			Ext:      suffix,
 			Category: h.Header.Get("Content-Type"),
 			Meta:     nil,
 			Creator:  creator,
@@ -35,7 +42,7 @@ func Upload() gin.HandlerFunc {
 			Created:  time.Now().Unix(),
 		}
 
-		if err := models.WriteFileToDB(finfo, file.UploadFile(f)); err != nil {
+		if err := models.WriteFileToDB(finfo, file.UploadFile(suffix, buf)); err != nil {
 			ctx.String(200, "%s", "no")
 			console.StdLog.Error(err)
 		} else {
