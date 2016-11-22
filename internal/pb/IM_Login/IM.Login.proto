@@ -1,6 +1,6 @@
 syntax="proto3";
 package IM.Login;
-import "tuohai/internal/pb/IM_BaseDefine/IM.BaseDefine.proto";
+import "internal/pb/IM_BaseDefine/IM.BaseDefine.proto";
 option optimize_for = LITE_RUNTIME;
 
 //service id:	0x0001
@@ -32,18 +32,3 @@ message IMLogoutRsp{
 	//cmd id:		0x0106
 	uint32 err_code = 1;
 }
-
-message IMKickClientReq{
-	//cmd id:		0x010a
-	string user_id = 1;
-	string device_id = 2;
-}
-
-message IMKickClientRsp{
-	//cmd id: 		0x010b
-	string user_id = 1;
-	uint32 result_code = 2;
-	string device_id = 3;
-}
- 
-

@@ -53,6 +53,17 @@ func newHTTPServer() *gin.Engine {
 
 		// 获取消息未读详情信息
 		version1.GET("/readinfo/:cid/:msgid/:origin", v1.MessageRead())
+
+		// 戳一下
+		version1.POST("/chuo", v1.AddChuo())
+		// 确认收到
+		version1.POST("/chuo_confirm", v1.ConfirmChuo())
+		// 获取我发出
+		version1.GET("/chuo_from/:uid", v1.GetChuoListFrom())
+		// 获取我收到的戳
+		version1.GET("/chuo_rcv/:uid", v1.GetChuoListRcv())
+		// 获取戳的详情
+		version1.GET("/chuo_info/:chuoid", v1.GetChuoInfo())
 	}
 
 	//登录
@@ -65,6 +76,8 @@ func newHTTPServer() *gin.Engine {
 func LoginAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if token := ctx.Query("session_token"); token == "" {
+			// ctx.Next()
+			// return
 			ctx.Abort()
 			ctx.JSON(http.StatusUnauthorized, gin.H{"err_code": 1, "data": "无权限访问"})
 		} else {
