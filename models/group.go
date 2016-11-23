@@ -74,7 +74,7 @@ func (g *Group) reset() {
 	g.IsPublic = 0
 	g.CreatedTime = 0
 	g.UpdatedTime = 0
-	g.GroupMems = g.GroupMems[:]
+	g.GroupMems = g.GroupMems[0:0]
 }
 
 func (g *Group) GetGroupMemsForSQL() error {
