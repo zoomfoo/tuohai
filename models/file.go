@@ -83,3 +83,8 @@ func WriteFileToDB(file *FileInfo, transact TransactHandle) error {
 	}
 	return tx.Commit().Error
 }
+
+func GetFilesInfo(to []string, ftype FileType) ([]FileInfo, error) {
+	fi := &FileInfo{}
+	return fi.GetFilesInfo(to, ftype)
+}

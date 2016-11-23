@@ -231,3 +231,20 @@ func ManageAdmin(operator uint32, gid string, mems []string, is bool) (*Group, e
 	// return group, nil
 	return nil, nil
 }
+
+func GetMyGroupId(id string) ([]string, error) {
+	var (
+		gm  []GroupMember
+		ids []string
+	)
+	err := db.Find(&gm, "member = ? and status = 0", id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < len(gm); i++ {
+		ids = append(ids, gm[i].GroupId)
+	}
+
+	return ids, nil
+}

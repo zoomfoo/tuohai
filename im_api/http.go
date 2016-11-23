@@ -23,36 +23,56 @@ func newHTTPServer() *gin.Engine {
 		//列出IM常用的信息
 		version1.GET("/im/profile", v1.Profile(ctx))
 
-		//获取群组列表 √
-		version1.GET("/groups", v1.Groups())
-		//获取群组信息
-		version1.GET("/groups/:gid", v1.Group())
-		//更新群组
-		version1.PUT("/groups/:gid", v1.UpdateGroup())
-		//创建群组
-		version1.POST("/groups", v1.CreateGroup())
+		//群组创建 更新
+		//成员管理
+		//管理员管理
+		groups := version1.Group("groups")
+		{
+			//获取群组列表 √
+			groups.GET("", v1.Groups())
+			//获取群组信息
+			groups.GET("/:gid", v1.Group())
+			//创建群组
+			groups.POST("", v1.CreateGroup())
 
-		//获取session列表 √
-		version1.GET("/sessions", v1.Sessions())
-		//删除session
-		version1.DELETE("/sessions/:sid", v1.RemoveSession()) //no
-		//获取消息历史记录 √
-		version1.GET("/sessions/:sid/messages", v1.Messages())
-		//消息已读确认 这个read 在restfull中为名词
-		version1.PUT("/sessions/:sid/read", v1.MessageRead())
+			//群管理
+			//群重命名
+			groups.PUT("/:gid/rename/:newname", v1.GroupRename())
+			//解散群
+			groups.DELETE("/:gid/dismiss", v1.DismissGroup())
+			//退出群
+			groups.DELETE("/:gid/quit", v1.QuitGroupMember())
+			//添加群成员
+			groups.POST("/:gid/add", v1.AddGroupMember())
+			//移除群成员
+			groups.DELETE("/:gid/remove", v1.RemoveGroupMember())
+		}
+
+		//session
+		//
+		//
+		sessions := version1.Group("sessions")
+		{
+			//获取session列表 √
+			sessions.GET("", v1.Sessions())
+			//删除session
+			sessions.DELETE("/:sid", v1.RemoveSession()) //no
+			//获取消息历史记录 √
+			sessions.GET("/:sid/messages", v1.Messages())
+			//消息已读确认 这个read 在restfull中为名词
+			sessions.PUT("/:sid/read", v1.MessageRead())
+		}
 
 		//获取所有未读消息
 		version1.GET("/unreads", v1.Unreads())
-
 		//获取用户信息
 		version1.GET("/user/:uid", v1.UserInfo())
-
 		//获取好友列表
 		version1.GET("/friends", v1.Friends())
 		version1.GET("/friends/:f_uuid", v1.Friend())
-
-		// 获取消息未读详情信息
+		//获取消息未读详情信息
 		version1.GET("/readinfo/:cid/:msgid/:origin", v1.MessageRead())
+		version1.GET("/get_toids", v1.GetIds())
 	}
 
 	//登录

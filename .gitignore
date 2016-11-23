@@ -26,3 +26,6 @@ _testmain.go
 
 log/*.log
 conf/*.conf
+apps/im_api/im_api
+apps/open_api/open_api
+apps/file_api/file_api

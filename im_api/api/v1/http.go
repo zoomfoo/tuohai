@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	// "time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/internal/console"
@@ -51,7 +52,10 @@ func Groups() gin.HandlerFunc {
 
 			group, err := models.GetGroupById(mems.GroupId)
 			if err != nil {
-				console.StdLog.Error(err)
+				if err != models.RecordNotFound {
+					console.StdLog.Error(err)
+				}
+				continue
 			}
 			groups = append(groups, *group)
 		}
@@ -162,8 +166,9 @@ func Sessions() gin.HandlerFunc {
 
 func Messages() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sid := ctx.Param("sid")
-		msg, err := models.GetMsgById(sid)
+		// sid := ctx.Param("sid")
+		record := &models.Msgrecord{}
+		msg, err := models.GetMsgById(record)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, "未找到数据")
@@ -215,6 +220,11 @@ func CreateGroup() gin.HandlerFunc {
 			return
 		}
 
+		//判断操作这否有权限操作群
+
+		//
+		//
+
 		g, err := models.CreateGroup(&group)
 		if err != nil {
 			console.StdLog.Error(err)
@@ -223,6 +233,133 @@ func CreateGroup() gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, g)
+	}
+}
+
+func GroupRename() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		gid := ctx.Param("gid")
+		newname := ctx.Param("newname")
+		if gid == "" || newname == "" {
+			renderJSON(ctx, struct{}{}, 1, "无效的URL参数!")
+			return
+		}
+
+		//判断操作这否有权限操作群
+
+		//
+		//
+
+		if err := models.RenameGroup(gid, newname); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "修改群名称失败!")
+			return
+		}
+		renderJSON(ctx, "ok")
+		return
+	}
+}
+
+func DismissGroup() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		gid := ctx.Param("gid")
+		if gid == "" {
+			renderJSON(ctx, struct{}{}, 1, "无效的URL参数!")
+			return
+		}
+
+		//判断操作这否有权限操作群
+
+		//
+		//
+
+		if err := models.DismissGroup(gid); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "解散群失败!")
+			return
+		}
+
+		renderJSON(ctx, "ok")
+		return
+	}
+}
+
+func AddGroupMember() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
+		gid := ctx.Param("gid")
+		if len(ids) == 0 {
+			renderJSON(ctx, struct{}{}, 1, "无效的参数")
+			return
+		}
+
+		//判定操作者权限
+
+		g, err := models.AddGroupMember(gid, ids)
+		if err != nil {
+			if err == models.RecordNotFound {
+				console.StdLog.Error(err)
+				renderJSON(ctx, struct{}{}, 0)
+			} else {
+				renderJSON(ctx, struct{}{}, 1)
+			}
+			return
+		}
+
+		renderJSON(ctx, g)
+		return
+	}
+}
+
+func RemoveGroupMember() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
+		gid := ctx.Param("gid")
+		if len(ids) == 0 {
+			renderJSON(ctx, struct{}{}, 1, "无效的参数")
+			return
+		}
+
+		//判定操作者权限
+
+		g, err := models.DelGroupMember(gid, ids)
+		if err != nil {
+			if err == models.RecordNotFound {
+				console.StdLog.Error(err)
+				renderJSON(ctx, struct{}{}, 0)
+			} else {
+				renderJSON(ctx, struct{}{}, 1)
+			}
+			return
+		}
+
+		renderJSON(ctx, g)
+		return
+	}
+}
+
+func QuitGroupMember() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		token := ctx.MustGet("token").(string)
+		gid := ctx.Param("gid")
+
+		//判定操作者权限
+
+		//
+
+		g, err := models.DelGroupMember(gid, []string{token})
+		if err != nil {
+			if err == models.RecordNotFound {
+				console.StdLog.Error(err)
+				renderJSON(ctx, struct{}{}, 0)
+			} else {
+				renderJSON(ctx, struct{}{}, 1)
+			}
+			return
+		}
+
+		renderJSON(ctx, g)
+		return
 	}
 }
 
@@ -333,15 +470,33 @@ func Login() gin.HandlerFunc {
 	}
 }
 
-func UploadFile() gin.HandlerFunc {
+func GetIds() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		var (
+			id         = ""
+			rels, gros []string
+			rerr, gerr error
+		)
+		wg := &util.WaitGroupWrapper{}
+		wg.Add(2)
+		wg.Wrap(func() {
+			rels, rerr = models.GetMyRelationId(id)
+			wg.Done()
+		})
+		wg.Wrap(func() {
+			gros, gerr = models.GetMyGroupId(id)
+			wg.Done()
+		})
+		wg.Wait()
 
-	}
-}
+		if rerr != nil || gerr != nil {
 
-func Files() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+		}
+		rels = append(rels, gros...)
 
+		renderJSON(ctx, gin.H{
+			"ids": rels,
+		})
 	}
 }
 

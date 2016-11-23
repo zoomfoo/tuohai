@@ -3,8 +3,8 @@ package models
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"time"
-	// "tuohai/internal/console"
 )
 
 const (
@@ -24,6 +24,16 @@ const (
 
 var RecordNotFound = errors.New("record not found")
 
+var GroupPool *sync.Pool
+
+func init() {
+	GroupPool = &sync.Pool{
+		New: func() interface{} {
+			return new(Group)
+		},
+	}
+}
+
 type Group struct {
 	Id          int      `gorm:"column:id" json:"-"`
 	Gid         string   `gorm:"column:gid" json:"gid"`
@@ -33,8 +43,8 @@ type Group struct {
 	Membercnt   uint     `gorm:"column:membercnt" json:"mem_cnt"`
 	Version     uint     `gorm:"column:version" json:"version"`
 	IsPublic    uint8    `gorm:"column:is_public" json:"is_public"`
-	CreatedTime int64    `gorm:"column:created_time" json:"time"`
-	UpdatedTime int64    `gorm:"column:updated_time" json:"-"`
+	CreatedTime int64    `gorm:"column:created_at" json:"time"`
+	UpdatedTime int64    `gorm:"column:updated_at" json:"-"`
 	GroupMems   []string `gorm:"-" json:"members" `
 }
 
@@ -92,25 +102,31 @@ func AddGroup(m *Group) error {
 
 //修改群名√
 func RenameGroup(gid, newname string) error {
-	g := &Group{Gid: gid}
+	g := GroupPool.Get().(*Group)
+	g.Gid = gid
+
 	if err := g.GetGroupById(); err != nil {
 		return err
 	}
 	if err := g.RenameGroup(newname); err != nil {
 		return err
 	}
+	GroupPool.Put(g)
 	return nil
 }
 
 //获取群组信息√
 func GetGroupById(gid string) (*Group, error) {
-	g := &Group{Gid: gid}
+	g := GroupPool.Get().(*Group)
+	g.Gid = gid
+
 	if err := g.GetGroupById(); err != nil {
 		return nil, err
 	}
 	if err := g.GetGroupMemsForSQL(); err != nil {
 		return nil, err
 	}
+	GroupPool.Put(g)
 	return g, nil
 }
 
