@@ -56,7 +56,7 @@ func (g *Group) GetGroupById() error {
 	if g.Gid == "" {
 		return errors.New("gid is empty")
 	}
-	return db.Find(g, "gid = ?", g.Gid).Error
+	return db.Find(g, "gid = ? and status = 0", g.Gid).Error
 }
 
 func (g *Group) validation() bool {
@@ -103,6 +103,8 @@ func (g *Group) RenameGroup(name string) error {
 	if g.Gname == name {
 		return nil
 	}
+
+	g.Gname = name
 	return db.Save(g).Error
 }
 
@@ -110,23 +112,19 @@ func (g *Group) TransferGroup(prince, king uint32) error {
 	return nil
 }
 
-func AddGroup(m *Group) error {
-	return db.Create(m).Error
-}
-
 //修改群名√
 func RenameGroup(gid, newname string) error {
 	g := GroupPool.Get().(*Group)
 	g.reset()
 	g.Gid = gid
-
+	GroupPool.Put(g)
 	if err := g.GetGroupById(); err != nil {
 		return err
 	}
 	if err := g.RenameGroup(newname); err != nil {
 		return err
 	}
-	GroupPool.Put(g)
+
 	return nil
 }
 
@@ -163,7 +161,7 @@ func GetGroupsByUid(uid string) ([]Group, error) {
 		gs = append(gs, m.GroupId)
 	}
 
-	if err := db.Find(&groups, "gid in (?)", gs).Error; err != nil {
+	if err := db.Find(&groups, "gid in (?) and status = 0", gs).Error; err != nil {
 		return nil, err
 	}
 
