@@ -63,6 +63,20 @@ func (g *Group) validation() bool {
 	return true
 }
 
+func (g *Group) reset() {
+	g.Id = 0
+	g.Gid = ""
+	g.Gname = ""
+	g.Creator = ""
+	g.Admincnt = 0
+	g.Membercnt = 0
+	g.Version = 0
+	g.IsPublic = 0
+	g.CreatedTime = 0
+	g.UpdatedTime = 0
+	g.GroupMems = []string{nil}
+}
+
 func (g *Group) GetGroupMemsForSQL() error {
 	var (
 		mems []GroupMember
@@ -103,6 +117,7 @@ func AddGroup(m *Group) error {
 //修改群名√
 func RenameGroup(gid, newname string) error {
 	g := GroupPool.Get().(*Group)
+	g.reset()
 	g.Gid = gid
 
 	if err := g.GetGroupById(); err != nil {
@@ -118,6 +133,7 @@ func RenameGroup(gid, newname string) error {
 //获取群组信息√
 func GetGroupById(gid string) (*Group, error) {
 	g := GroupPool.Get().(*Group)
+	g.reset()
 	g.Gid = gid
 
 	if err := g.GetGroupById(); err != nil {
