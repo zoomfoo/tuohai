@@ -36,7 +36,7 @@ func NewOptions() *Options {
 		DbPwd:  "yzjmysql",
 		DbName: "newim",
 
-		RedisHost: "127.0.0.1:6379",
+		RedisHost: "120.27.45.244:6379",
 		RedisPwd:  "",
 
 		Logger: console.New(*log.New(os.Stderr, "im_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),

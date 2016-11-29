@@ -9,7 +9,7 @@ type GroupMember struct {
 	Id        int    `gorm:"column:id"`
 	GroupId   string `gorm:"column:gid"`
 	Member    string `gorm:"column:member"`
-	Role      uint8  `gorm:"column:role"`
+	Role      int8   `gorm:"column:role"`
 	Status    uint8  `gorm:"column:status"`
 	CreatedAt int64  `gorm:"column:created_at"`
 	UpdatedAt int64  `gorm:"column:updated_at"`
@@ -24,11 +24,11 @@ func (gm *GroupMember) GetGroupMemberByUidAndGid(UserId, GroupId string) error {
 }
 
 func (gm *GroupMember) IsCreator() bool {
-	return gm.Role == GroupCreator
+	return gm.Role == GROUP_CREATOR
 }
 
 func (gm *GroupMember) IsAdmin() bool {
-	return gm.Role == GroupAdmin
+	return gm.Role == GROUP_ADMIN
 }
 
 func IsCreator(UserId, GroupId string) (bool, error) {
@@ -38,6 +38,15 @@ func IsCreator(UserId, GroupId string) (bool, error) {
 		return false, err
 	}
 	return gm.IsCreator(), nil
+}
+
+//获取角色值
+func RoleInfo(gid, uid string) int8 {
+	gm := &GroupMember{}
+	if err := db.Where("member = ? and gid = ? and status = 0", uid, gid).Find(gm).Error; err != nil {
+		return -1
+	}
+	return gm.Role
 }
 
 func IsAdmin(UserId, GroupId string) (bool, error) {
@@ -114,7 +123,7 @@ func AddGroupMember(gid string, GroupMems []string) (*Group, error) {
 			GroupId:   g.Gid,
 			Member:    mem,
 			Status:    Normal,
-			Role:      OrdinaryMembers,
+			Role:      ORDINARY_MEMS,
 			CreatedAt: now,
 			UpdatedAt: now,
 		}).Error; err != nil {

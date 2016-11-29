@@ -30,15 +30,15 @@ func newHTTPServer() *gin.Engine {
 		{
 			//获取群组列表 √
 			groups.GET("", v1.Groups())
-			//获取群组信息
+			//获取群组信息 √
 			groups.GET("/:gid", v1.Group())
-			//创建群组
+			//创建群组 √
 			groups.POST("", v1.CreateGroup())
 
 			//群管理
-			//群重命名
+			//群重命名 √
 			groups.PUT("/:gid/rename/:newname", v1.GroupRename())
-			//解散群
+			//解散群 √
 			groups.DELETE("/:gid/dismiss", v1.DismissGroup())
 			//退出群
 			groups.DELETE("/:gid/quit", v1.QuitGroupMember())
@@ -55,8 +55,8 @@ func newHTTPServer() *gin.Engine {
 		{
 			//获取session列表 √
 			sessions.GET("", v1.Sessions())
-			//删除session
-			sessions.DELETE("/:sid", v1.RemoveSession()) //no
+			//删除session no
+			sessions.DELETE("/:sid", v1.RemoveSession())
 			//获取消息历史记录 √
 			sessions.GET("/:sid/messages", v1.Messages())
 			//消息已读确认 这个read 在restfull中为名词

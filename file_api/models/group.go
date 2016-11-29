@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	OrdinaryMembers = iota //普通成员
-	GroupAdmin             //群组管理员
-	GroupCreator           //群组创建者/群主
+	ORDINARY_MEMS = iota //普通成员
+	GROUP_ADMIN          //群组管理员
+	GROUP_CREATOR        //群组创建者/群主
 )
 
 const (
@@ -20,6 +20,25 @@ const (
 
 const (
 	DelGroup = 1 //删除群
+)
+
+type OperationVerb int8
+
+const (
+	ADD_GROUP_MEMS OperationVerb = 1 //添加群成员
+	DEL_GROUP_MEMS OperationVerb = 2 //删除群成员
+	ADD_ADMIN      OperationVerb = 3 //添加管理员
+	DEL_ADMIN      OperationVerb = 4 //删除管理员
+	RENAME_GROUP   OperationVerb = 5 //重命名
+	QUIT_GROUP     OperationVerb = 6 //從群組成員中退出
+	DISMISS_GROUP  OperationVerb = 7 //關閉群組并解散群成員
+	TRANSFER_GROUP OperationVerb = 8 //轉讓群組
+)
+
+type GroupType int8
+
+const (
+	NORMAL_GROUP GroupType = 1
 )
 
 var RecordNotFound = errors.New("record not found")
@@ -230,7 +249,7 @@ func CreateGroup(g *Group) (*Group, error) {
 			gm := &GroupMember{
 				GroupId:   g.Gid,
 				Member:    mem,
-				Role:      OrdinaryMembers,
+				Role:      ORDINARY_MEMS,
 				Status:    Normal,
 				CreatedAt: now,
 				UpdatedAt: now,
