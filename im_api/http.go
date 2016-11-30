@@ -37,7 +37,7 @@ func newHTTPServer() *gin.Engine {
 
 			//群管理
 			//群重命名 √
-			groups.PUT("/:gid/rename/:newname", v1.GroupRename())
+			groups.PUT("/:gid/name/:newname", v1.GroupRename())
 			//解散群 √
 			groups.DELETE("/:gid/dismiss", v1.DismissGroup())
 			//退出群

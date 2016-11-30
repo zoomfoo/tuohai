@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
+	"tuohai/file_api/models"
 	"tuohai/internal/console"
 	"tuohai/internal/file"
 	"tuohai/internal/uuid"
-	"tuohai/models"
 )
 
 func Upload() gin.HandlerFunc {

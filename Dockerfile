@@ -1,11 +1,11 @@
 FROM ubuntu:14.04
-MAINTAINER tosingular@gmail.com
+MAINTAINER wangyang tosingular@gmail.com
 
 
+RUN mkdir -p /home/tuohai/apps && cd /home/tuohai/apps &&mkdir file_api im_api open_api
+ADD URL/file_api /home/tuohai/apps
 
-#安装mysql docker
+CMD ["sh run.sh","all"]
 
-#安装redis docker
 
-#下载tuohai 二进制文件
 

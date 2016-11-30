@@ -2,8 +2,6 @@ package http
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,7 +12,6 @@ import (
 	"tuohai/internal/console"
 	"tuohai/internal/pb/IM_Message"
 	"tuohai/internal/pb/MsgSrv"
-	"tuohai/models"
 )
 
 func SendLogicMsg(ConnLogicRPCAddress string, p *IM_Message.IMMsgData) (*IM_Message.IMMsgDataAck, error) {
@@ -64,39 +61,18 @@ func get(url string) ([]byte, error) {
 	return body, nil
 }
 
-func Groups(URL string) ([]models.Group, error) {
-	var js struct {
-		Data []models.Group `json:"data"`
-	}
-
+func Groups(URL string) ([]byte, error) {
 	data, err := get(URL)
 	if err != nil {
 		return nil, err
 	}
-
-	if err := json.Unmarshal(data, &js); err != nil {
-		return nil, err
-	}
-
-	return js.Data, nil
+	return data, nil
 }
 
-func Users(URL string) (*models.TblUser, error) {
-	var js struct {
-		Data []models.TblUser `json:"data"`
-	}
-
+func Users(URL string) ([]byte, error) {
 	data, err := get(URL)
 	if err != nil {
 		return nil, err
 	}
-
-	if err := json.Unmarshal(data, &js); err != nil {
-		return nil, err
-	}
-
-	if len(js.Data) == 0 {
-		return nil, fmt.Errorf("返回解析到的错误数据: %v ", js)
-	}
-	return &js.Data[0], nil
+	return data, nil
 }

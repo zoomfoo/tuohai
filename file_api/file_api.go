@@ -5,9 +5,9 @@ import (
 	"net"
 	"os"
 
+	"tuohai/file_api/models"
 	"tuohai/internal/svc"
 	"tuohai/internal/util"
-	"tuohai/models"
 )
 
 type FileApi struct {
