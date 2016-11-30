@@ -64,9 +64,9 @@ func get(url string) ([]byte, error) {
 	return body, nil
 }
 
-func Groups(URL string) ([]models.TblGroup, error) {
+func Groups(URL string) ([]models.Group, error) {
 	var js struct {
-		Data []models.TblGroup `json:"data"`
+		Data []models.Group `json:"data"`
 	}
 
 	data, err := get(URL)

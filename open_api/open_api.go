@@ -7,7 +7,7 @@ import (
 
 	"tuohai/internal/svc"
 	"tuohai/internal/util"
-	"tuohai/models"
+	"tuohai/open_api/models"
 )
 
 type OpenApi struct {

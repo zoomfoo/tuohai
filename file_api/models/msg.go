@@ -6,7 +6,7 @@ import (
 	"tuohai/internal/convert"
 )
 
-type TblMsg struct {
+type Message struct {
 	Id        int    `gorm:"column:id" json:"-"`
 	From      string `gorm:"column:from" json:"fr"`
 	To        string `gorm:"column:to" json:"to"`
@@ -18,21 +18,31 @@ type TblMsg struct {
 	UpdatedAt int    `gorm:"column:updated_at" json:"-"`
 }
 
-func (t *TblMsg) TableName() string {
+type Msgrecord struct {
+	FromId      uint32 `json:"user_id"`
+	SessionType int8   `json:"session_type"`
+	ToId        string `json:"session_id"`
+	MsgIdBegin  uint32 `json:"msg_id_begin"`
+	MsgCnt      uint32 `json:"msg_cnt"`
+}
+
+func (t *Message) TableName() string {
 	return fmt.Sprintf("tbl_msg_%d", convert.RuneAccumulation(t.To)%16)
 }
 
-func GetTblMsgById(to string) ([]TblMsg, error) {
+func GetMsgById(record *Msgrecord) ([]Message, error) {
 	var (
-		msgs []TblMsg
+		msgs []Message
 	)
 
-	err := db.Table((&TblMsg{To: to}).TableName()).Where("`to` = ?", to).Scan(&msgs).Error
+	err := db.Table((&Message{To: record.ToId}).TableName()).
+		Where("`to` = ? and msg_id <=? order by created_at desc, id desc limit ?", record.ToId, record.MsgIdBegin, record.MsgCnt).
+		Scan(&msgs).Error
 	return msgs, err
 }
 
-func GetLastHistory(to string) (*TblMsg, error) {
-	msg := &TblMsg{To: to}
+func GetLastHistory(to string) (*Message, error) {
+	msg := &Message{To: to}
 	err := db.Order("`msg_id` desc").First(&msg, "`to` = ?", to).Error
 	return msg, err
 }

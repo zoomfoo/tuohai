@@ -3,12 +3,11 @@ package main
 import (
 	"log"
 
-	api "tuohai/im_api"
+	api "tuohai/file_api"
 	"tuohai/internal/svc"
 )
 
 type program struct {
-	ImApi *api.ImApi
 }
 
 func main() {

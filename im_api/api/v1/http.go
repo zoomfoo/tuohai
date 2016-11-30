@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	// "time"
 
 	"gopkg.in/gin-gonic/gin.v1"
+	"tuohai/im_api/models"
 	"tuohai/internal/console"
 	"tuohai/internal/util"
-	"tuohai/models"
 )
 
 func Profile(c context.Context) gin.HandlerFunc {
@@ -46,12 +47,15 @@ func Groups() gin.HandlerFunc {
 			return
 		}
 
-		var groups []models.TblGroup
+		var groups []models.Group
 		for _, mems := range mems_groups {
 
-			group, err := models.GetTblGroupById(mems.GroupId)
+			group, err := models.GetGroupById(mems.GroupId)
 			if err != nil {
-				console.StdLog.Error(err)
+				if err != models.RecordNotFound {
+					console.StdLog.Error(err)
+				}
+				continue
 			}
 			groups = append(groups, *group)
 		}
@@ -72,13 +76,13 @@ func Group() gin.HandlerFunc {
 		wg := &util.WaitGroupWrapper{}
 
 		var (
-			group *models.TblGroup
+			group *models.Group
 			user  *models.TblUser
 			err   error
 		)
 		wg.Add(2)
 		wg.Wrap(func() {
-			group, err = models.GetTblGroupById(gid)
+			group, err = models.GetGroupById(gid)
 			wg.Done()
 		})
 
@@ -123,15 +127,9 @@ func Group() gin.HandlerFunc {
 	}
 }
 
-func UpdateGroup() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-
-	}
-}
-
 func Sessions() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sessions, err := models.GetTblSessionById(ctx.MustGet("token").(string))
+		sessions, err := models.GetSessionById(ctx.MustGet("token").(string))
 		if err != nil {
 			console.StdLog.Error(err)
 		}
@@ -162,8 +160,9 @@ func Sessions() gin.HandlerFunc {
 
 func Messages() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sid := ctx.Param("sid")
-		msg, err := models.GetTblMsgById(sid)
+		// sid := ctx.Param("sid")
+		record := &models.Msgrecord{}
+		msg, err := models.GetMsgById(record)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, "未找到数据")
@@ -208,7 +207,7 @@ func Unreads() gin.HandlerFunc {
 
 func CreateGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var group models.TblGroup
+		var group models.Group
 		if err := ctx.Bind(&group); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, err)
@@ -223,6 +222,151 @@ func CreateGroup() gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, g)
+	}
+}
+
+func GroupRename() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		gid := ctx.Param("gid")
+		newname := ctx.Param("newname")
+		token := ctx.MustGet("token").(string)
+		if gid == "" || newname == "" {
+			renderJSON(ctx, struct{}{}, 1, "无效的URL参数!")
+			return
+		}
+
+		//判断操作这否有权限操作群
+		if !models.Permit(gid, token, models.RENAME_GROUP).IsEditTitle() {
+			//无权限
+			renderJSON(ctx, struct{}{}, 1, "无权限更名!")
+			return
+		}
+
+		if err := models.RenameGroup(gid, newname); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "修改群名称失败!")
+			return
+		}
+		renderJSON(ctx, "ok")
+		return
+	}
+}
+
+//解散群组
+func DismissGroup() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		gid := ctx.Param("gid")
+		token := ctx.MustGet("token").(string)
+		if gid == "" {
+			renderJSON(ctx, struct{}{}, 1, "无效的URL参数!")
+			return
+		}
+
+		//判断操作这否有权限操作群
+		if !models.Permit(gid, token, models.DISMISS_GROUP).IsDismissGroup() {
+			//无权限
+			renderJSON(ctx, struct{}{}, 1, "无权解散群!")
+			return
+		}
+
+		if err := models.DismissGroup(gid); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "解散群失败!")
+			return
+		}
+
+		renderJSON(ctx, "ok")
+		return
+	}
+}
+
+//添加群成员
+func AddGroupMember() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
+		gid := ctx.Param("gid")
+		token := ctx.MustGet("token").(string)
+		if len(ids) == 0 {
+			renderJSON(ctx, struct{}{}, 1, "无效的参数")
+			return
+		}
+
+		//判断操作这否有权限操作群
+		if !models.Permit(gid, token, models.ADD_GROUP_MEMS).IsAddGroupMember() {
+			//无权限
+			renderJSON(ctx, struct{}{}, 1, "无权添加群!")
+			return
+		}
+
+		g, err := models.AddGroupMember(gid, ids)
+		if err != nil {
+			if err == models.RecordNotFound {
+				console.StdLog.Error(err)
+				renderJSON(ctx, struct{}{}, 0)
+			} else {
+				renderJSON(ctx, struct{}{}, 1)
+			}
+			return
+		}
+
+		renderJSON(ctx, g)
+		return
+	}
+}
+
+//移除群成员
+func RemoveGroupMember() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
+		gid := ctx.Param("gid")
+		token := ctx.MustGet("token").(string)
+		if len(ids) == 0 {
+			renderJSON(ctx, struct{}{}, 1, "无效的参数")
+			return
+		}
+
+		//判断操作这否有权限操作群
+		if !models.Permit(gid, token, models.ADD_GROUP_MEMS).IsRemoveGroupMember() {
+			//无权限
+			renderJSON(ctx, struct{}{}, 1, "无权删除成员!")
+			return
+		}
+
+		g, err := models.DelGroupMember(gid, ids)
+		if err != nil {
+			if err == models.RecordNotFound {
+				console.StdLog.Error(err)
+				renderJSON(ctx, struct{}{}, 0)
+			} else {
+				renderJSON(ctx, struct{}{}, 1)
+			}
+			return
+		}
+
+		renderJSON(ctx, g)
+		return
+	}
+}
+
+//退出群成员
+func QuitGroupMember() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		token := ctx.MustGet("token").(string)
+		gid := ctx.Param("gid")
+
+		g, err := models.DelGroupMember(gid, []string{token})
+		if err != nil {
+			if err == models.RecordNotFound {
+				console.StdLog.Error(err)
+				renderJSON(ctx, struct{}{}, 0)
+			} else {
+				renderJSON(ctx, struct{}{}, 1)
+			}
+			return
+		}
+
+		renderJSON(ctx, g)
+		return
 	}
 }
 
@@ -330,6 +474,36 @@ func Login() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 0, "用户名或密码错误")
 			return
 		}
+	}
+}
+
+func GetIds() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var (
+			id         = ""
+			rels, gros []string
+			rerr, gerr error
+		)
+		wg := &util.WaitGroupWrapper{}
+		wg.Add(2)
+		wg.Wrap(func() {
+			rels, rerr = models.GetMyRelationId(id)
+			wg.Done()
+		})
+		wg.Wrap(func() {
+			gros, gerr = models.GetMyGroupId(id)
+			wg.Done()
+		})
+		wg.Wait()
+
+		if rerr != nil || gerr != nil {
+
+		}
+		rels = append(rels, gros...)
+
+		renderJSON(ctx, gin.H{
+			"ids": rels,
+		})
 	}
 }
 

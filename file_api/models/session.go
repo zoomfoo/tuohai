@@ -6,7 +6,12 @@ import (
 	"tuohai/internal/convert"
 )
 
-type TblSession struct {
+const (
+	normal = iota
+	deleted
+)
+
+type Session struct {
 	Id        int    `gorm:"column:id" json:"-"`
 	Sid       string `gorm:"column:sid" json:"sid"`
 	From      string `gorm:"column:from" json:"from"`
@@ -16,13 +21,13 @@ type TblSession struct {
 	UpdatedAt int    `gorm:"column:updated_at" json:"-"`
 }
 
-func (t *TblSession) TableName() string {
+func (t *Session) TableName() string {
 	return fmt.Sprintf("tbl_session_%d", convert.RuneAccumulation(t.From)%4)
 }
 
-func GetTblSessionById(from string) ([]TblSession, error) {
-	var sessions []TblSession
-	sess := &TblSession{From: from}
+func GetSessionById(from string) ([]Session, error) {
+	var sessions []Session
+	sess := &Session{From: from}
 	err := db.Table(sess.TableName()).Where("`from` = ? and status = 0", from).Scan(&sessions).Error
 	return sessions, err
 }

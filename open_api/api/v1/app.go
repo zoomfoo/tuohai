@@ -18,7 +18,7 @@ import (
 	httplib "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
 	"tuohai/internal/uuid"
-	"tuohai/models"
+	"tuohai/open_api/models"
 )
 
 func BotList(api_host string) gin.HandlerFunc {

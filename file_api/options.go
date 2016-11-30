@@ -1,4 +1,4 @@
-package im_api
+package file_api
 
 import (
 	"fmt"
@@ -34,12 +34,12 @@ func NewOptions() *Options {
 		DbHost: "120.27.45.244:3306",
 		DbUser: "root",
 		DbPwd:  "yzjmysql",
-		DbName: "newim",
+		DbName: "fileadmin",
 
-		RedisHost: "120.27.45.244:6379",
+		RedisHost: "127.0.0.1:6379",
 		RedisPwd:  "",
 
-		Logger: console.New(*log.New(os.Stderr, "im_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),
+		Logger: console.New(*log.New(os.Stderr, "file_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),
 	}
 	return Opts
 }
