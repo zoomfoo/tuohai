@@ -31,7 +31,7 @@ func InitDB(MysqlOptions string) (m *DbModel, err error) {
 		log.Fatalln(err)
 		return nil, err
 	}
-
+	db.LogMode(true)
 	return
 }
 
