@@ -34,7 +34,11 @@ func SendLogicMsg(ConnLogicRPCAddress string, p *IM_Message.IMMsgData) (*IM_Mess
 }
 
 func post(url string, payload []byte) ([]byte, error) {
-	req, err := http.NewRequest("POST", url, bytes.NewReader(payload))
+	return client("POST", url, payload)
+}
+
+func client(method, url string, payload []byte) ([]byte, error) {
+	req, err := http.NewRequest(method, url, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}

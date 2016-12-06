@@ -1,13 +1,11 @@
 package im_api
 
 import (
-	"context"
-	"net/http"
 	"net/http/pprof"
-	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/api/v1"
+	"tuohai/internal/auth"
 	"tuohai/internal/console"
 )
 
@@ -17,11 +15,11 @@ func newHTTPServer() *gin.Engine {
 	router.Use(console.Logger())
 	router.Use(AccessControlAllowOrigin())
 
-	version1 := router.Group("v1", LoginAuth())
+	version1 := router.Group("v1", auth.LoginAuth(Opts.AuthHost))
 	{
-		ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
 		//列出IM常用的信息
-		version1.GET("/im/profile", v1.Profile(ctx))
+		version1.GET("/profile", v1.Profile())
+		version1.PUT("/profile", v1.PutProfile(Opts.AuthHost))
 
 		//群组创建 更新
 		//成员管理
@@ -37,7 +35,7 @@ func newHTTPServer() *gin.Engine {
 
 			//群管理
 			//群重命名 √
-			groups.PUT("/:gid/name/:newname", v1.GroupRename())
+			groups.PUT("/:gid/name", v1.GroupRename())
 			//解散群 √
 			groups.DELETE("/:gid/dismiss", v1.DismissGroup())
 			//退出群
@@ -48,9 +46,6 @@ func newHTTPServer() *gin.Engine {
 			groups.DELETE("/:gid/remove", v1.RemoveGroupMember())
 		}
 
-		//session
-		//
-		//
 		sessions := version1.Group("sessions")
 		{
 			//获取session列表 √
@@ -58,9 +53,35 @@ func newHTTPServer() *gin.Engine {
 			//删除session no
 			sessions.DELETE("/:sid", v1.RemoveSession())
 			//获取消息历史记录 √
-			sessions.GET("/:sid/messages", v1.Messages())
 			//消息已读确认 这个read 在restfull中为名词
 			sessions.PUT("/:sid/read", v1.MessageRead())
+		}
+
+		messages := version1.Group("messages")
+		{
+			messages.GET("/:cid", v1.Messages())
+		}
+
+		poke := version1.Group("pokes")
+		{
+			// 戳一下
+			poke.POST("", v1.AddChuo())
+			// 确认收到
+			poke.POST("/:pid/confirm", v1.ConfirmChuo())
+			// 获取戳的详情
+			poke.GET("/:pid", v1.GetChuoInfo())
+
+			poke.GET("", v1.GetChuoListFrom())
+			// 获取我发出
+			version1.GET("/poke/send", v1.GetChuoListFrom())
+			// 获取我收到的戳
+			version1.GET("/poke/recv", v1.GetChuoListRcv())
+		}
+
+		friends := version1.Group("friends")
+		{
+			friends.GET("", v1.Friends())
+			friends.GET("/:fid", v1.Friend())
 		}
 
 		//获取所有未读消息
@@ -68,24 +89,11 @@ func newHTTPServer() *gin.Engine {
 		//获取用户信息
 		version1.GET("/user/:uid", v1.UserInfo())
 		//获取好友列表
-		version1.GET("/friends", v1.Friends())
-		version1.GET("/friends/:f_uuid", v1.Friend())
+
 		//获取消息未读详情信息
 		version1.GET("/readinfo/:cid/:msgid/:origin", v1.MessageRead())
 
-		// 戳一下
-		version1.POST("/chuo", v1.AddChuo())
-		// 确认收到
-		version1.POST("/chuo_confirm", v1.ConfirmChuo())
-		// 获取我发出
-		version1.GET("/chuo_from/:uid", v1.GetChuoListFrom())
-		// 获取我收到的戳
-		version1.GET("/chuo_rcv/:uid", v1.GetChuoListRcv())
-		// 获取戳的详情
-		version1.GET("/chuo_info/:chuoid", v1.GetChuoInfo())
-	    
-        // ?	
-        version1.GET("/get_toids", v1.GetIds())
+		version1.GET("/get_toids", v1.GetIds())
 	}
 
 	//登录
@@ -93,21 +101,6 @@ func newHTTPServer() *gin.Engine {
 
 	Debug(router)
 	return router
-}
-
-func LoginAuth() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		if token := ctx.Query("session_token"); token == "" {
-			// ctx.Next()
-			// return
-			ctx.Abort()
-			ctx.JSON(http.StatusUnauthorized, gin.H{"err_code": 1, "data": "无权限访问"})
-		} else {
-			ctx.Set("token", token)
-			ctx.Next()
-		}
-		return
-	}
 }
 
 func AccessControlAllowOrigin() gin.HandlerFunc {

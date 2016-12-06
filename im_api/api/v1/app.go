@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,37 +9,95 @@ import (
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
+	"tuohai/internal/auth"
 	"tuohai/internal/console"
+	httplib "tuohai/internal/http"
 	"tuohai/internal/util"
 )
 
-func Profile(c context.Context) gin.HandlerFunc {
+//获取个人信息
+//包括头像、昵称、个性签名、头像地址
+func Profile() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
-		// go func() {
-		// 	for {
-		// 		select {
-		// 		case <-c.Done():
-		// 			return
-		// 		default:
-		// 		}
-		// 	}
-		// }()
-		token := ctx.MustGet("token").(string)
-		user, err := models.GetTblUserById(token)
+		user := ctx.MustGet("user").(*auth.MainUser)
+		u, err := models.GetUserById(user.Uid)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 0, "未找到数据")
 			return
 		}
-		renderJSON(ctx, user)
+		renderJSON(ctx, u)
+	}
+}
+
+//完善或者更改个人信息
+//头像 上传不带host的url 客户端首先上传文件服务器 服务器返回url
+//昵称 更改服务方名称
+//个性签名 个性签名保存在im需要保存在本地im数据库中
+func PutProfile(url string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var result struct {
+			Msg  string `json:"msg"`
+			Data struct {
+				Nickname string `json:"nickname"`
+				Avatar   string `json:"avatar"`
+			} `json:"data"`
+			ErrorCode float64 `json:"error_code"`
+		}
+
+		//主站 /api/i/profile
+		token := ctx.MustGet("token").(string)
+		user := ctx.MustGet("user").(*auth.MainUser)
+		nickname := ctx.PostForm("nickname")
+		avatar := ctx.PostForm("avatar")
+		// desc := ctx.PostForm("desc")
+		// u, err := models.GetUserById(user.Uid)
+		// if err != nil {
+		// 	console.StdLog.Error(err)
+		// 	renderJSON(ctx, struct{}{}, 1, "远程服务器错误1")
+		// }
+		user_id := strconv.FormatInt(user.Id, 10)
+
+		// if desc != "" {
+		// 	fmt.Println("desc: ", desc)
+		// 	err := models.UpdateUser(u)
+		// 	if err != nil {
+		// 		console.StdLog.Error(err)
+		// 		renderJSON(ctx, struct{}{}, 1, "远程服务器错误2")
+		// 		return
+		// 	}
+		// }
+		//本地数据库更新个人信息
+
+		//更新主站用户信息
+		auth_url := auth.GetUpdateUserInfoUrl(token, url, []string{
+			fmt.Sprintf("nickname=%s", nickname),
+			fmt.Sprintf("avatar=%s", avatar),
+			fmt.Sprintf("user_id=%s", user_id),
+		})
+		fmt.Println(auth_url)
+		if err := httplib.Put(auth_url).ToJson(&result); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误3")
+			return
+		}
+
+		if result.ErrorCode == 0 {
+			fmt.Println(result)
+			renderJSON(ctx, true)
+			return
+		} else {
+			console.StdLog.Error(fmt.Errorf("%s", result.Msg))
+			renderJSON(ctx, struct{}{}, 1, result.Msg)
+			return
+		}
 	}
 }
 
 func Groups() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		token := ctx.MustGet("token").(string)
-		mems_groups, err := models.AssociationGroups(token)
+		user := ctx.MustGet("user").(*auth.MainUser)
+		mems_groups, err := models.AssociationGroups(user.Uid)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, "未找到数据")
@@ -49,7 +106,6 @@ func Groups() gin.HandlerFunc {
 
 		var groups []models.Group
 		for _, mems := range mems_groups {
-
 			group, err := models.GetGroupById(mems.GroupId)
 			if err != nil {
 				if err != models.RecordNotFound {
@@ -72,12 +128,12 @@ func Groups() gin.HandlerFunc {
 func Group() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
-		token := ctx.MustGet("token").(string)
+		token := ctx.MustGet("user").(*auth.MainUser)
 		wg := &util.WaitGroupWrapper{}
 
 		var (
 			group *models.Group
-			user  *models.TblUser
+			user  *models.User
 			err   error
 		)
 		wg.Add(2)
@@ -87,7 +143,7 @@ func Group() gin.HandlerFunc {
 		})
 
 		wg.Wrap(func() {
-			user, err = models.GetTblUserById(token)
+			user, err = models.GetUserById(token.Uid)
 			wg.Done()
 		})
 
@@ -129,7 +185,8 @@ func Group() gin.HandlerFunc {
 
 func Sessions() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sessions, err := models.GetSessionById(ctx.MustGet("token").(string))
+		user := ctx.MustGet("user").(*auth.MainUser)
+		sessions, err := models.GetSessionById(user.Uid)
 		if err != nil {
 			console.StdLog.Error(err)
 		}
@@ -146,12 +203,16 @@ func Sessions() gin.HandlerFunc {
 				console.StdLog.Error(err)
 			}
 			list = append(list, gin.H{
-				"sid":  session.Sid,
-				"fr":   session.From,
-				"to":   session.To,
-				"mid":  history.MsgId,
-				"data": history.MsgData,
-				"time": history.CreatedAt,
+				"sid": session.Sid,
+				"cid": session.To,
+				"msg": gin.H{
+					"id":       history.MsgId,
+					"data":     history.MsgData,
+					"type":     history.Type,
+					"sub_type": history.Subtype,
+					"time":     history.CreatedAt,
+				},
+				"type": session.SType,
 			})
 		}
 		renderJSON(ctx, list)
@@ -208,11 +269,18 @@ func Unreads() gin.HandlerFunc {
 func CreateGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var group models.Group
+		token := ctx.MustGet("token").(string)
 		if err := ctx.Bind(&group); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, err)
 			return
 		}
+		if group.Gname == "" {
+			renderJSON(ctx, []int{}, 1, "group_name is empty")
+			return
+		}
+
+		group.Creator = token
 
 		g, err := models.CreateGroup(&group)
 		if err != nil {
@@ -376,7 +444,7 @@ func UserInfo() gin.HandlerFunc {
 
 		uid := strings.Split(uids, ",")
 
-		user, err := models.GetTblUserByIds(uid)
+		user, err := models.GetUserByIds(uid)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")
@@ -407,7 +475,7 @@ func Friends() gin.HandlerFunc {
 				f_uuid = rel.SmallId
 			}
 
-			fuser, err := models.GetTblUserById(f_uuid)
+			fuser, err := models.GetUserById(f_uuid)
 			if err != nil {
 				console.StdLog.Error(err)
 			}
@@ -444,7 +512,7 @@ func Friend() gin.HandlerFunc {
 			f_uuid = rel.SmallId
 		}
 
-		fuser, err := models.GetTblUserById(f_uuid)
+		fuser, err := models.GetUserById(f_uuid)
 		if err != nil {
 			console.StdLog.Error(err)
 		}
@@ -459,8 +527,8 @@ func Friend() gin.HandlerFunc {
 
 func Login() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		uname := ctx.PostForm("user_name")
-		pwd := ctx.PostForm("user_pwd")
+		uname := ctx.PostForm("username")
+		pwd := ctx.PostForm("password")
 		user, err := models.Login(uname, pwd)
 		if err != nil {
 			console.StdLog.Error(err)

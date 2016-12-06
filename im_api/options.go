@@ -13,7 +13,8 @@ var Opts *Options
 type Options struct {
 	ID int
 	HTTPAddress,
-	LogFilePath string
+	LogFilePath,
+	AuthHost string
 
 	DbHost,
 	DbUser,
@@ -30,6 +31,7 @@ func NewOptions() *Options {
 	Opts = &Options{
 		ID:          os.Getpid(),
 		HTTPAddress: "0.0.0.0:10011",
+		AuthHost:    "http://test.yunwoke.com",
 
 		DbHost: "120.27.45.244:3306",
 		DbUser: "root",

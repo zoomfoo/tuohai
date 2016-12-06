@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"tuohai/internal/uuid"
 )
 
 const (
@@ -56,16 +58,17 @@ func init() {
 type Group struct {
 	Id          int       `gorm:"column:id" json:"-"`
 	Gid         string    `gorm:"column:gid" json:"gid"`
-	Gname       string    `gorm:"column:gname" json:"g_name"`
+	Gname       string    `gorm:"column:gname" json:"group_name" form:"group_name"`
 	Creator     string    `gorm:"column:creator" json:"creator"`
 	Admincnt    uint8     `gorm:"column:admincnt" json:"admin_cnt"`
 	Membercnt   uint      `gorm:"column:membercnt" json:"mem_cnt"`
 	Version     uint      `gorm:"column:version" json:"version"`
 	GType       GroupType `gorm:"column:type" json:"-"`
 	IsPublic    uint8     `gorm:"column:is_public" json:"is_public"`
+	Status      uint8     `gorm:"column:status" json:"-"`
 	CreatedTime int64     `gorm:"column:created_at" json:"time"`
 	UpdatedTime int64     `gorm:"column:updated_at" json:"-"`
-	GroupMems   []string  `gorm:"-" json:"members" `
+	GroupMems   []string  `gorm:"-" json:"members" form:"members"`
 }
 
 func NewGroup(Gid string) Group {
@@ -76,6 +79,16 @@ func NewGroup(Gid string) Group {
 
 	g.GetGroupById()
 	return *g
+}
+
+func initGroup() *Group {
+	g := &Group{}
+	g.Gid = "g_" + uuid.NewV4().String()
+	g.CreatedTime = time.Now().Unix()
+	g.UpdatedTime = time.Now().Unix()
+	g.Status = 0
+	g.Version = 1
+	return g
 }
 
 func (g *Group) TableName() string {
@@ -199,7 +212,7 @@ func GetGroupsByUid(uid string) ([]Group, error) {
 }
 
 //创建群√
-func CreateGroup(g *Group) (*Group, error) {
+func CreateGroup(group *Group) (*Group, error) {
 	var (
 		val []interface{}
 		now = time.Now().Unix()
@@ -207,10 +220,8 @@ func CreateGroup(g *Group) (*Group, error) {
 
 	tx := db.Begin()
 
-	g.Membercnt = uint(len(g.GroupMems))
-	g.CreatedTime = now
-	g.UpdatedTime = now
-	g.Version = 1
+	g := initGroup()
+	g.Membercnt = uint(len(group.GroupMems) + 1)
 
 	resg := tx.Create(g)
 	if err := resg.Error; err != nil {
@@ -282,6 +293,7 @@ func CreateGroup(g *Group) (*Group, error) {
 		if err := g.GetGroupById(); err != nil {
 			return nil, err
 		}
+		g.GetGroupMemsForSQL()
 
 		return g, nil
 	}

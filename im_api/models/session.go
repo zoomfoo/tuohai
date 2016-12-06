@@ -11,14 +11,22 @@ const (
 	deleted
 )
 
+type SessionType int8
+
+const (
+	SimpleSession SessionType = 1
+	GroupSession  SessionType = 2
+)
+
 type Session struct {
-	Id        int    `gorm:"column:id" json:"-"`
-	Sid       string `gorm:"column:sid" json:"sid"`
-	From      string `gorm:"column:from" json:"from"`
-	To        string `gorm:"column:to" json:"to"`
-	Status    int8   `gorm:"column:status" json:"-"`
-	CreatedAt int    `gorm:"column:created_at" json:"-"`
-	UpdatedAt int    `gorm:"column:updated_at" json:"-"`
+	Id        int         `gorm:"column:id" json:"-"`
+	Sid       string      `gorm:"column:sid" json:"sid"`
+	From      string      `gorm:"column:from" json:"from"`
+	To        string      `gorm:"column:to" json:"to"`
+	Status    int8        `gorm:"column:status" json:"-"`
+	SType     SessionType `gorm:"column:type" json:"type"`
+	CreatedAt int         `gorm:"column:created_at" json:"-"`
+	UpdatedAt int         `gorm:"column:updated_at" json:"-"`
 }
 
 func (t *Session) TableName() string {

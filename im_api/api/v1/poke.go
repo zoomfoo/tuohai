@@ -9,23 +9,21 @@ import (
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
+	"tuohai/im_api/models"
 	msgsender "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
-	// "tuohai/internal/console"
-	// "tuohai/internal/util"
-	"tuohai/models"
 )
 
 const addr = "127.0.0.1:5004"
 
 func ConfirmChuo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		chuoid, ok := ctx.GetPostForm("chuoid")
+		chuoid, ok := ctx.GetPostForm("poke_id")
 		if !ok {
 			renderJSON(ctx, struct{}{}, 0, "chuoid缺失")
 			return
 		}
-		rcv, _ := ctx.GetPostForm("rcv")
+		rcv, _ := ctx.GetPostForm("rcv") //默认是自己
 		fmt.Println(chuoid, rcv)
 		if err := models.ConfirmChuo(chuoid, rcv); err != nil {
 			renderJSON(ctx, struct{}{}, 0, "数据有误")
@@ -39,10 +37,10 @@ func ConfirmChuo() gin.HandlerFunc {
 // 戳一下业务处理
 func AddChuo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sender, _ := ctx.GetPostForm("sender")
+		sender, _ := ctx.GetPostForm("sender") //戳一下本人
 		cid, _ := ctx.GetPostForm("cid")
 		msg_id, _ := ctx.GetPostForm("msg_id")
-		tos, ok := ctx.GetPostForm("to")
+		tos, ok := ctx.GetPostForm("cnee")
 		if !ok {
 			renderJSON(ctx, struct{}{}, 0, "必须提供to,以逗号分隔")
 			return

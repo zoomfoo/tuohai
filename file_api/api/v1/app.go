@@ -1,9 +1,11 @@
 package v1
 
 import (
-	// "errors"
 	"bytes"
+	"fmt"
+	"net/http"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
@@ -15,22 +17,33 @@ import (
 
 func Upload() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		fmt.Println("...")
 		f, h, err := ctx.Request.FormFile("file")
+		fmt.Println("ok")
 		if err != nil {
-			ctx.String(200, "%s", "no")
+			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "解析file文件失败"})
 			return
 		}
-		to := ctx.PostForm("to")
+		cid := ctx.PostForm("cid")
 		creator := ctx.PostForm("creator")
+		if creator == "" || cid == "" {
+			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "创建者或者cid不允许为空"})
+			return
+		}
 
 		suffix := filepath.Ext(h.Filename)
-
 		buf := &bytes.Buffer{}
 		buf.ReadFrom(f)
+		fmt.Println(buf.Len())
+		l, _ := strconv.Atoi(ctx.PostForm("size"))
+		if buf.Len() != l {
+			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "上传意外终止"})
+			return
+		}
 
 		finfo := &models.FileInfo{
 			Id:       uuid.NewV4().String(),
-			To:       to,
+			To:       cid,
 			Name:     h.Filename,
 			Size:     len(buf.Bytes()),
 			Type:     0,
