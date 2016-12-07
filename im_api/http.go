@@ -44,7 +44,10 @@ func newHTTPServer() *gin.Engine {
 			groups.POST("/:gid/add", v1.AddGroupMember())
 			//移除群成员
 			groups.DELETE("/:gid/remove", v1.RemoveGroupMember())
+
 		}
+		//创建项目群
+		version1.POST("/project/groups", v1.CreateProjectGroup())
 
 		sessions := version1.Group("sessions")
 		{

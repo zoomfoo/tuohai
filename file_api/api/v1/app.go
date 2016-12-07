@@ -17,9 +17,7 @@ import (
 
 func Upload() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		fmt.Println("...")
 		f, h, err := ctx.Request.FormFile("file")
-		fmt.Println("ok")
 		if err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "解析file文件失败"})
 			return

@@ -19,14 +19,24 @@ import (
 //包括头像、昵称、个性签名、头像地址
 func Profile() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		user := ctx.MustGet("user").(*auth.MainUser)
-		u, err := models.GetUserById(user.Uid)
+		main_user := ctx.MustGet("user").(*auth.MainUser)
+		u, err := models.GetUserById(main_user.Uid)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 0, "未找到数据")
 			return
 		}
-		renderJSON(ctx, u)
+
+		renderJSON(ctx, gin.H{
+			"username": main_user.Username,
+			"uuid":     main_user.Uid,
+			"phone":    main_user.Phone,
+			"avatar":   main_user.Avatar,
+			"nickname": main_user.Nickname,
+			"email":    main_user.Username,
+			"desc":     u.Desc,
+		})
+
 	}
 }
 
@@ -50,31 +60,34 @@ func PutProfile(url string) gin.HandlerFunc {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		nickname := ctx.PostForm("nickname")
 		avatar := ctx.PostForm("avatar")
-		// desc := ctx.PostForm("desc")
-		// u, err := models.GetUserById(user.Uid)
-		// if err != nil {
-		// 	console.StdLog.Error(err)
-		// 	renderJSON(ctx, struct{}{}, 1, "远程服务器错误1")
-		// }
-		user_id := strconv.FormatInt(user.Id, 10)
+		desc := ctx.PostForm("desc")
 
-		// if desc != "" {
-		// 	fmt.Println("desc: ", desc)
-		// 	err := models.UpdateUser(u)
-		// 	if err != nil {
-		// 		console.StdLog.Error(err)
-		// 		renderJSON(ctx, struct{}{}, 1, "远程服务器错误2")
-		// 		return
-		// 	}
-		// }
-		//本地数据库更新个人信息
+		if desc != "" {
+			fmt.Println("desc: ", desc)
+			err := models.SaveUser(&models.User{Uuid: user.Uid, Desc: desc})
+			if err != nil {
+				console.StdLog.Error(err)
+				renderJSON(ctx, struct{}{}, 1, "远程服务器错误2")
+				return
+			}
+		}
+
+		param := []string{fmt.Sprintf("user_id=%d", user.Id)}
+		if nickname != "" {
+			param = append(param, fmt.Sprintf("nickname=%s", nickname))
+		}
+		if avatar != "" {
+			param = append(param, fmt.Sprintf("avatar=%s", avatar))
+		}
+
+		if len(param) < 2 {
+			fmt.Println("未提供任何参数!")
+			renderJSON(ctx, true)
+			return
+		}
 
 		//更新主站用户信息
-		auth_url := auth.GetUpdateUserInfoUrl(token, url, []string{
-			fmt.Sprintf("nickname=%s", nickname),
-			fmt.Sprintf("avatar=%s", avatar),
-			fmt.Sprintf("user_id=%s", user_id),
-		})
+		auth_url := auth.GetUpdateUserInfoUrl(token, url, param)
 		fmt.Println(auth_url)
 		if err := httplib.Put(auth_url).ToJson(&result); err != nil {
 			console.StdLog.Error(err)
@@ -128,7 +141,7 @@ func Groups() gin.HandlerFunc {
 func Group() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
-		token := ctx.MustGet("user").(*auth.MainUser)
+		main_user := ctx.MustGet("user").(*auth.MainUser)
 		wg := &util.WaitGroupWrapper{}
 
 		var (
@@ -143,7 +156,7 @@ func Group() gin.HandlerFunc {
 		})
 
 		wg.Wrap(func() {
-			user, err = models.GetUserById(token.Uid)
+			user, err = models.GetUserById(main_user.Uid)
 			wg.Done()
 		})
 
@@ -215,6 +228,10 @@ func Sessions() gin.HandlerFunc {
 				"type": session.SType,
 			})
 		}
+		if len(list) == 0 {
+			renderJSON(ctx, []int{})
+			return
+		}
 		renderJSON(ctx, list)
 	}
 }
@@ -244,13 +261,13 @@ func MessageRead() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		cid := ctx.Param("cid")
 		msgid := ctx.Param("msgid")
-		origin := ctx.Param("origin")
-		fmt.Printf("get read info.cid:%s,msgid:%s,origin:%s\n", cid, msgid, origin)
-		cnt, res, err := models.MsgReadInfo(cid, msgid, origin)
+		user := ctx.MustGet("user").(*auth.MainUser)
+		fmt.Printf("get read info.cid:%s,msgid:%s,origin:%s\n", cid, msgid, user.Uid)
+		cnt, res, err := models.MsgReadInfo(cid, msgid, user.Uid)
 		if err != nil {
-			renderJSON(ctx, map[string]string{}, 1, "查数据出现问题")
+			renderJSON(ctx, struct{}{}, 1, "查数据出现问题")
 		} else {
-			renderJSON(ctx, map[string]string{
+			renderJSON(ctx, gin.H{
 				"cnt":    strconv.Itoa(cnt),
 				"read":   strings.Join(res["read"], ","),
 				"unread": strings.Join(res["unread"], ","),
@@ -269,7 +286,7 @@ func Unreads() gin.HandlerFunc {
 func CreateGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var group models.Group
-		token := ctx.MustGet("token").(string)
+		user := ctx.MustGet("user").(*auth.MainUser)
 		if err := ctx.Bind(&group); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, err)
@@ -280,7 +297,7 @@ func CreateGroup() gin.HandlerFunc {
 			return
 		}
 
-		group.Creator = token
+		group.Creator = user.Uid
 
 		g, err := models.CreateGroup(&group)
 		if err != nil {
@@ -293,18 +310,46 @@ func CreateGroup() gin.HandlerFunc {
 	}
 }
 
+func CreateProjectGroup() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var group models.Group
+		user := ctx.MustGet("user").(*auth.MainUser)
+		if err := ctx.Bind(&group); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 0, err)
+			return
+		}
+		if group.Gname == "" {
+			renderJSON(ctx, []int{}, 1, "group_name is empty")
+			return
+		}
+
+		group.Creator = user.Uid
+
+		g, err := models.CreateGroup(&group)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "未找到数据")
+			return
+		}
+
+		//生成botid
+		renderJSON(ctx, g)
+	}
+}
+
 func GroupRename() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
 		newname := ctx.Param("newname")
-		token := ctx.MustGet("token").(string)
+		user := ctx.MustGet("user").(*auth.MainUser)
 		if gid == "" || newname == "" {
 			renderJSON(ctx, struct{}{}, 1, "无效的URL参数!")
 			return
 		}
 
 		//判断操作这否有权限操作群
-		if !models.Permit(gid, token, models.RENAME_GROUP).IsEditTitle() {
+		if !models.Permit(gid, user.Uid, models.RENAME_GROUP).IsEditTitle() {
 			//无权限
 			renderJSON(ctx, struct{}{}, 1, "无权限更名!")
 			return
@@ -324,14 +369,14 @@ func GroupRename() gin.HandlerFunc {
 func DismissGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
-		token := ctx.MustGet("token").(string)
+		user := ctx.MustGet("user").(*auth.MainUser)
 		if gid == "" {
 			renderJSON(ctx, struct{}{}, 1, "无效的URL参数!")
 			return
 		}
 
 		//判断操作这否有权限操作群
-		if !models.Permit(gid, token, models.DISMISS_GROUP).IsDismissGroup() {
+		if !models.Permit(gid, user.Uid, models.DISMISS_GROUP).IsDismissGroup() {
 			//无权限
 			renderJSON(ctx, struct{}{}, 1, "无权解散群!")
 			return
@@ -353,14 +398,14 @@ func AddGroupMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
 		gid := ctx.Param("gid")
-		token := ctx.MustGet("token").(string)
+		user := ctx.MustGet("user").(*auth.MainUser)
 		if len(ids) == 0 {
 			renderJSON(ctx, struct{}{}, 1, "无效的参数")
 			return
 		}
 
 		//判断操作这否有权限操作群
-		if !models.Permit(gid, token, models.ADD_GROUP_MEMS).IsAddGroupMember() {
+		if !models.Permit(gid, user.Uid, models.ADD_GROUP_MEMS).IsAddGroupMember() {
 			//无权限
 			renderJSON(ctx, struct{}{}, 1, "无权添加群!")
 			return
@@ -387,14 +432,14 @@ func RemoveGroupMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
 		gid := ctx.Param("gid")
-		token := ctx.MustGet("token").(string)
+		user := ctx.MustGet("user").(*auth.MainUser)
 		if len(ids) == 0 {
 			renderJSON(ctx, struct{}{}, 1, "无效的参数")
 			return
 		}
 
 		//判断操作这否有权限操作群
-		if !models.Permit(gid, token, models.ADD_GROUP_MEMS).IsRemoveGroupMember() {
+		if !models.Permit(gid, user.Uid, models.ADD_GROUP_MEMS).IsRemoveGroupMember() {
 			//无权限
 			renderJSON(ctx, struct{}{}, 1, "无权删除成员!")
 			return
@@ -419,10 +464,10 @@ func RemoveGroupMember() gin.HandlerFunc {
 //退出群成员
 func QuitGroupMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		token := ctx.MustGet("token").(string)
+		user := ctx.MustGet("user").(*auth.MainUser)
 		gid := ctx.Param("gid")
 
-		g, err := models.DelGroupMember(gid, []string{token})
+		g, err := models.DelGroupMember(gid, []string{user.Uid})
 		if err != nil {
 			if err == models.RecordNotFound {
 				console.StdLog.Error(err)
@@ -457,8 +502,8 @@ func UserInfo() gin.HandlerFunc {
 
 func Friends() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		token := ctx.MustGet("token").(string)
-		r, err := models.Friends(token)
+		user := ctx.MustGet("user").(*auth.MainUser)
+		r, err := models.Friends(user.Uid)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")
@@ -468,7 +513,7 @@ func Friends() gin.HandlerFunc {
 		var list []interface{}
 		for _, rel := range r {
 			f_uuid := ""
-			switch token {
+			switch user.Uid {
 			case rel.SmallId:
 				f_uuid = rel.BigId
 			case rel.BigId:
