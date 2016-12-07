@@ -15,6 +15,7 @@ func newHTTPServer() *gin.Engine {
 	router.Use(console.Logger())
 	router.Use(AccessControlAllowOrigin())
 
+	router.OPTIONS("/", func(ctx *gin.Context) {})
 	version1 := router.Group("v1", auth.LoginAuth(Opts.AuthHost))
 	{
 		//列出IM常用的信息
@@ -44,7 +45,6 @@ func newHTTPServer() *gin.Engine {
 			groups.POST("/:gid/add", v1.AddGroupMember())
 			//移除群成员
 			groups.DELETE("/:gid/remove", v1.RemoveGroupMember())
-
 		}
 		//创建项目群
 		version1.POST("/project/groups", v1.CreateProjectGroup())
@@ -83,7 +83,7 @@ func newHTTPServer() *gin.Engine {
 
 		friends := version1.Group("friends")
 		{
-			friends.GET("", v1.Friends())
+			friends.GET("", v1.Friends(Opts.AuthHost))
 			friends.GET("/:fid", v1.Friend())
 		}
 

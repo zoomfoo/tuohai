@@ -17,7 +17,7 @@ import (
 
 func LoginAuth(host string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		token := ctx.Request.Header.Get("session_token")
+		token := ctx.Query("session_token")
 		url := GetUserInfoUrl(token, host)
 		if user, err := ValidationToken(url); err != nil || user == nil {
 			ctx.Abort()
@@ -80,6 +80,11 @@ func GetUserInfoUrl(token, url string) string {
 //获取更新用户信息URL
 func GetUpdateUserInfoUrl(token, url string, params []string) string {
 	return fmt.Sprintf("%s/api/i/profile?%s", url, SignStr(token, params...))
+}
+
+//获取主站好友列表URL
+func GetFriendsUrl(token, url string) string {
+	return fmt.Sprintf("%s/api/i/friends?%s", url, SignStr(token))
 }
 
 //生成签名参数

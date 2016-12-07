@@ -500,7 +500,7 @@ func UserInfo() gin.HandlerFunc {
 	}
 }
 
-func Friends() gin.HandlerFunc {
+func Friends(url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		r, err := models.Friends(user.Uid)
@@ -536,6 +536,30 @@ func Friends() gin.HandlerFunc {
 			return
 		}
 		renderJSON(ctx, list)
+
+		// var result struct {
+		// 	Msg  string `json:"msg"`
+		// 	Data []struct {
+		// 		Username string `json:"username"`
+		// 		Phone    string `json:"phone"`
+		// 		Nickname string `json:"nickname"`
+		// 		YzjId    int    `json:"yzj_id"`
+		// 		Avatar   string `json:"avatar"`
+		// 	} `json:"friends"`
+		// 	ErrorCode float64 `json:"error_code"`
+		// }
+
+		// token := ctx.MustGet("token").(string)
+		// //获取主站好友信息
+		// auth_url := auth.GetFriendsUrl(token, url)
+		// fmt.Println(auth_url)
+		// if err := httplib.Get(auth_url).ToJson(&result); err != nil {
+		// 	console.StdLog.Error(err)
+		// 	renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+		// 	return
+		// }
+
+		// renderJSON(ctx, result.Data)
 	}
 }
 
