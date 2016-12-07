@@ -48,6 +48,7 @@ func newHTTPServer() *gin.Engine {
 		}
 		//创建项目群
 		version1.POST("/project/groups", v1.CreateProjectGroup())
+		version1.GET("/teams", v1.Teams())
 
 		sessions := version1.Group("sessions")
 		{

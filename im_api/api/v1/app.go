@@ -196,6 +196,39 @@ func Group() gin.HandlerFunc {
 	}
 }
 
+func Teams() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := ctx.MustGet("user").(*auth.MainUser)
+		mems_groups, err := models.AssociationGroups(user.Uid)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 0, "未找到数据")
+			return
+		}
+
+		var groups []models.Group
+		for _, mems := range mems_groups {
+			group, err := models.GetGroupById(mems.GroupId)
+			if err != nil {
+				if err != models.RecordNotFound {
+					console.StdLog.Error(err)
+				}
+				continue
+			}
+			if group.GType == models.Project_Group {
+				groups = append(groups, *group)
+			}
+		}
+
+		if len(groups) == 0 {
+			renderJSON(ctx, []int{})
+			return
+		}
+
+		renderJSON(ctx, groups)
+	}
+}
+
 func Sessions() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -647,13 +680,13 @@ func GetIds() gin.HandlerFunc {
 func renderJSON(ctx *gin.Context, json interface{}, err_status ...interface{}) {
 	switch len(err_status) {
 	case 0:
-		ctx.JSON(http.StatusOK, gin.H{"err_code": 0, "data": json})
+		ctx.JSON(http.StatusOK, gin.H{"code": 0, "data": json})
 		break
 	case 1:
-		ctx.JSON(http.StatusOK, gin.H{"err_code": err_status[0], "data": json})
+		ctx.JSON(http.StatusOK, gin.H{"code": err_status[0], "data": json})
 		break
 	case 2:
-		ctx.JSON(http.StatusOK, gin.H{"err_code": err_status[0], "err_msg": err_status[1], "data": json})
+		ctx.JSON(http.StatusOK, gin.H{"code": err_status[0], "msg": err_status[1], "data": json})
 		break
 	}
 }

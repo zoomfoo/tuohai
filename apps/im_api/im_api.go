@@ -25,11 +25,13 @@ func (p *program) Init() error {
 
 func (p *program) Start() error {
 	opts := api.NewOptions()
-	api.New(opts).Main()
+	p.ImApi = api.New(opts)
+	p.ImApi.Main()
 	return nil
 }
 
 func (p *program) Stop() error {
+	p.ImApi.Close()
 	log.Println("停止")
 	return nil
 }

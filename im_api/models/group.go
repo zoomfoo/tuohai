@@ -40,7 +40,8 @@ const (
 type GroupType int8
 
 const (
-	NORMAL_GROUP GroupType = 1
+	NORMAL_GROUP  GroupType = 1
+	Project_Group GroupType = 3
 )
 
 var RecordNotFound = errors.New("record not found")
