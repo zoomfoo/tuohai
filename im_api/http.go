@@ -83,6 +83,7 @@ func newHTTPServer() *gin.Engine {
 			version1.GET("/poke/recv", v1.GetChuoListRcv())
 		}
 
+		//好友
 		friends := version1.Group("friends")
 		{
 			friends.GET("", v1.Friends(Opts.AuthHost))

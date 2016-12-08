@@ -63,8 +63,9 @@ func SyncCreateFriend(small, big string, fid int) error {
 }
 
 func createRelation(small, big string, fid int) error {
+	cid := "r_" + uuid.NewV4().StringMd5()
 	r := &Relation{
-		Rid:          "r_" + uuid.NewV4().StringMd5(),
+		Rid:          cid,
 		SmallId:      small,
 		BigId:        big,
 		OriginId:     small,
@@ -73,7 +74,19 @@ func createRelation(small, big string, fid int) error {
 		CreatedAt:    time.Now().Unix(),
 		UpatedAt:     time.Now().Unix(),
 	}
-	return db.Create(r).Error
+	tx := db.Begin()
+
+	if err := tx.Create(r).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := saveChennelToRedis(cid, []string{small, big}); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 func CreateRelation(small, big string) error {

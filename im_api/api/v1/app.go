@@ -631,21 +631,7 @@ func AddFriend() gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, true)
-
-		// small, big := convert.StringSort(user.Uid, uuid)
-
-		// //没有好友创建成功之后允许添加关系
-		// if err := models.CreateRelation(small, big); err != nil {
-		// 	console.StdLog.Error(err)
-		// 	renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
-		// 	return
-		// }
-
-		//发送信息给im
-
-		renderJSON(ctx, true)
 		return
-
 	}
 }
 

@@ -52,8 +52,11 @@ func SyncFriends() error {
 	)
 	//获取本地数据库增量friend id
 	if err := db.Order("sync_friend_id desc").Limit(1).Find(&rel).Error; err != nil {
-		fmt.Println(err)
-		return err
+		if err.Error() == "record not found" {
+			rel.SyncFriendId = 0
+		} else {
+			return err
+		}
 	}
 	fmt.Println("SyncFriendId: ", rel.SyncFriendId)
 	//获取主站好友列表
@@ -78,7 +81,7 @@ func SyncFriends() error {
 		}
 
 		small, big := convert.StringSort(user.Uuid, team.Uuid)
-
+		fmt.Println(small, big, friend.Id)
 		if err := SyncCreateFriend(small, big, friend.Id); err != nil {
 			fmt.Println(err)
 		}
