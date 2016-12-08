@@ -59,7 +59,7 @@ func init() {
 type Group struct {
 	Id          int       `gorm:"column:id" json:"-"`
 	Gid         string    `gorm:"column:gid" json:"gid"`
-	Gname       string    `gorm:"column:gname" json:"group_name" form:"group_name"`
+	Gname       string    `gorm:"column:gname" json:"name" form:"name"`
 	Creator     string    `gorm:"column:creator" json:"creator"`
 	Admincnt    uint8     `gorm:"column:admincnt" json:"admin_cnt"`
 	Membercnt   uint      `gorm:"column:membercnt" json:"mem_cnt"`
@@ -69,7 +69,7 @@ type Group struct {
 	Status      uint8     `gorm:"column:status" json:"-"`
 	CreatedTime int64     `gorm:"column:created_at" json:"time"`
 	UpdatedTime int64     `gorm:"column:updated_at" json:"-"`
-	GroupMems   []string  `gorm:"-" json:"members" form:"members"`
+	GroupMems   []string  `gorm:"-" json:"member" form:"member"`
 }
 
 func NewGroup(Gid string) Group {

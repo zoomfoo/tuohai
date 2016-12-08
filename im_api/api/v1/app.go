@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	// "time"
+	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
@@ -14,6 +14,7 @@ import (
 	"tuohai/internal/convert"
 	httplib "tuohai/internal/http"
 	"tuohai/internal/util"
+	"tuohai/internal/uuid"
 )
 
 //获取个人信息
@@ -327,7 +328,7 @@ func CreateGroup() gin.HandlerFunc {
 			return
 		}
 		if group.Gname == "" {
-			renderJSON(ctx, []int{}, 1, "group_name is empty")
+			renderJSON(ctx, []int{}, 1, "name is empty")
 			return
 		}
 
@@ -630,22 +631,48 @@ func Friend() gin.HandlerFunc {
 
 func AddFriend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		uuid := ctx.PostForm("uuid")
-		// content := ctx.PostForm("content")
+		uid := ctx.PostForm("uuid")
+		attach := ctx.PostForm("attach")
+		way := ctx.PostForm("way")
 		user := ctx.MustGet("user").(*auth.MainUser)
-		if user.Uid == uuid {
+		if user.Uid == uid {
 			renderJSON(ctx, struct{}{}, 1, "不允许添加自己为好友")
 			return
 		}
 
-		small, big := convert.StringSort(user.Uid, uuid)
+		fa := &models.FriendApply{
+			Id:         uuid.NewV4().StringMd5(),
+			ApplyUid:   user.Uid,
+			TargetUid:  uid,
+			Way:        models.ApplyWay(convert.StrTo(way).MustInt()),
+			Attach:     attach,
+			Status:     models.UntreatedApply,
+			LaunchTime: time.Now().Unix(),
+		}
+		res := fa.ValidationField()
+		if res != "" {
+			renderJSON(ctx, struct{}{}, 1, res)
+			return
+		}
 
-		//没有好友创建成功之后允许添加关系
-		if err := models.CreateRelation(small, big); err != nil {
+		err := models.CreateFriendApply(fa)
+
+		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
 			return
 		}
+
+		renderJSON(ctx, true)
+
+		// small, big := convert.StringSort(user.Uid, uuid)
+
+		// //没有好友创建成功之后允许添加关系
+		// if err := models.CreateRelation(small, big); err != nil {
+		// 	console.StdLog.Error(err)
+		// 	renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+		// 	return
+		// }
 
 		//发送信息给im
 

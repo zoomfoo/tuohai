@@ -90,6 +90,12 @@ func newHTTPServer() *gin.Engine {
 			friends.POST("", v1.AddFriend())
 		}
 
+		apply := version1.Group("apply")
+		{
+			apply.GET("/friends", v1.ApplyFriends())
+			apply.PUT("/friends", v1.ConfirmApplyFriend())
+		}
+
 		//获取所有未读消息
 		version1.GET("/unreads", v1.Unreads())
 		//获取用户信息
