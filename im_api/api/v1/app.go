@@ -320,21 +320,15 @@ func Unreads() gin.HandlerFunc {
 
 func CreateGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var group models.Group
 		user := ctx.MustGet("user").(*auth.MainUser)
-		if err := ctx.Bind(&group); err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 0, err)
-			return
-		}
-		if group.Gname == "" {
+		name := ctx.PostForm("name")
+		member := ctx.PostForm("member")
+		if name == "" {
 			renderJSON(ctx, []int{}, 1, "name is empty")
 			return
 		}
 
-		group.Creator = user.Uid
-
-		g, err := models.CreateGroup(&group)
+		g, err := models.CreateGroup(user.Uid, name, strings.Split(member, ","))
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")
@@ -347,21 +341,16 @@ func CreateGroup() gin.HandlerFunc {
 
 func CreateProjectGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var group models.Group
 		user := ctx.MustGet("user").(*auth.MainUser)
-		if err := ctx.Bind(&group); err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 0, err)
-			return
-		}
-		if group.Gname == "" {
+		name := ctx.PostForm("name")
+		member := ctx.PostForm("member")
+
+		if name == "" {
 			renderJSON(ctx, []int{}, 1, "group_name is empty")
 			return
 		}
 
-		group.Creator = user.Uid
-
-		g, err := models.CreateGroup(&group)
+		g, err := models.CreateGroup(user.Uid, name, strings.Split(member, ","))
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")
@@ -679,6 +668,26 @@ func AddFriend() gin.HandlerFunc {
 		renderJSON(ctx, true)
 		return
 
+	}
+}
+
+func DelFriend() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := ctx.MustGet("user").(*auth.MainUser)
+		uid := ctx.PostForm("uuid")
+		if uid == "" {
+			renderJSON(ctx, struct{}{}, 1, "uid 不能为空")
+			return
+		}
+
+		err := models.DelRelation(convert.StringSort(user.Uid, uid))
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			return
+		}
+
+		renderJSON(ctx, true)
 	}
 }
 

@@ -7,6 +7,10 @@ import (
 	"tuohai/internal/uuid"
 )
 
+const (
+	RelationDeleted = 1
+)
+
 type Relation struct {
 	Id           int    `gorm:"column:id"`
 	Rid          string `gorm:"column:rid"`
@@ -78,4 +82,9 @@ func createRelation(small, big string, fid int) error {
 
 func CreateRelation(small, big string) error {
 	return createRelation(small, big, 0)
+}
+
+func DelRelation(small, big string) error {
+	r := &Relation{}
+	return db.Table(r.TableName()).Where("small_id = ? and big_id = ?", small, big).Updates(map[string]interface{}{"status": RelationDeleted}).Error
 }

@@ -84,7 +84,7 @@ func NewGroup(Gid string) Group {
 
 func initGroup() *Group {
 	g := &Group{}
-	g.Gid = "g_" + uuid.NewV4().String()
+	g.Gid = "g_" + uuid.NewV4().StringMd5()
 	g.CreatedTime = time.Now().Unix()
 	g.UpdatedTime = time.Now().Unix()
 	g.Status = 0
@@ -213,7 +213,7 @@ func GetGroupsByUid(uid string) ([]Group, error) {
 }
 
 //创建群√
-func CreateGroup(group *Group) (*Group, error) {
+func CreateGroup(creator, gname string, members []string) (*Group, error) {
 	var (
 		val []interface{}
 		now = time.Now().Unix()
@@ -222,7 +222,9 @@ func CreateGroup(group *Group) (*Group, error) {
 	tx := db.Begin()
 
 	g := initGroup()
-	g.Membercnt = uint(len(group.GroupMems) + 1)
+	g.Membercnt = uint(len(members) + 1)
+	g.Creator = creator
+	g.Gname = gname
 
 	resg := tx.Create(g)
 	if err := resg.Error; err != nil {
@@ -251,7 +253,7 @@ func CreateGroup(group *Group) (*Group, error) {
 		val = append(val, gm.Member, now)
 
 		//Add a group of members
-		for _, mem := range g.GroupMems {
+		for _, mem := range members {
 			//如果成员mem ==0 跳过
 			if mem == "" {
 				continue
@@ -271,6 +273,7 @@ func CreateGroup(group *Group) (*Group, error) {
 				CreatedAt: now,
 				UpdatedAt: now,
 			}
+
 			if err := tx.Create(gm).Error; err != nil {
 				tx.Rollback()
 				return nil, err
