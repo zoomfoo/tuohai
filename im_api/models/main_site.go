@@ -51,16 +51,17 @@ func SyncFriends() error {
 		rel     Relation
 	)
 	//获取本地数据库增量friend id
-	if err := db.Last(&rel).Error; err != nil {
+	if err := db.Order("sync_friend_id desc").Limit(1).Find(&rel).Error; err != nil {
 		fmt.Println(err)
 		return err
 	}
-	fmt.Println(rel.SyncFrendId)
+	fmt.Println("SyncFriendId: ", rel.SyncFriendId)
 	//获取主站好友列表
-	err := msdb.Find(&friends, "user_id != 0 and id > ?", rel.SyncFrendId).Error
+	err := msdb.Find(&friends, "user_id != 0 and id > ?", rel.SyncFriendId).Error
 	if err != nil {
 		return err
 	}
+
 	//这里使用range 因为friends里面保存对象这里会导致 值拷贝。
 	//优化建议使用for i:=0;i<count;i++ 代替
 	for _, friend := range friends {

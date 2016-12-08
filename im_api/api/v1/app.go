@@ -32,7 +32,7 @@ func Profile() gin.HandlerFunc {
 			"uuid":     main_user.Uid,
 			"phone":    main_user.Phone,
 			"avatar":   main_user.Avatar,
-			"nickname": main_user.Nickname,
+			"name":     main_user.Nickname,
 			"email":    main_user.Username,
 			"desc":     u.Desc,
 		})
@@ -58,7 +58,7 @@ func PutProfile(url string) gin.HandlerFunc {
 		//主站 /api/i/profile
 		token := ctx.MustGet("token").(string)
 		user := ctx.MustGet("user").(*auth.MainUser)
-		nickname := ctx.PostForm("nickname")
+		nickname := ctx.PostForm("name")
 		avatar := ctx.PostForm("avatar")
 		desc := ctx.PostForm("desc")
 
@@ -558,9 +558,9 @@ func Friends(url string) gin.HandlerFunc {
 				console.StdLog.Error(err)
 			}
 			list = append(list, gin.H{
-				"f_name": fuser.Uname,
-				"f_uuid": fuser.Uuid,
-				"rid":    rel.Rid,
+				"name": fuser.Uname,
+				"uuid": fuser.Uuid,
+				"cid":  rel.Rid,
 			})
 		}
 
@@ -624,6 +624,12 @@ func Friend() gin.HandlerFunc {
 			"f_uuid": fuser.Uuid,
 			"rid":    rel.Rid,
 		})
+	}
+}
+
+func AddFriend() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		//models.CreateRelation("", "")
 	}
 }
 

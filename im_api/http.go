@@ -87,6 +87,7 @@ func newHTTPServer() *gin.Engine {
 		{
 			friends.GET("", v1.Friends(Opts.AuthHost))
 			friends.GET("/:fid", v1.Friend())
+			friends.POST("", v1.AddFriend())
 		}
 
 		//获取所有未读消息

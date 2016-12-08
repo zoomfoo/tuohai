@@ -8,15 +8,15 @@ import (
 )
 
 type Relation struct {
-	Id          int    `gorm:"column:id"`
-	Rid         string `gorm:"column:rid"`
-	SmallId     string `gorm:"column:small_id"`
-	BigId       string `gorm:"column:big_id"`
-	OriginId    string `gorm:"column:origin_id"`
-	Status      int    `gorm:"column:status"`
-	SyncFrendId int    `gorm:"column:sync_frend_id"`
-	CreatedAt   int64  `gorm:"column:created_at"`
-	UpatedAt    int64  `gorm:"column:upated_at"`
+	Id           int    `gorm:"column:id"`
+	Rid          string `gorm:"column:rid"`
+	SmallId      string `gorm:"column:small_id"`
+	BigId        string `gorm:"column:big_id"`
+	OriginId     string `gorm:"column:origin_id"`
+	Status       int    `gorm:"column:status"`
+	SyncFriendId int    `gorm:"column:sync_friend_id"`
+	CreatedAt    int64  `gorm:"column:created_at"`
+	UpatedAt     int64  `gorm:"column:upated_at"`
 }
 
 func (r *Relation) TableName() string {
@@ -59,15 +59,23 @@ func GetMyRelationId(id string) ([]string, error) {
 }
 
 func SyncCreateFriend(small, big string, fid int) error {
+	return createRelation(small, big, fid)
+}
+
+func createRelation(small, big string, fid int) error {
 	r := &Relation{
-		Rid:         "r_" + uuid.NewV4().StringMd5(),
-		SmallId:     small,
-		BigId:       big,
-		OriginId:    small,
-		Status:      0,
-		SyncFrendId: fid,
-		CreatedAt:   time.Now().Unix(),
-		UpatedAt:    time.Now().Unix(),
+		Rid:          "r_" + uuid.NewV4().StringMd5(),
+		SmallId:      small,
+		BigId:        big,
+		OriginId:     small,
+		Status:       0,
+		SyncFriendId: fid,
+		CreatedAt:    time.Now().Unix(),
+		UpatedAt:     time.Now().Unix(),
 	}
 	return db.Create(r).Error
+}
+
+func CreateRelation(small, big string, fid int) error {
+	return createRelation(small, big, 0)
 }
