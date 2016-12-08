@@ -593,28 +593,37 @@ func Friend(url string) gin.HandlerFunc {
 			uid = rel.SmallId
 		}
 
-		fuser, err := models.GetUserById(uid)
+		users, err := auth.GetBatchUsers(url, uid)
 		if err != nil {
 			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "未找到数据")
+			return
 		}
 
-		if muser, err := auth.GetBatchUsers(url, fuser.Uuid); err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 1, "远程服务器错误")
-			return
-		} else {
-			if len(muser) == 0 {
-				renderJSON(ctx, []int{}, 1, "未找到数据")
-				return
-			}
-			renderJSON(ctx, gin.H{
-				"name":   fuser.Uname,
-				"uuid":   fuser.Uuid,
-				"cid":    rel.Rid,
-				"avatar": muser[0].Avatar,
-				"phone":  "",
-			})
-		}
+		renderJSON(ctx, users)
+
+		// fuser, err := models.GetUserById(uid)
+		// if err != nil {
+		// 	console.StdLog.Error(err)
+		// }
+
+		// if muser, err := auth.GetBatchUsers(url, fuser.Uuid); err != nil {
+		// 	console.StdLog.Error(err)
+		// 	renderJSON(ctx, []int{}, 1, "远程服务器错误")
+		// 	return
+		// } else {
+		// 	if len(muser) == 0 {
+		// 		renderJSON(ctx, []int{}, 1, "未找到数据")
+		// 		return
+		// 	}
+		// 	renderJSON(ctx, gin.H{
+		// 		"name":   fuser.Uname,
+		// 		"uuid":   fuser.Uuid,
+		// 		"cid":    rel.Rid,
+		// 		"avatar": muser[0].Avatar,
+		// 		"phone":  "",
+		// 	})
+		// }
 	}
 }
 
