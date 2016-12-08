@@ -88,6 +88,56 @@ func GetFriendsUrl(token, url string) string {
 	return fmt.Sprintf("%s/api/i/friends?%s", url, SignStr(token))
 }
 
+func GetBatchUsersUrl(url, user_ids string) string {
+	return fmt.Sprintf("%s/api/users/info?user_ids=%s", url, user_ids)
+}
+
+func GetBatchUsers(url, user_ids string) ([]models.User, error) {
+	var result struct {
+		Msg      string `json:"msg"`
+		MainUser []struct {
+			Id     string `json:"id"`
+			Name   string `json:"name"`
+			Avatar string `json:"avatar"`
+		} `json:"users"`
+		ErrorCode float64 `json:"error_code"`
+	}
+	fmt.Println("url: ", GetBatchUsersUrl(url, user_ids))
+	err := httplib.Get(GetBatchUsersUrl(url, user_ids)).ToJson(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []models.User
+	// us, err := models.GetBatchUsers(strings.Split(user_ids, ","))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// for i := 0; i < len(result.MainUser); i++ {
+	// 	for j := 0; j < len(us); j++ {
+	// 		if us[j].Uuid == result.MainUser[i].Id {
+	// 			users = append(users, models.User{
+	// 				Uuid:   result.MainUser[i].Id,
+	// 				Uname:  result.MainUser[i].Name,
+	// 				Avatar: result.MainUser[i].Avatar,
+	// 				Desc:   us[j].Desc,
+	// 			})
+	// 		}
+	// 	}
+	// }
+
+	for i := 0; i < len(result.MainUser); i++ {
+		users = append(users, models.User{
+			Uuid:   result.MainUser[i].Id,
+			Uname:  result.MainUser[i].Name,
+			Avatar: result.MainUser[i].Avatar,
+			Desc:   "",
+		})
+	}
+	return users, err
+}
+
 //生成签名参数
 func SignStr(token string, params ...string) (session_token string) {
 	var (

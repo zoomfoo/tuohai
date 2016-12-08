@@ -87,7 +87,7 @@ func newHTTPServer() *gin.Engine {
 		friends := version1.Group("friends")
 		{
 			friends.GET("", v1.Friends(Opts.AuthHost))
-			friends.GET("/:fid", v1.Friend())
+			friends.GET("/:fid", v1.Friend(Opts.AuthHost))
 			friends.POST("", v1.AddFriend())
 			friends.DELETE("", v1.DelFriend())
 		}

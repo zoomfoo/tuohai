@@ -7,11 +7,12 @@ import (
 )
 
 type User struct {
-	Id    int64  `gorm:"primary_key" json:"-"`
-	Uuid  string `gorm:"column:uuid" json:"uuid"`
-	Uname string `gorm:"column:uname" json:"name"`
-	Desc  string `gorm:"column:description" json:"desc"` //个性签名
-	Token string `gorm:"column:token" json:"token"`
+	Id     int64  `gorm:"primary_key" json:"-"`
+	Uuid   string `gorm:"column:uuid" json:"uuid"`
+	Uname  string `gorm:"column:uname" json:"name"`
+	Avatar string `gorm:"-" json:"avatar"`
+	Desc   string `gorm:"column:description" json:"desc"` //个性签名
+	Token  string `gorm:"column:token" json:"token"`
 }
 
 func (t *User) TableName() string {
@@ -63,8 +64,18 @@ func SaveUser(u *User) error {
 		Updates(u).Error
 }
 
+func CreateUser(u *User) error {
+	return db.Create(u).Error
+}
+
 func generateToken(str string) string {
 	m := md5.New()
 	m.Write([]byte(str))
 	return hex.EncodeToString(m.Sum(nil))
+}
+
+func GetBatchUsers(uids []string) ([]User, error) {
+	var us []User
+	err := db.Find(&us, "uuid in (?)", uids).Error
+	return us, err
 }

@@ -25,8 +25,12 @@ type MainSiteFriend struct {
 }
 
 type MainSiteUser struct {
-	Id   int    `gorm:"column:id"`
-	Uuid string `gorm:column:uuid`
+	Id       int    `gorm:"column:id"`
+	Phone    string `gorm:"column:phone"`
+	Email    string `gorm:"column:email"`
+	Nickname string `gorm:"column:nickname"`
+	Avatar   string `gorm:"column:avatar"`
+	Uuid     string `gorm:column:uuid`
 }
 
 func (f *MainSiteFriend) TableName() string {
@@ -77,6 +81,16 @@ func SyncFriends() error {
 		}
 		if err := msdb.Table("team").Where("id = ?", friend.TargetClientId).Scan(team).
 			Error; err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		if err := CreateUser(&User{
+			Uuid:   user.Uuid,
+			Uname:  user.Nickname,
+			Avatar: user.Avatar,
+		}); err != nil {
+			fmt.Println(err)
 			continue
 		}
 
