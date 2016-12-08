@@ -2,9 +2,11 @@ package models
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"log"
 	"strconv"
+	"time"
+
+	"github.com/garyburd/redigo/redis"
 )
 
 func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
@@ -13,10 +15,6 @@ func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
 	c := rpool.Get()
 	defer c.Close()
 
-	if _, err := c.Do("select", "1"); err != nil {
-		log.Println(err)
-		return 0, nil, err
-	}
 	// 获取消息未读数
 	key := "msg:unread:cnt:" + cid + ":" + msgid + ":" + origin
 	cnt, err := c.Do("GET", key)
@@ -227,4 +225,23 @@ func IsGroupMember(gid, uid string) (bool, error) {
 	}
 
 	return res == 1, nil
+}
+
+func saveChennelToRedis(cid string, members []string) error {
+	var (
+		val = []interface{}{"channel:member:" + cid}
+		now = time.Now().Unix()
+	)
+
+	c := rpool.Get()
+	defer c.Close()
+
+	for _, mem := range members {
+		val = append(val, mem, now)
+	}
+
+	if _, err := c.Do("hmset", val...); err != nil {
+		return err
+	}
+	return nil
 }

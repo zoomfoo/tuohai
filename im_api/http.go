@@ -94,7 +94,7 @@ func newHTTPServer() *gin.Engine {
 		apply := version1.Group("apply")
 		{
 			apply.GET("/friends", v1.ApplyFriends())
-			apply.PUT("/friends", v1.ConfirmApplyFriend())
+			apply.PUT("/friends", v1.AgreeApplyFriend())
 		}
 
 		//获取所有未读消息

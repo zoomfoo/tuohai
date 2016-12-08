@@ -215,7 +215,6 @@ func GetGroupsByUid(uid string) ([]Group, error) {
 //创建群√
 func CreateGroup(creator, gname string, members []string) (*Group, error) {
 	var (
-		val []interface{}
 		now = time.Now().Unix()
 	)
 
@@ -250,16 +249,12 @@ func CreateGroup(creator, gname string, members []string) (*Group, error) {
 			return nil, err
 		}
 
-		val = append(val, gm.Member, now)
-
 		//Add a group of members
 		for _, mem := range members {
 			//如果成员mem ==0 跳过
 			if mem == "" {
 				continue
 			}
-			//拼接redis 参数
-			val = append(val, mem, now)
 
 			if mem == g.Creator {
 				continue
@@ -283,8 +278,7 @@ func CreateGroup(creator, gname string, members []string) (*Group, error) {
 		//将数据更新redis中
 		c := rpool.Get()
 		defer c.Close()
-		c.Do("select", "5")
-		if _, err := c.Do("hmset", append([]interface{}{fmt.Sprintf("group:member:%s", g.Gid)}, val...)...); err != nil {
+		if err := saveChennelToRedis(g.Gid, append(members, creator)); err != nil {
 			tx.Rollback()
 			return nil, err
 		}

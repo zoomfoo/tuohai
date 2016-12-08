@@ -331,7 +331,7 @@ func CreateGroup() gin.HandlerFunc {
 		g, err := models.CreateGroup(user.Uid, name, strings.Split(member, ","))
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 1, "未找到数据")
+			renderJSON(ctx, []int{}, 1, "远程服务器错误")
 			return
 		}
 
@@ -560,52 +560,30 @@ func Friends(url string) gin.HandlerFunc {
 			return
 		}
 		renderJSON(ctx, list)
-
-		// var result struct {
-		// 	Msg  string `json:"msg"`
-		// 	Data []struct {
-		// 		Username string `json:"username"`
-		// 		Phone    string `json:"phone"`
-		// 		Nickname string `json:"nickname"`
-		// 		YzjId    int    `json:"yzj_id"`
-		// 		Avatar   string `json:"avatar"`
-		// 	} `json:"friends"`
-		// 	ErrorCode float64 `json:"error_code"`
-		// }
-
-		// token := ctx.MustGet("token").(string)
-		// //获取主站好友信息
-		// auth_url := auth.GetFriendsUrl(token, url)
-		// fmt.Println(auth_url)
-		// if err := httplib.Get(auth_url).ToJson(&result); err != nil {
-		// 	console.StdLog.Error(err)
-		// 	renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
-		// 	return
-		// }
-
-		// renderJSON(ctx, result.Data)
 	}
 }
 
 func Friend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		f_uuid := ctx.Param("uuid")
-		token := ctx.MustGet("token").(string)
-		rel, err := models.Friend(token, f_uuid)
+		f_uuid := ctx.Param("fid")
+		user := ctx.MustGet("user").(*auth.MainUser)
+		rel, err := models.Friend(user.Uid, f_uuid)
+		fmt.Println(f_uuid, " ", *rel)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")
 			return
 		}
 
-		switch token {
+		uid := ""
+		switch user.Uid {
 		case rel.SmallId:
-			f_uuid = rel.BigId
+			uid = rel.BigId
 		case rel.BigId:
-			f_uuid = rel.SmallId
+			uid = rel.SmallId
 		}
 
-		fuser, err := models.GetUserById(f_uuid)
+		fuser, err := models.GetUserById(uid)
 		if err != nil {
 			console.StdLog.Error(err)
 		}

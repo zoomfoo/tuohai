@@ -1,5 +1,9 @@
 package models
 
+import (
+// "github.com/garyburd/redigo/redis"
+)
+
 type ApplyType int8
 
 const (
@@ -70,9 +74,18 @@ func FriendApplys(uid string) ([]FriendApply, error) {
 	return applys, err
 }
 
-//更新
+//
 func SaveFriendApply(apply *FriendApply) error {
-	return db.Table(apply.TableName()).Where("id = ?", apply.Id).Updates(apply).Error
+	tx := db.Begin()
+	if err := tx.Table(apply.TableName()).Where("id = ?", apply.Id).Updates(apply).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := saveChennelToRedis(apply.Id, []string{apply.ApplyUid, apply.TargetUid}); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
 }
 
 //创建

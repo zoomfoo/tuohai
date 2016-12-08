@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"tuohai/internal/convert"
@@ -33,15 +34,10 @@ func Friends(uuid string) ([]Relation, error) {
 	return r, err
 }
 
-func Friend(token, fuuid string) (*Relation, error) {
+func Friend(uid, fuid string) (*Relation, error) {
 	var rel Relation
-	small, big := "", ""
-	if convert.RuneAccumulation(token) > convert.RuneAccumulation(fuuid) {
-		small, big = fuuid, token
-	} else {
-		small, big = token, fuuid
-	}
-
+	small, big := convert.StringSort(uid, fuid)
+	fmt.Println(small, big)
 	err := db.Find(&rel, "status = 0 and small_id = ? and big_id = ?", small, big).Error
 	return &rel, err
 }
@@ -86,5 +82,15 @@ func CreateRelation(small, big string) error {
 
 func DelRelation(small, big string) error {
 	r := &Relation{}
-	return db.Table(r.TableName()).Where("small_id = ? and big_id = ?", small, big).Updates(map[string]interface{}{"status": RelationDeleted}).Error
+	tx := db.Begin()
+	err := tx.Table(r.TableName()).Where("small_id = ? and big_id = ?", small, big).Updates(map[string]interface{}{"status": RelationDeleted}).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	c := rpool.Get()
+	defer c.Close()
+	return nil
+	// c.Do(commandName, ...)
 }

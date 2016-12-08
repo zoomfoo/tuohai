@@ -22,7 +22,7 @@ func ApplyFriends() gin.HandlerFunc {
 	}
 }
 
-func ConfirmApplyFriend() gin.HandlerFunc {
+func AgreeApplyFriend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// main_user := ctx.MustGet("user").(*auth.MainUser)
 		id := ctx.PostForm("id")
