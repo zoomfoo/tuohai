@@ -76,6 +76,6 @@ func createRelation(small, big string, fid int) error {
 	return db.Create(r).Error
 }
 
-func CreateRelation(small, big string, fid int) error {
+func CreateRelation(small, big string) error {
 	return createRelation(small, big, 0)
 }

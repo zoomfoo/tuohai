@@ -11,6 +11,7 @@ import (
 	"tuohai/im_api/models"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
+	"tuohai/internal/convert"
 	httplib "tuohai/internal/http"
 	"tuohai/internal/util"
 )
@@ -598,7 +599,7 @@ func Friends(url string) gin.HandlerFunc {
 
 func Friend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		f_uuid := ctx.Param("f_uuid")
+		f_uuid := ctx.Param("uuid")
 		token := ctx.MustGet("token").(string)
 		rel, err := models.Friend(token, f_uuid)
 		if err != nil {
@@ -620,16 +621,37 @@ func Friend() gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, gin.H{
-			"f_name": fuser.Uname,
-			"f_uuid": fuser.Uuid,
-			"rid":    rel.Rid,
+			"name": fuser.Uname,
+			"uuid": fuser.Uuid,
+			"cid":  rel.Rid,
 		})
 	}
 }
 
 func AddFriend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		//models.CreateRelation("", "")
+		uuid := ctx.PostForm("uuid")
+		// content := ctx.PostForm("content")
+		user := ctx.MustGet("user").(*auth.MainUser)
+		if user.Uid == uuid {
+			renderJSON(ctx, struct{}{}, 1, "不允许添加自己为好友")
+			return
+		}
+
+		small, big := convert.StringSort(user.Uid, uuid)
+
+		//没有好友创建成功之后允许添加关系
+		if err := models.CreateRelation(small, big); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			return
+		}
+
+		//发送信息给im
+
+		renderJSON(ctx, true)
+		return
+
 	}
 }
 
