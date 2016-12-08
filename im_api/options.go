@@ -54,3 +54,8 @@ func (opts *Options) MysqlOptions() string {
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		opts.DbUser, opts.DbPwd, opts.DbHost, opts.DbName)
 }
+
+func (opts *Options) MainSiteMysql() string {
+	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		"root", "yzjmysql", "120.27.45.244:3306", "cloudwork")
+}

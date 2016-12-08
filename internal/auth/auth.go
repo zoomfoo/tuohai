@@ -28,6 +28,7 @@ func LoginAuth(host string) gin.HandlerFunc {
 			//每一个新的请求都会新创建Context
 			//所以Context类下面的key是不需要加锁的
 			//这里user可以放心使用
+			fmt.Println("++++++++++")
 			models.ValidAndCreate(&models.User{
 				Uuid:  user.Uid,
 				Uname: user.Nickname,

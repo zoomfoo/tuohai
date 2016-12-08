@@ -3,14 +3,17 @@ package im_api
 import (
 	"fmt"
 	"time"
+
+	"tuohai/im_api/models"
 )
 
 func (api *ImApi) friendLoop() {
-	ticker := time.Tick(2 * time.Second)
+	models.SyncFriends()
+	ticker := time.Tick(300 * time.Second)
 	for {
 		select {
 		case <-ticker:
-			fmt.Println("同步好友关系ing")
+			models.SyncFriends()
 		case <-api.exitChan:
 			goto exit
 		}

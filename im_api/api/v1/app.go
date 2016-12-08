@@ -542,7 +542,7 @@ func Friends(url string) gin.HandlerFunc {
 			renderJSON(ctx, []int{}, 1, "未找到数据")
 			return
 		}
-
+		fmt.Println("friend: ", r, "uid: ", user.Uid)
 		var list []interface{}
 		for _, rel := range r {
 			f_uuid := ""

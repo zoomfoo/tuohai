@@ -2,7 +2,7 @@ package test
 
 import (
 	"testing"
-	"tuohai/models"
+	"tuohai/im_api/models"
 )
 
 //获取用户所在群列表

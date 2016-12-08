@@ -2,6 +2,7 @@ package convert
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 )
 
@@ -162,4 +163,18 @@ func RuneAccumulation(str string) rune {
 		val += rune(s)
 	}
 	return val
+}
+
+func StringSort(str1, str2 string) (small, big string) {
+	s := []string{str1, str2}
+	sort.Strings(s)
+	return s[0], s[1]
+}
+
+func StringSortByRune(str1, str2 string) (small, big string) {
+	if RuneAccumulation(str1) > RuneAccumulation(str2) {
+		return str2, str1
+	} else {
+		return str1, str2
+	}
 }

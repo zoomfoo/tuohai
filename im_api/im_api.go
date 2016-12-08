@@ -14,6 +14,7 @@ type ImApi struct {
 	Opts         *Options
 	httpListener net.Listener
 	waitGroup    util.WaitGroupWrapper
+	notifySync   chan int
 	exitChan     chan int
 }
 
@@ -30,6 +31,8 @@ func (api *ImApi) Main() {
 
 	models.InitDB(api.Opts.MysqlOptions())
 	models.InitRedis(api.Opts.RedisHost, api.Opts.RedisPwd)
+	//初始化主站数据库
+	models.InitMainSiteDB(api.Opts.MainSiteMysql())
 
 	api.httpListener = httpListener
 	fmt.Println("LISTEN: ", api.httpListener.Addr().String())

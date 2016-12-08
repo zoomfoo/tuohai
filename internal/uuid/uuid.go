@@ -150,6 +150,18 @@ func (u UUID) StringTrim() string {
 		u[:4], u[4:6], u[6:8], u[8:10], u[10:])
 }
 
+func (u UUID) StringMd5() string {
+	id := fmt.Sprintf("%x-%x-%x-%x-%x",
+		u[:4], u[4:6], u[6:8], u[8:10], u[10:])
+	return getMd5(id)
+}
+
+func getMd5(str string) string {
+	m := md5.New()
+	m.Write([]byte(str))
+	return hex.EncodeToString(m.Sum(nil))
+}
+
 // SetVersion sets version bits.
 func (u *UUID) SetVersion(v byte) {
 	u[6] = (u[6] & 0x0f) | (v << 4)
