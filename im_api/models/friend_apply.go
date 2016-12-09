@@ -40,23 +40,23 @@ func (fa *FriendApply) ValidationField() string {
 	}
 
 	if fa.ApplyUid == "" {
-		return "ApplyUid 不能为空"
+		return "apply uid 不能为空"
 	}
 
 	if fa.TargetUid == "" {
-		return "TargetUid 不能为空"
+		return "uuid 不能为空"
 	}
 
 	switch fa.Way {
 	case FriendSeek, GroupSeek:
 	default:
-		return "未知的Way值"
+		return "未知的Way值 (添加途径(0: 通过账号查找，1: 通过群组添加))"
 	}
 
 	switch fa.Status {
 	case UntreatedApply, AgreedApply, RefusedApply:
 	default:
-		return "未知的Status值"
+		return "未知的Status值 状态 (0， 未处理， 1 通过，2 拒绝)"
 	}
 	return ""
 }

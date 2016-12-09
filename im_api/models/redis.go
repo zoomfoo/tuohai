@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -241,6 +242,35 @@ func saveChennelToRedis(cid string, members []string) error {
 	}
 
 	if _, err := c.Do("hmset", val...); err != nil {
+		return err
+	}
+	return nil
+}
+
+func Publish(args ...interface{}) error {
+	c := rpool.Get()
+	defer c.Close()
+	if _, err := c.Do("publish", args...); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SaveBotInfo(key string, info map[string]interface{}) error {
+	js, err := json.Marshal(info)
+	if err != nil {
+		return err
+	}
+
+	c := rpool.Get()
+	defer c.Close()
+
+	str := string(js)
+	if _, err := c.Do("set", key, str); err != nil {
+		return err
+	}
+
+	if err := Publish("cw:bot:add", str); err != nil {
 		return err
 	}
 	return nil

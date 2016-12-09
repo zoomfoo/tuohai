@@ -10,6 +10,8 @@ type User struct {
 	Id     int64  `gorm:"primary_key" json:"-"`
 	Uuid   string `gorm:"column:uuid" json:"uuid"`
 	Uname  string `gorm:"column:uname" json:"name"`
+	Phone  string `gorm:"column:phone" json:"phone"`
+	Email  string `gorm:"column:email" json:"email"`
 	Avatar string `gorm:"-" json:"avatar"`
 	Desc   string `gorm:"column:description" json:"desc"` //个性签名
 	Token  string `gorm:"column:token" json:"token"`
@@ -78,4 +80,11 @@ func GetBatchUsers(uids []string) ([]User, error) {
 	var us []User
 	err := db.Find(&us, "uuid in (?)", uids).Error
 	return us, err
+}
+
+func SelectUsers(u *User) ([]User, error) {
+	var users []User
+	err := db.Table(u.TableName()).Where(u).Scan(&users).Error
+	fmt.Println(users)
+	return users, err
 }

@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
+	// "time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
-	"tuohai/internal/convert"
+	// "tuohai/internal/convert"
 	httplib "tuohai/internal/http"
 	"tuohai/internal/util"
 	"tuohai/internal/uuid"
@@ -350,13 +350,6 @@ func CreateProjectGroup() gin.HandlerFunc {
 			return
 		}
 
-		//生成botid
-		// botid := uuid.NewV4().StringMd5()
-		// gid := uuid.NewV4().StringMd5()
-		// bot_access_token := uuid.NewV4().StringMd5()
-		// bot_name := ""
-		// appid := ""
-
 		g, err := models.CreateGroup(user.Uid, name, strings.Split(member, ","))
 		if err != nil {
 			console.StdLog.Error(err)
@@ -364,7 +357,32 @@ func CreateProjectGroup() gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, g)
+		//生成botid
+		botid := uuid.NewV4().StringMd5()
+		gid := g.Gid
+		bot_access_token := uuid.NewV4().StringMd5()
+		bot_name := "clouderwork"
+		appid := "clouderwork"
+
+		bot_info := gin.H{
+			"bot_access_token": bot_access_token,
+			"bot_id":           botid,
+			"bot_name":         bot_name,
+			"app_id":           appid,
+			"cid":              gid,
+		}
+
+		if err := models.SaveBotInfo("bot:id:"+botid, bot_info); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{}, 1, "未找到数据")
+			return
+		}
+
+		renderJSON(ctx, gin.H{
+			"group": g,
+			"bot":   bot_info,
+		})
+
 	}
 }
 
@@ -527,173 +545,6 @@ func UserInfo() gin.HandlerFunc {
 		}
 		renderJSON(ctx, user)
 		return
-	}
-}
-
-func Friends(url string) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		user := ctx.MustGet("user").(*auth.MainUser)
-		r, err := models.Friends(user.Uid)
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 1, "未找到数据")
-			return
-		}
-		fmt.Println("friend: ", r, "uid: ", user.Uid)
-		var list []string
-		for _, rel := range r {
-			f_uuid := ""
-			switch user.Uid {
-			case rel.SmallId:
-				f_uuid = rel.BigId
-			case rel.BigId:
-				f_uuid = rel.SmallId
-			}
-			// fmt.Println("f_uuid: ", f_uuid)
-
-			// fuser, err := models.GetUserById(f_uuid)
-			// if err != nil {
-			// 	console.StdLog.Error(err)
-			// }
-			list = append(list, f_uuid)
-			// list = append(list, gin.H{
-			// 	"name": fuser.Uname,
-			// 	"uuid": fuser.Uuid,
-			// 	"cid":  rel.Rid,
-			// })
-		}
-
-		users, err := auth.GetBatchUsers(url, strings.Join(list, ","))
-		fmt.Println(users)
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 1, "未找到数据")
-			return
-		}
-		if len(list) == 0 {
-			renderJSON(ctx, []int{})
-			return
-		}
-
-		renderJSON(ctx, users)
-	}
-}
-
-func Friend(url string) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		f_uuid := ctx.Param("fid")
-		user := ctx.MustGet("user").(*auth.MainUser)
-		rel, err := models.Friend(user.Uid, f_uuid)
-		fmt.Println(f_uuid, " ", *rel)
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 1, "未找到数据")
-			return
-		}
-
-		uid := ""
-		switch user.Uid {
-		case rel.SmallId:
-			uid = rel.BigId
-		case rel.BigId:
-			uid = rel.SmallId
-		}
-
-		users, err := auth.GetBatchUsers(url, uid)
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 1, "未找到数据")
-			return
-		}
-
-		if len(users) == 0 {
-			renderJSON(ctx, struct{}{})
-			return
-		}
-		renderJSON(ctx, users[0])
-		return
-
-		// fuser, err := models.GetUserById(uid)
-		// if err != nil {
-		// 	console.StdLog.Error(err)
-		// }
-
-		// if muser, err := auth.GetBatchUsers(url, fuser.Uuid); err != nil {
-		// 	console.StdLog.Error(err)
-		// 	renderJSON(ctx, []int{}, 1, "远程服务器错误")
-		// 	return
-		// } else {
-		// 	if len(muser) == 0 {
-		// 		renderJSON(ctx, []int{}, 1, "未找到数据")
-		// 		return
-		// 	}
-		// 	renderJSON(ctx, gin.H{
-		// 		"name":   fuser.Uname,
-		// 		"uuid":   fuser.Uuid,
-		// 		"cid":    rel.Rid,
-		// 		"avatar": muser[0].Avatar,
-		// 		"phone":  "",
-		// 	})
-		// }
-	}
-}
-
-func AddFriend() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		uid := ctx.PostForm("uuid")
-		attach := ctx.PostForm("attach")
-		way := ctx.PostForm("way")
-		user := ctx.MustGet("user").(*auth.MainUser)
-		if user.Uid == uid {
-			renderJSON(ctx, struct{}{}, 1, "不允许添加自己为好友")
-			return
-		}
-
-		fa := &models.FriendApply{
-			Id:         uuid.NewV4().StringMd5(),
-			ApplyUid:   user.Uid,
-			TargetUid:  uid,
-			Way:        models.ApplyWay(convert.StrTo(way).MustInt()),
-			Attach:     attach,
-			Status:     models.UntreatedApply,
-			LaunchTime: time.Now().Unix(),
-		}
-		res := fa.ValidationField()
-		if res != "" {
-			renderJSON(ctx, struct{}{}, 1, res)
-			return
-		}
-
-		err := models.CreateFriendApply(fa)
-
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
-			return
-		}
-
-		renderJSON(ctx, true)
-		return
-	}
-}
-
-func DelFriend() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		user := ctx.MustGet("user").(*auth.MainUser)
-		uid := ctx.PostForm("uuid")
-		if uid == "" {
-			renderJSON(ctx, struct{}{}, 1, "uid 不能为空")
-			return
-		}
-
-		err := models.DelRelation(convert.StringSort(user.Uid, uid))
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
-			return
-		}
-
-		renderJSON(ctx, true)
 	}
 }
 

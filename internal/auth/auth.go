@@ -88,46 +88,38 @@ func GetFriendsUrl(token, url string) string {
 	return fmt.Sprintf("%s/api/i/friends?%s", url, SignStr(token))
 }
 
-func GetBatchUsersUrl(url, user_ids string) string {
-	return fmt.Sprintf("%s/api/users/info?user_ids=%s", url, user_ids)
+//批量获取用户信息
+func GetBatchUsersUrl(token, url string, params []string) string {
+	fmt.Println("sigin:", token)
+	return fmt.Sprintf("%s/api/v1.1/users/info?%s", url, SignStr(token, params...))
 }
 
-func GetBatchUsers(url, user_ids string) ([]models.User, error) {
+func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
 	var result struct {
 		Msg      string `json:"msg"`
 		MainUser []struct {
 			Id     string `json:"id"`
 			Name   string `json:"name"`
 			Avatar string `json:"avatar"`
+			Phone  string `json:"phone"`
+			Email  string `json:"email"`
 		} `json:"users"`
 		ErrorCode float64 `json:"error_code"`
 	}
-	fmt.Println("url: ", GetBatchUsersUrl(url, user_ids))
-	err := httplib.Get(GetBatchUsersUrl(url, user_ids)).ToJson(&result)
+	fmt.Println("URL: ", GetBatchUsersUrl(token, url, params))
+	err := httplib.Get(GetBatchUsersUrl(token, url, params)).ToJson(&result)
 	if err != nil {
 		return nil, err
 	}
-
 	var users []models.User
-	us, err := models.GetBatchUsers(strings.Split(user_ids, ","))
-	if err != nil {
-		return nil, err
-	}
-
 	for i := 0; i < len(result.MainUser); i++ {
 		u := models.User{
 			Uuid:   result.MainUser[i].Id,
 			Uname:  result.MainUser[i].Name,
 			Avatar: result.MainUser[i].Avatar,
+			Phone:  result.MainUser[i].Phone,
+			Email:  result.MainUser[i].Email,
 		}
-
-		for j := 0; j < len(us); j++ {
-			if us[j].Uuid == result.MainUser[i].Id {
-				u.Desc = us[j].Uuid
-				break
-			}
-		}
-
 		users = append(users, u)
 	}
 	return users, err
@@ -147,7 +139,6 @@ func SignStr(token string, params ...string) (session_token string) {
 		fmt.Sprintf("session_token=%s", token),
 		fmt.Sprintf("stamp=%s", stamp),
 	)
-
 	sort.Strings(params)
 	sign_str := fmt.Sprintf("%scloudwork", strings.Join(params, ""))
 	fmt.Println("签名字符串: ", sign_str)

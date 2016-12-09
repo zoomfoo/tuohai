@@ -89,6 +89,8 @@ func SyncFriends() error {
 			Uuid:   user.Uuid,
 			Uname:  user.Nickname,
 			Avatar: user.Avatar,
+			Phone:  user.Phone,
+			Email:  user.Email,
 		}); err != nil {
 			fmt.Println(err)
 			continue
