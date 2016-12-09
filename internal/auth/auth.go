@@ -113,12 +113,14 @@ func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
 	}
 	var users []models.User
 	for i := 0; i < len(result.MainUser); i++ {
+		localuser, _ := models.GetUserById(result.MainUser[i].Id)
 		u := models.User{
 			Uuid:   result.MainUser[i].Id,
 			Uname:  result.MainUser[i].Name,
 			Avatar: result.MainUser[i].Avatar,
 			Phone:  result.MainUser[i].Phone,
 			Email:  result.MainUser[i].Email,
+			Desc:   localuser.Desc,
 		}
 		users = append(users, u)
 	}

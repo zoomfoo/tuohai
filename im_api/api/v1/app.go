@@ -109,6 +109,20 @@ func PutProfile(url string) gin.HandlerFunc {
 	}
 }
 
+func Users(url string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		token := ctx.MustGet("token").(string)
+		ids := ctx.Query("ids")
+		u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", ids)})
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			return
+		}
+		renderJSON(ctx, u)
+	}
+}
+
 func Groups() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -140,10 +154,11 @@ func Groups() gin.HandlerFunc {
 	}
 }
 
-func Group() gin.HandlerFunc {
+func Group(url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
 		main_user := ctx.MustGet("user").(*auth.MainUser)
+		token := ctx.MustGet("token").(string)
 		wg := &util.WaitGroupWrapper{}
 
 		var (
@@ -191,7 +206,34 @@ func Group() gin.HandlerFunc {
 		}
 
 		if ig {
-			renderJSON(ctx, group, 0)
+			var list []gin.H
+			for _, gm := range group.GroupMems {
+				u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", gm)})
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+
+				name := ""
+				avatar := ""
+				phone := ""
+
+				if len(u) != 0 {
+					name = u[0].Uname
+					avatar = u[0].Avatar
+					phone = u[0].Phone
+				}
+
+				list = append(list, gin.H{
+					"uuid":   gm,
+					"name":   name,
+					"avatar": avatar,
+					"phone":  phone,
+				})
+			}
+
+			renderJSON(ctx, list)
+
 		} else {
 			renderJSON(ctx, struct{}{}, 1, "当前用户不属于这个群")
 		}

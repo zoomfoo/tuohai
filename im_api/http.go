@@ -21,6 +21,7 @@ func newHTTPServer() *gin.Engine {
 		//列出IM常用的信息
 		version1.GET("/profile", v1.Profile())
 		version1.PUT("/profile", v1.PutProfile(Opts.AuthHost))
+		version1.GET("/users", v1.Users(Opts.AuthHost))
 
 		//群组创建 更新
 		//成员管理
@@ -30,7 +31,7 @@ func newHTTPServer() *gin.Engine {
 			//获取群组列表 √
 			groups.GET("", v1.Groups())
 			//获取群组信息 √
-			groups.GET("/:gid", v1.Group())
+			groups.GET("/:gid", v1.Group(Opts.AuthHost))
 			//创建群组 √
 			groups.POST("", v1.CreateGroup())
 
