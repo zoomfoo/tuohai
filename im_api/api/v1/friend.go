@@ -61,58 +61,41 @@ func Friend(url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		f_uuid := ctx.Param("fid")
 		user := ctx.MustGet("user").(*auth.MainUser)
+		fmt.Println("接受 fuuid", f_uuid, " uid:", user.Uid)
 		rel, err := models.Friend(user.Uid, f_uuid)
-		fmt.Println(f_uuid, " ", *rel)
+		token := ctx.MustGet("token").(string)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")
 			return
 		}
 
-		// uid := ""
-		// switch user.Uid {
-		// case rel.SmallId:
-		// 	uid = rel.BigId
-		// case rel.BigId:
-		// 	uid = rel.SmallId
-		// }
+		id := ""
+		switch user.Uid {
+		case rel.SmallId:
+			id = rel.BigId
+		case rel.BigId:
+			id = rel.SmallId
+		}
+		u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", id)})
+		if err != nil {
+			fmt.Println(err)
+		}
+		if len(u) == 0 {
+			renderJSON(ctx, struct{}{})
+			return
+		}
 
-		// users, err := auth.GetBatchUsers(url, uid)
-		// if err != nil {
-		// 	console.StdLog.Error(err)
-		// 	renderJSON(ctx, []int{}, 1, "未找到数据")
-		// 	return
-		// }
+		renderJSON(ctx, gin.H{
+			"uid":      u[0].Uuid,
+			"name":     u[0].Uname,
+			"cid":      rel.Rid,
+			"avatar":   u[0].Avatar,
+			"phone":    u[0].Phone,
+			"desc":     u[0].Desc,
+			"relation": []int{},
+		})
 
-		// if len(users) == 0 {
-		// 	renderJSON(ctx, struct{}{})
-		// 	return
-		// }
-		// renderJSON(ctx, users[0])
-		return
-
-		// fuser, err := models.GetUserById(uid)
-		// if err != nil {
-		// 	console.StdLog.Error(err)
-		// }
-
-		// if muser, err := auth.GetBatchUsers(url, fuser.Uuid); err != nil {
-		// 	console.StdLog.Error(err)
-		// 	renderJSON(ctx, []int{}, 1, "远程服务器错误")
-		// 	return
-		// } else {
-		// 	if len(muser) == 0 {
-		// 		renderJSON(ctx, []int{}, 1, "未找到数据")
-		// 		return
-		// 	}
-		// 	renderJSON(ctx, gin.H{
-		// 		"name":   fuser.Uname,
-		// 		"uuid":   fuser.Uuid,
-		// 		"cid":    rel.Rid,
-		// 		"avatar": muser[0].Avatar,
-		// 		"phone":  "",
-		// 	})
-		// }
 	}
 }
 
