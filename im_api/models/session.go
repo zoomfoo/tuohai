@@ -39,3 +39,8 @@ func GetSessionById(from string) ([]Session, error) {
 	err := db.Table(sess.TableName()).Where("`from` = ? and status = 0", from).Scan(&sessions).Error
 	return sessions, err
 }
+
+func RemoveSession(sid, uid string) error {
+	s := &Session{From: uid}
+	return db.Table(s.TableName()).Where("sid = ?", sid).Updates(map[string]interface{}{"status": deleted}).Error
+}

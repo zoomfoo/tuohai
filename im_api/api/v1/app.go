@@ -336,7 +336,17 @@ func Messages() gin.HandlerFunc {
 
 func RemoveSession() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		sid := ctx.Param("sid")
+		user := ctx.MustGet("user").(*auth.MainUser)
+		//清除session
+		if err := models.RemoveSession(sid, user.Uid); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, false)
+			return
+		}
 
+		//删除未读消息数
+		renderJSON(ctx, true)
 	}
 }
 
@@ -567,7 +577,7 @@ func QuitGroupMember() gin.HandlerFunc {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		gid := ctx.Param("gid")
 
-		g, err := models.DelGroupMember(gid, []string{user.Uid})
+		_, err := models.DelGroupMember(gid, []string{user.Uid})
 		if err != nil {
 			if err == models.RecordNotFound {
 				console.StdLog.Error(err)
@@ -578,7 +588,7 @@ func QuitGroupMember() gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, g)
+		renderJSON(ctx, true)
 		return
 	}
 }

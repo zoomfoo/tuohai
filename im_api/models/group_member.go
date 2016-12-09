@@ -197,8 +197,8 @@ func DelGroupMember(gid string, GroupMems []string) (*Group, error) {
 
 	c := rpool.Get()
 	defer c.Close()
-	c.Do("select", "5")
-	if _, err := c.Do("hdel", append([]interface{}{fmt.Sprintf("group:member:%s", gid)}, val...)...); err != nil {
+
+	if _, err := c.Do("hdel", append([]interface{}{fmt.Sprintf("channel:member:%s", gid)}, val...)...); err != nil {
 		tx.Rollback()
 		return nil, err
 	}
