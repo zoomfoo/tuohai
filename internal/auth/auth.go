@@ -109,31 +109,26 @@ func GetBatchUsers(url, user_ids string) ([]models.User, error) {
 	}
 
 	var users []models.User
-	// us, err := models.GetBatchUsers(strings.Split(user_ids, ","))
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// for i := 0; i < len(result.MainUser); i++ {
-	// 	for j := 0; j < len(us); j++ {
-	// 		if us[j].Uuid == result.MainUser[i].Id {
-	// 			users = append(users, models.User{
-	// 				Uuid:   result.MainUser[i].Id,
-	// 				Uname:  result.MainUser[i].Name,
-	// 				Avatar: result.MainUser[i].Avatar,
-	// 				Desc:   us[j].Desc,
-	// 			})
-	// 		}
-	// 	}
-	// }
+	us, err := models.GetBatchUsers(strings.Split(user_ids, ","))
+	if err != nil {
+		return nil, err
+	}
 
 	for i := 0; i < len(result.MainUser); i++ {
-		users = append(users, models.User{
+		u := models.User{
 			Uuid:   result.MainUser[i].Id,
 			Uname:  result.MainUser[i].Name,
 			Avatar: result.MainUser[i].Avatar,
-			Desc:   "",
-		})
+		}
+
+		for j := 0; j < len(us); j++ {
+			if us[j].Uuid == result.MainUser[i].Id {
+				u.Desc = us[j].Uuid
+				break
+			}
+		}
+
+		users = append(users, u)
 	}
 	return users, err
 }

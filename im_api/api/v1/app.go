@@ -350,6 +350,13 @@ func CreateProjectGroup() gin.HandlerFunc {
 			return
 		}
 
+		//生成botid
+		// botid := uuid.NewV4().StringMd5()
+		// gid := uuid.NewV4().StringMd5()
+		// bot_access_token := uuid.NewV4().StringMd5()
+		// bot_name := ""
+		// appid := ""
+
 		g, err := models.CreateGroup(user.Uid, name, strings.Split(member, ","))
 		if err != nil {
 			console.StdLog.Error(err)
@@ -357,7 +364,6 @@ func CreateProjectGroup() gin.HandlerFunc {
 			return
 		}
 
-		//生成botid
 		renderJSON(ctx, g)
 	}
 }
@@ -600,7 +606,12 @@ func Friend(url string) gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, users)
+		if len(users) == 0 {
+			renderJSON(ctx, struct{}{})
+			return
+		}
+		renderJSON(ctx, users[0])
+		return
 
 		// fuser, err := models.GetUserById(uid)
 		// if err != nil {
