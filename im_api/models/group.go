@@ -249,6 +249,7 @@ func CreateGroup(creator, gname string, members []string) (*Group, error) {
 			return nil, err
 		}
 
+		fmt.Println("members: ", members)
 		//Add a group of members
 		for _, mem := range members {
 			//如果成员mem ==0 跳过

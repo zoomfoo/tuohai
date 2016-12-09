@@ -232,7 +232,13 @@ func Group(url string) gin.HandlerFunc {
 				})
 			}
 
-			renderJSON(ctx, list)
+			renderJSON(ctx, gin.H{
+				"gid":     group.Gid,
+				"name":    group.Gname,
+				"creator": group.Creator,
+				"time":    group.CreatedTime,
+				"member":  list,
+			})
 
 		} else {
 			renderJSON(ctx, struct{}{}, 1, "当前用户不属于这个群")
@@ -367,6 +373,10 @@ func CreateGroup() gin.HandlerFunc {
 		member := ctx.PostForm("member")
 		if name == "" {
 			renderJSON(ctx, []int{}, 1, "name is empty")
+			return
+		}
+		if member == "" {
+			renderJSON(ctx, []int{}, 1, "群成员不能为空")
 			return
 		}
 

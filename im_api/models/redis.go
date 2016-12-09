@@ -190,7 +190,7 @@ func GetGroupMem(gid string) ([]string, error) {
 		return []string{}, err
 	}
 
-	return redis.Strings(c.Do("hgetall", fmt.Sprintf("group:member:%s", gid)))
+	return redis.Strings(c.Do("hgetall", fmt.Sprintf("channel:member:%s", gid)))
 }
 
 func QuitGroup(gid string, member []string) (bool, error) {
@@ -201,7 +201,7 @@ func QuitGroup(gid string, member []string) (bool, error) {
 		return false, err
 	}
 
-	var args = []interface{}{fmt.Sprintf("group:member:%s", gid)}
+	var args = []interface{}{fmt.Sprintf("channel:member:%s", gid)}
 	for _, m := range member {
 		args = append(args, m)
 	}
@@ -216,15 +216,10 @@ func IsGroupMember(gid, uid string) (bool, error) {
 	c := rpool.Get()
 	defer c.Close()
 
-	if _, err := c.Do("select", "5"); err != nil {
-		return false, err
-	}
-
-	res, err := redis.Int(c.Do("hexists", fmt.Sprintf("group:member:%s", gid), uid))
+	res, err := redis.Int64(c.Do("hexists", fmt.Sprintf("channel:member:%s", gid), uid))
 	if err != nil {
 		return false, err
 	}
-
 	return res == 1, nil
 }
 
@@ -241,8 +236,11 @@ func saveChennelToRedis(cid string, members []string) error {
 		val = append(val, mem, now)
 	}
 
-	if _, err := c.Do("hmset", val...); err != nil {
+	fmt.Println("val: ", val)
+	if i, err := c.Do("hmset", val...); err != nil {
 		return err
+	} else {
+		fmt.Println("写入redis:返回 ", i)
 	}
 	return nil
 }
