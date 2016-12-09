@@ -257,3 +257,9 @@ func GetMyGroupId(id string) ([]string, error) {
 
 	return ids, nil
 }
+
+func GroupGhosting(uid, fuid string) ([]GroupMember, error) {
+	var gm []GroupMember
+	err := db.Where("member in (?)", []string{uid, fuid}).Group("gid").Find(&gm).Error
+	return gm, err
+}

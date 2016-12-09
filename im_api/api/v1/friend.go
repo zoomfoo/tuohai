@@ -82,8 +82,28 @@ func Friend(url string) gin.HandlerFunc {
 			fmt.Println(err)
 		}
 		if len(u) == 0 {
-			renderJSON(ctx, struct{}{})
+			renderJSON(ctx, struct{}{}, 0)
 			return
+		}
+
+		//获取与我相关群组
+		gm, err := models.GroupGhosting(user.Uid, id)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			return
+		}
+
+		var list []gin.H
+		for i, _ := range gm {
+			g, err := models.GetGroupById(gm[i].GroupId)
+			if err != nil {
+				continue
+			}
+			list = append(list, gin.H{
+				"gid":  gm[i].GroupId,
+				"name": g.Gname,
+			})
 		}
 
 		renderJSON(ctx, gin.H{
@@ -93,7 +113,7 @@ func Friend(url string) gin.HandlerFunc {
 			"avatar":   u[0].Avatar,
 			"phone":    u[0].Phone,
 			"desc":     u[0].Desc,
-			"relation": []int{},
+			"relation": list,
 		})
 
 	}
