@@ -52,7 +52,7 @@ func (gp *GroupPermit) IsDismissGroup() bool {
 func Permit(gid, uid string, role_info OperationVerb) *GroupPermit {
 	g := NewGroup(gid)
 	ri := RoleInfo(gid, uid)
-	fmt.Println(g.GType, role_info, ri)
+	fmt.Println("群组权限: ", g.GType, role_info, ri)
 	gp := &GroupPermit{}
 	err := db.Find(gp, "group_type = ? and role_info = ? and role = ? and status = 0", g.GType, role_info, ri).Error
 	if err != nil {

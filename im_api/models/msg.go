@@ -18,25 +18,17 @@ type Message struct {
 	UpdatedAt int    `gorm:"column:updated_at" json:"-"`
 }
 
-type Msgrecord struct {
-	FromId      uint32 `json:"user_id"`
-	SessionType int8   `json:"session_type"`
-	ToId        string `json:"session_id"`
-	MsgIdBegin  uint32 `json:"msg_id_begin"`
-	MsgCnt      uint32 `json:"msg_cnt"`
-}
-
 func (t *Message) TableName() string {
 	return fmt.Sprintf("tbl_msg_%d", convert.RuneAccumulation(t.To)%16)
 }
 
-func GetMsgById(record *Msgrecord) ([]Message, error) {
+func GetMsgById(cid, mid, size string) ([]Message, error) {
 	var (
 		msgs []Message
 	)
 
-	err := db.Table((&Message{To: record.ToId}).TableName()).
-		Where("`to` = ? and msg_id <=? order by created_at desc, id desc limit ?", record.ToId, record.MsgIdBegin, record.MsgCnt).
+	err := db.Table((&Message{To: cid}).TableName()).
+		Where("`to` = ? and msg_id <=? order by created_at desc, id desc limit ?", cid, mid, size).
 		Scan(&msgs).Error
 	return msgs, err
 }

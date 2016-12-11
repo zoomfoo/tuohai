@@ -15,7 +15,6 @@ func newHTTPServer() *gin.Engine {
 	router.Use(console.Logger())
 	router.Use(AccessControlAllowOrigin())
 
-	router.OPTIONS("/", func(ctx *gin.Context) {})
 	version1 := router.Group("v1", auth.LoginAuth(Opts.AuthHost))
 	{
 		//列出IM常用的信息

@@ -206,6 +206,7 @@ func Group(url string) gin.HandlerFunc {
 		}
 
 		if ig {
+
 			var list []gin.H
 			for _, gm := range group.GroupMems {
 				u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", gm)})
@@ -321,9 +322,10 @@ func Sessions() gin.HandlerFunc {
 
 func Messages() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// sid := ctx.Param("sid")
-		record := &models.Msgrecord{}
-		msg, err := models.GetMsgById(record)
+		cid := ctx.Param("cid")
+		size := ctx.Query("size")
+		mid := ctx.Query("mid")
+		msg, err := models.GetMsgById(cid, mid, size)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, "未找到数据")
@@ -376,6 +378,8 @@ func Unreads() gin.HandlerFunc {
 	}
 }
 
+//创建普通群
+//models.NORMAL_GROUP
 func CreateGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -390,7 +394,7 @@ func CreateGroup() gin.HandlerFunc {
 			return
 		}
 
-		g, err := models.CreateGroup(user.Uid, name, strings.Split(member, ","))
+		g, err := models.CreateGroup(user.Uid, name, models.NORMAL_GROUP, strings.Split(member, ","))
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "远程服务器错误")
@@ -412,7 +416,7 @@ func CreateProjectGroup() gin.HandlerFunc {
 			return
 		}
 
-		g, err := models.CreateGroup(user.Uid, name, strings.Split(member, ","))
+		g, err := models.CreateGroup(user.Uid, name, models.Project_Group, strings.Split(member, ","))
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")
@@ -451,10 +455,10 @@ func CreateProjectGroup() gin.HandlerFunc {
 func GroupRename() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
-		newname := ctx.Param("newname")
+		newname := ctx.PostForm("name")
 		user := ctx.MustGet("user").(*auth.MainUser)
 		if gid == "" || newname == "" {
-			renderJSON(ctx, struct{}{}, 1, "无效的URL参数!")
+			renderJSON(ctx, struct{}{}, 1, "name 不能为空")
 			return
 		}
 

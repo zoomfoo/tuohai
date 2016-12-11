@@ -213,7 +213,7 @@ func GetGroupsByUid(uid string) ([]Group, error) {
 }
 
 //创建群√
-func CreateGroup(creator, gname string, members []string) (*Group, error) {
+func CreateGroup(creator, gname string, group_type GroupType, members []string) (*Group, error) {
 	var (
 		now = time.Now().Unix()
 	)
@@ -224,6 +224,7 @@ func CreateGroup(creator, gname string, members []string) (*Group, error) {
 	g.Membercnt = uint(len(members) + 1)
 	g.Creator = creator
 	g.Gname = gname
+	g.GType = group_type
 
 	resg := tx.Create(g)
 	if err := resg.Error; err != nil {

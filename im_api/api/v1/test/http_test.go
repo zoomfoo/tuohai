@@ -41,3 +41,8 @@ func TestRenameGroup(t *testing.T) {
 	buf.ReadFrom(res.Body)
 	t.Log(string(buf.Bytes()))
 }
+
+//解散群组
+func TestDismissGroup(t *testing.T) {
+
+}

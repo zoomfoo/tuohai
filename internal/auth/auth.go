@@ -28,7 +28,7 @@ func LoginAuth(host string) gin.HandlerFunc {
 			//每一个新的请求都会新创建Context
 			//所以Context类下面的key是不需要加锁的
 			//这里user可以放心使用
-			fmt.Println("++++++++++")
+			fmt.Println("用户id: ", user.Uid)
 			models.ValidAndCreate(&models.User{
 				Uuid:  user.Uid,
 				Uname: user.Nickname,
@@ -128,6 +128,8 @@ func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
 }
 
 //生成签名参数
+//params a=1212   b=2323   c=name
+//url 后面作为参数
 func SignStr(token string, params ...string) (session_token string) {
 	var (
 		par_str = strings.Join(params, "&")

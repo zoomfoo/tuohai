@@ -220,6 +220,7 @@ func IsGroupMember(gid, uid string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	fmt.Println("当前[", uid, "]是否在群中", res)
 	return res == 1, nil
 }
 
