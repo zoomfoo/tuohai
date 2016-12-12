@@ -142,6 +142,10 @@ func Groups() gin.HandlerFunc {
 				}
 				continue
 			}
+			//如果是项目群则过滤掉
+			if group.GType == models.Project_Group {
+				continue
+			}
 			groups = append(groups, *group)
 		}
 
