@@ -26,6 +26,7 @@ func GetMsgById(cid, mid, size string) ([]Message, error) {
 	var (
 		msgs []Message
 	)
+
 	fmt.Println("消息数据库表名称: ", fmt.Sprintf("tbl_msg_%d", convert.RuneAccumulation(cid)%16))
 	err := db.Table((&Message{To: cid}).TableName()).
 		Where("`to` = ? and msg_id <=? order by created_at desc, id desc limit ?", cid, mid, size).

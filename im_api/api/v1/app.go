@@ -329,6 +329,13 @@ func Messages() gin.HandlerFunc {
 		cid := ctx.Param("cid")
 		size := ctx.Query("size")
 		mid := ctx.Query("mid")
+		if mid == "" {
+			mid = "0"
+		}
+		if size == "" {
+			renderJSON(ctx, []int{}, 0, "size 不能为空!")
+			return
+		}
 		msg, err := models.GetMsgById(cid, mid, size)
 		if err != nil {
 			console.StdLog.Error(err)
