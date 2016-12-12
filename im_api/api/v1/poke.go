@@ -19,12 +19,9 @@ const addr = "127.0.0.1:5004"
 
 func ConfirmChuo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		chuoid, ok := ctx.GetPostForm("poke_id")
-		if !ok {
-			renderJSON(ctx, struct{}{}, 0, "chuoid缺失")
-			return
-		}
-		rcv, _ := ctx.GetPostForm("rcv") //默认是自己
+		chuoid := ctx.Param("pid")
+		user := ctx.MustGet("user").(*auth.MainUser)
+		rcv := user.Uid
 		fmt.Println(chuoid, rcv)
 		if err := models.ConfirmChuo(chuoid, rcv); err != nil {
 			renderJSON(ctx, struct{}{}, 0, "数据有误")
@@ -42,7 +39,7 @@ func AddChuo() gin.HandlerFunc {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		sender := user.Uid
 		cid, _ := ctx.GetPostForm("cid")
-		msg_id, _ := ctx.GetPostForm("msg_id")
+		msg_id, _ := ctx.GetPostForm("mid")
 		tos, ok := ctx.GetPostForm("cnee")
 		if !ok {
 			renderJSON(ctx, struct{}{}, 0, "必须提供to,以逗号分隔")
