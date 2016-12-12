@@ -146,12 +146,12 @@ func AddFriend() gin.HandlerFunc {
 		//通过手机号添加好友
 		if phone != "" {
 			fmt.Println("添加好友 手机号: ", phone)
-			users, _ := models.SelectUsers(&models.User{Phone: phone})
-			// if err != nil {
-			// 	console.StdLog.Error(err)
-			// 	renderJSON(ctx, []int{}, 1, "远程服务器错误")
-			// 	return
-			// }
+			users, err := models.SelectUsers(&models.User{Phone: phone})
+			if err != nil {
+				console.StdLog.Error(err)
+				renderJSON(ctx, []int{}, 1, "远程服务器错误")
+				return
+			}
 
 			if len(users) == 0 {
 				renderJSON(ctx, struct{}{}, 1, "未找到好友")
@@ -169,7 +169,12 @@ func AddFriend() gin.HandlerFunc {
 
 		//通过邮箱添加好友
 		if email != "" {
-			users, _ := models.SelectUsers(&models.User{Email: email})
+			users, err := models.SelectUsers(&models.User{Email: email})
+			if err != nil {
+				console.StdLog.Error(err)
+				renderJSON(ctx, []int{}, 1, "远程服务器错误")
+				return
+			}
 
 			if len(users) == 0 {
 				renderJSON(ctx, struct{}{}, 1, "未找到好友")
@@ -177,7 +182,6 @@ func AddFriend() gin.HandlerFunc {
 			}
 
 			res := addFriend(user, users[0].Uuid, way, attach)
-			fmt.Println("180", res)
 			if res == "" {
 				renderJSON(ctx, true)
 				return

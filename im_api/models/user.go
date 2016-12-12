@@ -85,8 +85,5 @@ func GetBatchUsers(uids []string) ([]User, error) {
 func SelectUsers(u *User) ([]User, error) {
 	var users []User
 	err := db.Table(u.TableName()).Where(u).Scan(&users).Error
-	if len(users) == 0 {
-		return nil, err
-	}
-	return users, nil
+	return users, err
 }
