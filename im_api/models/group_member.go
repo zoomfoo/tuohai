@@ -80,7 +80,7 @@ func GroupMemByUid(uid string) ([]GroupMember, error) {
 
 func AssociationGroups(uid string) ([]GroupMember, error) {
 	var mems []GroupMember
-	err := db.Table((&GroupMember{}).TableName()).Where("`member` = ?", uid).Scan(&mems).Error
+	err := db.Table((&GroupMember{}).TableName()).Where("`member` = ? and status = 0", uid).Scan(&mems).Error
 	return mems, err
 }
 
