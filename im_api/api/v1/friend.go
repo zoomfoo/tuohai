@@ -10,6 +10,7 @@ import (
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
 	"tuohai/internal/convert"
+	"tuohai/internal/util"
 	"tuohai/internal/uuid"
 )
 
@@ -133,10 +134,6 @@ func AddFriend() gin.HandlerFunc {
 			return
 		}
 
-		//判断是否是手机号
-
-		//判断是否是邮箱
-
 		//通过uid添加好友
 		if uid != "" {
 			res := addFriend(user, uid, way, attach)
@@ -148,6 +145,13 @@ func AddFriend() gin.HandlerFunc {
 			return
 		}
 		phone, email := "", ""
+
+		//判断是否是手机号
+		if util.ValidateMob(num) {
+			phone = num
+		}
+		fmt.Println(phone)
+		//判断是否是邮箱
 
 		//通过手机号添加好友
 		if phone != "" {

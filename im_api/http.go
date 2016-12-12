@@ -46,6 +46,7 @@ func newHTTPServer() *gin.Engine {
 			//移除群成员
 			groups.DELETE("/:gid/remove", v1.RemoveGroupMember())
 		}
+
 		//创建项目群
 		version1.POST("/project/groups", v1.CreateProjectGroup())
 		//获取团队群
