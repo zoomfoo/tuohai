@@ -45,7 +45,7 @@ func Friend(uid, fuid string) (*Relation, error) {
 
 func FriendSmallAndBig(uid, fid string) (*Relation, error) {
 	var rel Relation
-	small, big := convert.StringSort(uid, fid)
+	small, big := convert.StringSortByRune(uid, fid)
 	err := db.Find(&rel, "status = 0 and small_id = ? and big_id = ?", small, big).Error
 	return &rel, err
 }

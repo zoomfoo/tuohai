@@ -126,7 +126,7 @@ func Users(url string) gin.HandlerFunc {
 		var list []gin.H
 		for i, _ := range u {
 			rel, _ := models.FriendSmallAndBig(user.Uid, u[i].Uuid)
-
+			fmt.Println("获取好友rid", user.Uid, u[i].Uuid)
 			list = append(list, gin.H{
 				"uuid":   u[i].Uuid,
 				"name":   u[i].Uname,
