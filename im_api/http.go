@@ -78,6 +78,7 @@ func newHTTPServer() *gin.Engine {
 			// 获取戳的详情
 			poke.GET("/:pid", v1.GetChuoInfo())
 
+			//获取戳列表
 			poke.GET("", v1.GetChuoListFrom())
 			// 获取我发出
 			version1.GET("/poke/send", v1.GetChuoListFrom())
