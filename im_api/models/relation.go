@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	// "tuohai/internal/convert"
+	"tuohai/internal/convert"
 	"tuohai/internal/uuid"
 )
 
@@ -34,10 +34,19 @@ func Friends(uuid string) ([]Relation, error) {
 	return r, err
 }
 
+//uid用户id
+//fuid 是cid 或者是rid是关系id
 func Friend(uid, fuid string) (*Relation, error) {
 	var rel Relation
 	err := db.Find(&rel, "status = 0 and rid = ? and (small_id = ? or big_id = ?)", fuid, uid, uid).Error
 	fmt.Println("获取好友详细信息: ", rel)
+	return &rel, err
+}
+
+func FriendSmallAndBig(uid, fid string) (*Relation, error) {
+	var rel Relation
+	small, big := convert.StringSort(uid, fid)
+	err := db.Find(&rel, "status = 0 and small_id = ? and big_id = ?", small, big).Error
 	return &rel, err
 }
 

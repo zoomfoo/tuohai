@@ -124,13 +124,18 @@ func AddFriend() gin.HandlerFunc {
 		uid := ctx.PostForm("uuid")
 		attach := ctx.PostForm("attach")
 		way := ctx.PostForm("way")
-		phone := ctx.PostForm("phone")
-		email := ctx.PostForm("email")
+		num := ctx.PostForm("num")
+		fmt.Println(num)
+
 		user := ctx.MustGet("user").(*auth.MainUser)
 		if user.Uid == uid {
 			renderJSON(ctx, struct{}{}, 1, "不允许添加自己为好友")
 			return
 		}
+
+		//判断是否是手机号
+
+		//判断是否是邮箱
 
 		//通过uid添加好友
 		if uid != "" {
@@ -142,6 +147,7 @@ func AddFriend() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, res)
 			return
 		}
+		phone, email := "", ""
 
 		//通过手机号添加好友
 		if phone != "" {

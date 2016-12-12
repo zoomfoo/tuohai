@@ -14,7 +14,7 @@ type User struct {
 	Email  string `gorm:"column:email" json:"email"`
 	Avatar string `gorm:"-" json:"avatar"`
 	Desc   string `gorm:"column:description" json:"desc"` //个性签名
-	Token  string `gorm:"column:token" json:"token"`
+	Token  string `gorm:"column:token" json:"-"`
 }
 
 func (t *User) TableName() string {

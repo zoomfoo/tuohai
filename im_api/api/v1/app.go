@@ -109,8 +109,11 @@ func PutProfile(url string) gin.HandlerFunc {
 	}
 }
 
+//批量获取用户信息
+//如果与操作者不是好友cid返回空
 func Users(url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		user := ctx.MustGet("user").(*auth.MainUser)
 		token := ctx.MustGet("token").(string)
 		ids := ctx.Query("ids")
 		u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", ids)})
@@ -119,7 +122,27 @@ func Users(url string) gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
 			return
 		}
-		renderJSON(ctx, u)
+
+		var list []gin.H
+		for i, _ := range u {
+			rel, _ := models.FriendSmallAndBig(user.Uid, u[i].Uuid)
+
+			list = append(list, gin.H{
+				"uuid":   u[i].Uuid,
+				"name":   u[i].Uname,
+				"phone":  u[i].Phone,
+				"email":  u[i].Email,
+				"avatar": u[i].Avatar,
+				"desc":   u[i].Desc,
+				"cid":    rel.Rid,
+			})
+		}
+
+		if len(list) == 0 {
+			renderJSON(ctx, []int{})
+			return
+		}
+		renderJSON(ctx, list)
 	}
 }
 
