@@ -96,7 +96,7 @@ func SyncFriends() error {
 			continue
 		}
 
-		small, big := convert.StringSort(user.Uuid, team.Uuid)
+		small, big := convert.StringSortByRune(user.Uuid, team.Uuid)
 		fmt.Println(small, big, friend.Id)
 		if err := SyncCreateFriend(small, big, friend.Id); err != nil {
 			fmt.Println(err)

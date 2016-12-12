@@ -236,7 +236,7 @@ func DelFriend() gin.HandlerFunc {
 			return
 		}
 
-		err := models.DelRelation(convert.StringSort(user.Uid, uid))
+		err := models.DelRelation(convert.StringSortByRune(user.Uid, uid))
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
