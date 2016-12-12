@@ -66,9 +66,10 @@ func Upload() gin.HandlerFunc {
 func Files() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		//http获取用户相关的所有toid
-		tos := []string{""}
+		cid := ctx.Query("cid")
+		tos := []string{cid}
 		//获得to_id 查询文件
-		info, err := models.GetFilesInfo(tos, models.FileTypeImage)
+		info, err := models.GetFilesInfo(tos)
 		if err != nil {
 			ctx.String(200, "%s", "no")
 			return

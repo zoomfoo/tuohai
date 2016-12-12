@@ -15,7 +15,7 @@ import (
 	httplib "tuohai/internal/http"
 )
 
-func LoginAuth(host string) gin.HandlerFunc {
+func LoginAuth(host string, params ...int) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token := ctx.Query("session_token")
 		url := GetUserInfoUrl(token, host)
@@ -29,11 +29,13 @@ func LoginAuth(host string) gin.HandlerFunc {
 			//所以Context类下面的key是不需要加锁的
 			//这里user可以放心使用
 			fmt.Println("用户id: ", user.Uid)
-			models.ValidAndCreate(&models.User{
-				Uuid:  user.Uid,
-				Uname: user.Nickname,
-				Token: token,
-			})
+			if len(params) == 0 {
+				models.ValidAndCreate(&models.User{
+					Uuid:  user.Uid,
+					Uname: user.Nickname,
+					Token: token,
+				})
+			}
 			ctx.Set("user", user)
 			ctx.Set("token", token)
 			ctx.Next()
