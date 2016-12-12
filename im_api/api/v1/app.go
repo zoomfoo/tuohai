@@ -374,6 +374,7 @@ func RemoveSession() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		sid := ctx.Param("sid")
 		user := ctx.MustGet("user").(*auth.MainUser)
+		fmt.Println("移除sessionid: ", sid)
 		//清除session
 		if err := models.RemoveSession(sid, user.Uid); err != nil {
 			console.StdLog.Error(err)
