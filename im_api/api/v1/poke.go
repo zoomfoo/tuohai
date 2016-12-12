@@ -11,6 +11,7 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
 	"tuohai/internal/auth"
+	"tuohai/internal/console"
 	msgsender "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
 )
@@ -24,10 +25,11 @@ func ConfirmChuo() gin.HandlerFunc {
 		rcv := user.Uid
 		fmt.Println(chuoid, rcv)
 		if err := models.ConfirmChuo(chuoid, rcv); err != nil {
+			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 0, "数据有误")
 			return
 		}
-		renderJSON(ctx, struct{}{})
+		renderJSON(ctx, true)
 		return
 	}
 }
@@ -61,6 +63,7 @@ func AddChuo() gin.HandlerFunc {
 		}
 		urgent, err := strconv.Atoi(ur)
 		if err != nil {
+			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 0, "urgent参数非法")
 			return
 		}
@@ -77,11 +80,12 @@ func AddChuo() gin.HandlerFunc {
 		}
 		t.Chuoid = genChuoid(t)
 		if err := models.AddChuo(t, to); err != nil {
+			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 0, "处理错误")
 			return
 		}
 		go sendChuoEvent(t, to)
-		renderJSON(ctx, struct{}{})
+		renderJSON(ctx, true)
 		return
 	}
 }
@@ -127,6 +131,7 @@ func GetChuoListFrom() gin.HandlerFunc {
 		uid := ctx.Param("uid")
 		clist, err := models.GetChuoFrom(uid)
 		if err != nil {
+			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, "query error")
 			return
 		}
@@ -141,6 +146,7 @@ func GetChuoListRcv() gin.HandlerFunc {
 		uid := ctx.Param("uid")
 		clist, err := models.GetChuoRcv(uid)
 		if err != nil {
+			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, "query error")
 			return
 		}
@@ -155,6 +161,7 @@ func GetChuoInfo() gin.HandlerFunc {
 		chuoid := ctx.Param("chuoid")
 		clist, err := models.GetChuo(chuoid)
 		if err != nil {
+			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, "query error")
 			return
 		}
