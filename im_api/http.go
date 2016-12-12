@@ -100,7 +100,7 @@ func newHTTPServer() *gin.Engine {
 
 		apply := version1.Group("apply")
 		{
-			apply.GET("/friends", v1.ApplyFriends())
+			apply.GET("/friends", v1.ApplyFriends(Opts.AuthHost))
 			apply.PUT("/friends", v1.AgreeApplyFriend())
 		}
 

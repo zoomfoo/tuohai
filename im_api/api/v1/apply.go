@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"fmt"
+
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
 	"tuohai/internal/auth"
@@ -8,9 +10,10 @@ import (
 	"tuohai/internal/convert"
 )
 
-func ApplyFriends() gin.HandlerFunc {
+func ApplyFriends(url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		main_user := ctx.MustGet("user").(*auth.MainUser)
+		token := ctx.MustGet("token").(string)
 		apply, err := models.FriendApplys(main_user.Uid)
 		if err != nil {
 			console.StdLog.Error(err)
@@ -18,7 +21,36 @@ func ApplyFriends() gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, apply)
+		var list []gin.H
+		for i, _ := range apply {
+			users, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", apply[i].ApplyUid)})
+			if err != nil {
+				console.StdLog.Error(err)
+			}
+			avatar, name := "", ""
+			if len(users) != 0 {
+				name = users[0].Uname
+				avatar = users[0].Avatar
+			}
+
+			list = append(list, gin.H{
+				"id":     apply[i].Fid,
+				"uuid":   apply[i].ApplyUid,
+				"way":    apply[i].Way,
+				"attach": apply[i].Attach,
+				"status": apply[i].Attach,
+				"avatar": avatar,
+				"name":   name,
+				"time":   apply[i].LaunchTime,
+			})
+		}
+
+		if len(list) == 0 {
+			renderJSON(ctx, []int{})
+			return
+		}
+
+		renderJSON(ctx, list)
 	}
 }
 
