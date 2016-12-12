@@ -1,6 +1,7 @@
 package im_api
 
 import (
+	"fmt"
 	"net/http/pprof"
 
 	"gopkg.in/gin-gonic/gin.v1"
@@ -101,7 +102,6 @@ func newHTTPServer() *gin.Engine {
 		{
 			apply.GET("/friends", v1.ApplyFriends())
 			apply.PUT("/friends", v1.AgreeApplyFriend())
-			apply.OPTIONS("/friends", func(ctx *gin.Context) {})
 		}
 
 		//获取所有未读消息
@@ -128,6 +128,11 @@ func AccessControlAllowOrigin() gin.HandlerFunc {
 		ctx.Writer.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx.Writer.Header().Add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
 		ctx.Writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Depth, User-Agent, X-File-Size, X-Requested-With, X-Requested-By, If-Modified-Since, X-File-Name, Cache-Control, Token, session_token")
+		fmt.Println(ctx.Request.Method)
+		if ctx.Request.Method == "OPTIONS" {
+			ctx.JSON(200, "ok")
+			ctx.Abort()
+		}
 		ctx.Next()
 	}
 }
