@@ -10,6 +10,7 @@ import (
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
+	"tuohai/internal/auth"
 	msgsender "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
 )
@@ -37,7 +38,9 @@ func ConfirmChuo() gin.HandlerFunc {
 // 戳一下业务处理
 func AddChuo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		sender, _ := ctx.GetPostForm("sender") //戳一下本人
+		// sender, _ := ctx.GetPostForm("sender") //戳一下本人
+		user := ctx.MustGet("user").(*auth.MainUser)
+		sender := user.Uid
 		cid, _ := ctx.GetPostForm("cid")
 		msg_id, _ := ctx.GetPostForm("msg_id")
 		tos, ok := ctx.GetPostForm("cnee")
