@@ -140,20 +140,20 @@ func AddFriend() gin.HandlerFunc {
 				return
 			}
 			renderJSON(ctx, struct{}{}, 1, res)
+			return
 		}
 
 		//通过手机号添加好友
 		if phone != "" {
-			fmt.Println(phone)
-			users, err := models.SelectUsers(&models.User{Phone: phone})
-			if err != nil {
-				console.StdLog.Error(err)
-				renderJSON(ctx, []int{}, 1, "远程服务器错误")
-				return
-			}
+			fmt.Println("添加好友 手机号: ", phone)
+			users, _ := models.SelectUsers(&models.User{Phone: phone})
+			// if err != nil {
+			// 	console.StdLog.Error(err)
+			// 	renderJSON(ctx, []int{}, 1, "远程服务器错误")
+			// 	return
+			// }
 
 			if len(users) == 0 {
-				console.StdLog.Error(err)
 				renderJSON(ctx, struct{}{}, 1, "未找到好友")
 				return
 			}
@@ -164,36 +164,33 @@ func AddFriend() gin.HandlerFunc {
 				return
 			}
 			renderJSON(ctx, struct{}{}, 1, res)
+			return
 		}
 
 		//通过邮箱添加好友
 		if email != "" {
-			users, err := models.SelectUsers(&models.User{Email: email})
-			if err != nil {
-				console.StdLog.Error(err)
-				renderJSON(ctx, []int{}, 1, "远程服务器错误")
-				return
-			}
+			users, _ := models.SelectUsers(&models.User{Email: email})
 
 			if len(users) == 0 {
-				console.StdLog.Error(err)
 				renderJSON(ctx, struct{}{}, 1, "未找到好友")
 				return
 			}
 
 			res := addFriend(user, users[0].Uuid, way, attach)
+			fmt.Println("180", res)
 			if res == "" {
 				renderJSON(ctx, true)
 				return
 			}
 			renderJSON(ctx, struct{}{}, 1, res)
+			return
 		}
 	}
 }
 
 func addFriend(user *auth.MainUser, uid, way, attach string) string {
 	fa := &models.FriendApply{
-		Id:         uuid.NewV4().StringMd5(),
+		Fid:        uuid.NewV4().StringMd5(),
 		ApplyUid:   user.Uid,
 		TargetUid:  uid,
 		Way:        models.ApplyWay(convert.StrTo(way).MustInt()),

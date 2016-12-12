@@ -28,10 +28,17 @@ func GetMsgById(cid, mid, size string) ([]Message, error) {
 	)
 
 	fmt.Println("消息数据库表名称: ", fmt.Sprintf("tbl_msg_%d", convert.RuneAccumulation(cid)%16))
-	err := db.Table((&Message{To: cid}).TableName()).
-		Where("`to` = ? and `msg_id` <= ?", cid, mid).Limit(size).Order("msg_id desc").
-		Scan(&msgs).Error
-	return msgs, err
+	if mid != "" && mid != "0" {
+		err := db.Table((&Message{To: cid}).TableName()).
+			Where("`to` = ? and `msg_id` <= ?", cid, mid).Limit(size).Order("msg_id desc").
+			Scan(&msgs).Error
+		return msgs, err
+	} else {
+		err := db.Table((&Message{To: cid}).TableName()).
+			Where("`to` = ?", cid).Limit(size).Order("msg_id desc").
+			Scan(&msgs).Error
+		return msgs, err
+	}
 }
 
 func GetLastHistory(to string) (*Message, error) {

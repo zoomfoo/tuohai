@@ -20,7 +20,8 @@ const (
 )
 
 type FriendApply struct {
-	Id          string    `gorm:"column:id" json:"id"`
+	Id          int       `gorm:"column:id" json:"-"`
+	Fid         string    `gorm:"column:fid" json:"id"`
 	ApplyUid    string    `gorm:"column:apply_uid" json:"uuid"`
 	TargetUid   string    `gorm:"column:target_uid" json:"-"`
 	Way         ApplyWay  `gorm:"column:way" json:"way"`
@@ -35,7 +36,7 @@ func (fa *FriendApply) TableName() string {
 }
 
 func (fa *FriendApply) ValidationField() string {
-	if fa.Id == "" {
+	if fa.Fid == "" {
 		return "id 不能为空"
 	}
 
@@ -81,7 +82,7 @@ func SaveFriendApply(apply *FriendApply) error {
 		tx.Rollback()
 		return err
 	}
-	if err := saveChennelToRedis(apply.Id, []string{apply.ApplyUid, apply.TargetUid}); err != nil {
+	if err := saveChennelToRedis(apply.Fid, []string{apply.ApplyUid, apply.TargetUid}); err != nil {
 		tx.Rollback()
 		return err
 	}

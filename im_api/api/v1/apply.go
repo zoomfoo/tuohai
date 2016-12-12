@@ -32,7 +32,7 @@ func AgreeApplyFriend() gin.HandlerFunc {
 			return
 		}
 		status_int := convert.StrTo(status).MustInt()
-		err := models.SaveFriendApply(&models.FriendApply{Id: id, Status: models.ApplyType(status_int)})
+		err := models.SaveFriendApply(&models.FriendApply{Fid: id, Status: models.ApplyType(status_int)})
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
