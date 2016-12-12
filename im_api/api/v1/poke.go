@@ -128,7 +128,10 @@ func sendChuoEvent(t *models.TblChuoyixiaMeta, tos []string) error {
 // 获取戳列表：我发出的
 func GetChuoListFrom() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		uid := ctx.Param("uid")
+		// uid := ctx.Param("uid")
+		user := ctx.MustGet("user").(*auth.MainUser)
+		uid := user.Uid
+
 		clist, err := models.GetChuoFrom(uid)
 		if err != nil {
 			console.StdLog.Error(err)
@@ -143,7 +146,9 @@ func GetChuoListFrom() gin.HandlerFunc {
 // 获取戳列表：我收到的
 func GetChuoListRcv() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		uid := ctx.Param("uid")
+		// uid := ctx.Param("uid")
+		user := ctx.MustGet("user").(*auth.MainUser)
+		uid := user.Uid
 		clist, err := models.GetChuoRcv(uid)
 		if err != nil {
 			console.StdLog.Error(err)
