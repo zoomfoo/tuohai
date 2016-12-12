@@ -101,6 +101,7 @@ func newHTTPServer() *gin.Engine {
 		{
 			apply.GET("/friends", v1.ApplyFriends())
 			apply.PUT("/friends", v1.AgreeApplyFriend())
+			apply.OPTIONS("/friends", func(ctx *gin.Context) {})
 		}
 
 		//获取所有未读消息
