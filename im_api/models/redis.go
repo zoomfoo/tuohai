@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+	"tuohai/internal/console"
 )
 
 func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
@@ -43,123 +43,6 @@ func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
 	return cc, res, nil
 }
 
-func SimpleUnread(userid, sid int) int {
-	return SimpleUnreads(userid)[strconv.Itoa(sid)]
-}
-
-func SimpleUnreads(userid int) map[string]int {
-	c := rpool.Get()
-	defer c.Close()
-
-	if _, err := c.Do("select", "1"); err != nil {
-		log.Println(err)
-		return nil
-	}
-
-	if val, err := redis.IntMap(c.Do("hgetall", "unread_"+strconv.Itoa(userid))); err != nil {
-		log.Println(err)
-		return map[string]int{}
-	} else {
-		return val
-	}
-}
-
-func GroupUnread(uid, gid int) int {
-	c := rpool.Get()
-	defer c.Close()
-
-	if _, err := c.Do("select", "1"); err != nil {
-		log.Println(err)
-		return 0
-	}
-	//获取群所有消息
-	gkey := fmt.Sprintf("%d_im_group_msg", gid)
-	v, err := redis.IntMap(c.Do("hgetall", gkey))
-	if err != nil {
-		log.Println(err)
-		return 0
-	}
-
-	if count, ok := v["count"]; ok {
-		//获取已读的消息
-		ugkey := fmt.Sprintf("%d_%d_im_user_group", uid, gid)
-		ug, err := redis.IntMap(c.Do("hgetall", ugkey))
-		if err != nil {
-			log.Println(err)
-			return 0
-		}
-
-		if _, ok := ug["count"]; !ok {
-			return 0
-		}
-
-		return count - ug["count"]
-	} else {
-		return 0
-	}
-}
-
-//删除uid 的pid消息
-func CleanSimpleAlRead(uid, pid int) (int, error) {
-	c := rpool.Get()
-	defer c.Close()
-
-	if _, err := c.Do("select", "1"); err != nil {
-		log.Println(err)
-		return 0, err
-	}
-
-	if res, err := redis.Int(c.Do("hdel", "unread_"+strconv.Itoa(uid), pid)); err != nil {
-		return 0, err
-	} else {
-		return res, nil
-	}
-}
-
-func CleanGroupAlRead(uid, gid int) (bool, error) {
-	c := rpool.Get()
-	defer c.Close()
-
-	if _, err := c.Do("select", "1"); err != nil {
-		log.Println(err)
-		return false, err
-	}
-
-	//获取群所有消息
-	gkey := fmt.Sprintf("%d_im_group_msg", gid)
-	v, err := redis.IntMap(c.Do("hgetall", gkey))
-	if err != nil {
-		log.Println(err)
-		return false, err
-	}
-
-	if count, ok := v["count"]; ok {
-		//获取已读的消息
-		ugkey := fmt.Sprintf("%d_%d_im_user_group", uid, gid)
-		ug, err := redis.IntMap(c.Do("hgetall", ugkey))
-		if err != nil {
-			log.Println(err)
-			return false, err
-		}
-
-		if _, ok := ug["count"]; !ok {
-			log.Println("ug[count] == nil")
-			return false, nil
-		}
-
-		if ok, err := redis.String(c.Do("hmset", ugkey, "count", count)); err != nil {
-			return false, err
-		} else if ok == "OK" {
-			return true, nil
-		} else {
-			return false, err
-		}
-
-	} else {
-		return false, nil
-	}
-}
-
 func Subscribers(m chan redis.Message, key string) {
 	c := rpool.Get()
 	defer c.Close()
@@ -186,20 +69,12 @@ func Subscribers(m chan redis.Message, key string) {
 func GetGroupMem(gid string) ([]string, error) {
 	c := rpool.Get()
 	defer c.Close()
-	if _, err := c.Do("select", "5"); err != nil {
-		return []string{}, err
-	}
-
 	return redis.Strings(c.Do("hgetall", fmt.Sprintf("channel:member:%s", gid)))
 }
 
 func QuitGroup(gid string, member []string) (bool, error) {
 	c := rpool.Get()
 	defer c.Close()
-
-	if _, err := c.Do("select", "5"); err != nil {
-		return false, err
-	}
 
 	var args = []interface{}{fmt.Sprintf("channel:member:%s", gid)}
 	for _, m := range member {
@@ -273,4 +148,26 @@ func SaveBotInfo(key string, info map[string]interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func ChennelUnreadNum(cid, uid string) int {
+	c := rpool.Get()
+	defer c.Close()
+	res, err := redis.Int(c.Do("hmget", "cnt:unread"+cid, uid))
+	if err != nil {
+		console.StdLog.Error(err)
+		return 0
+	}
+	return res
+}
+
+func CleanSessionUnread(cid, uid string) bool {
+	c := rpool.Get()
+	defer c.Close()
+	_, err := c.Do("hdel", "cnt:unread"+cid, uid)
+	if err != nil {
+		console.StdLog.Error(err)
+		return false
+	}
+	return true
 }

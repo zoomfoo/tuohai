@@ -74,3 +74,8 @@ func TestAddFriend(t *testing.T) {
 
 	t.Log(buf.String())
 }
+
+//戳一下
+func TestPoke() {
+
+}

@@ -337,7 +337,7 @@ func Sessions() gin.HandlerFunc {
 					"time":     history.CreatedAt,
 				},
 				"type":       session.SType,
-				"unread_cnt": 0,
+				"unread_cnt": models.ChennelUnreadNum(session.To, user.Uid),
 			})
 		}
 		if len(list) == 0 {
@@ -385,6 +385,19 @@ func RemoveSession() gin.HandlerFunc {
 
 		//删除未读消息数
 		renderJSON(ctx, true)
+	}
+}
+
+func CleanSessionUnread() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := ctx.MustGet("user").(*auth.MainUser)
+		cid := ctx.PostForm("cid")
+		uid := user.Uid
+		if models.CleanSessionUnread(cid, uid) {
+			renderJSON(ctx, true)
+		} else {
+			renderJSON(ctx, false)
+		}
 	}
 }
 

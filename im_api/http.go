@@ -62,15 +62,16 @@ func newHTTPServer() *gin.Engine {
 			sessions.GET("", v1.Sessions())
 			//删除session no
 			sessions.DELETE("/:sid", v1.RemoveSession())
-			//获取消息历史记录 √
-			//消息已读确认 这个read 在restfull中为名词
-			sessions.PUT("/:sid/read", v1.MessageRead())
+			sessions.DELETE("/:sid/unread", v1.CleanSessionUnread())
 		}
 
 		//消息
 		messages := version1.Group("messages")
 		{
+			//获取消息历史记录 √
 			messages.GET("/:cid", v1.Messages())
+			//消息已读确认 这个read 在restfull中为名词
+			messages.PUT("/:cid/read", v1.MessageRead())
 		}
 
 		//戳一下
@@ -111,6 +112,7 @@ func newHTTPServer() *gin.Engine {
 
 		//消息已读确认
 		version1.GET("/unreads", v1.Unreads())
+
 		//获取用户信息
 		version1.GET("/user/:uid", v1.UserInfo())
 		//获取好友列表
