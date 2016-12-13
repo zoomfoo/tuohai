@@ -31,7 +31,37 @@ func ApplyFriends(url string) gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, list)
+		renderJSON(ctx, gin.H{
+			"list":  list,
+			"total": models.FriendApplysCount(main_user.Uid, true),
+		})
+	}
+}
+
+func UnApplyFriends(url string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		main_user := ctx.MustGet("user").(*auth.MainUser)
+		token := ctx.MustGet("token").(string)
+		pageindex, _ := strconv.Atoi(ctx.Param("pageindex"))
+		pagesize, _ := strconv.Atoi(ctx.Param("pagesize"))
+
+		apply, err := models.FriendApplys(main_user.Uid, false, pageindex, pagesize)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			return
+		}
+
+		list := RenderApplyFriends(apply, token, url)
+		if len(list) == 0 {
+			renderJSON(ctx, []int{})
+			return
+		}
+
+		renderJSON(ctx, gin.H{
+			"list":  list,
+			"total": models.FriendApplysCount(main_user.Uid, false),
+		})
 	}
 }
 
@@ -60,30 +90,6 @@ func RenderApplyFriends(apply []models.FriendApply, token, url string) []gin.H {
 		})
 	}
 	return list
-}
-
-func UnApplyFriends(url string) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		main_user := ctx.MustGet("user").(*auth.MainUser)
-		token := ctx.MustGet("token").(string)
-		pageindex, _ := strconv.Atoi(ctx.Param("pageindex"))
-		pagesize, _ := strconv.Atoi(ctx.Param("pagesize"))
-
-		apply, err := models.FriendApplys(main_user.Uid, false, pageindex, pagesize)
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
-			return
-		}
-
-		list := RenderApplyFriends(apply, token, url)
-		if len(list) == 0 {
-			renderJSON(ctx, []int{})
-			return
-		}
-
-		renderJSON(ctx, list)
-	}
 }
 
 func AgreeApplyFriend() gin.HandlerFunc {

@@ -1,7 +1,7 @@
 package models
 
 import (
-// "github.com/garyburd/redigo/redis"
+	"tuohai/internal/console"
 )
 
 type ApplyType int8
@@ -82,10 +82,32 @@ func FriendApplys(uid string, is bool, pageindex, pagesize int) ([]FriendApply, 
 
 	if pageindex != 0 && pagesize != 0 {
 		pageindex = (pageindex - 1) * pagesize
+	} else {
+		err := db.Where("target_uid = ? and status in (?)", uid, status).Find(&applys).Error
+		return applys, err
 	}
 
 	err := db.Offset(pageindex).Limit(pagesize).Where("target_uid = ? and status in (?)", uid, status).Find(&applys).Error
 	return applys, err
+}
+
+//is=true 已经处理
+//is=false 未处理
+func FriendApplysCount(uid string, is bool) int {
+	var total int
+	var applys []FriendApply
+	var status []int
+	if is {
+		status = []int{1, 2}
+	} else {
+		status = []int{0}
+	}
+	err := db.Where("target_uid = ? and status in (?)", uid, status).Find(&applys).Count(&total).Error
+	if err != nil {
+		console.StdLog.Error(err)
+		return 0
+	}
+	return total
 }
 
 //
