@@ -546,7 +546,7 @@ func DismissGroup() gin.HandlerFunc {
 //添加群成员
 func AddGroupMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
+		ids := strings.Split(ctx.Request.FormValue("member"), ",")
 		gid := ctx.Param("gid")
 		user := ctx.MustGet("user").(*auth.MainUser)
 		if len(ids) == 0 {
