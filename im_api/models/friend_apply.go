@@ -69,9 +69,22 @@ func FriendApplyById(id string) (*FriendApply, error) {
 }
 
 //获取自己的好友申请列表
-func FriendApplys(uid string) ([]FriendApply, error) {
+//is=true 已经处理
+//is=false 未处理
+func FriendApplys(uid string, is bool, pageindex, pagesize int) ([]FriendApply, error) {
 	var applys []FriendApply
-	err := db.Find(&applys, "target_uid = ?", uid).Error
+	var status []int
+	if is {
+		status = []int{1, 2}
+	} else {
+		status = []int{0}
+	}
+
+	if pageindex != 0 && pagesize != 0 {
+		pageindex = (pageindex - 1) * pagesize
+	}
+
+	err := db.Offset(pageindex).Limit(pagesize).Where("target_uid = ? and status in (?)", uid, status).Find(&applys).Error
 	return applys, err
 }
 

@@ -106,7 +106,9 @@ func newHTTPServer() *gin.Engine {
 		apply := version1.Group("apply")
 		{
 			//获得好友申请列表
-			apply.GET("/friends", v1.ApplyFriends(Opts.AuthHost))
+			apply.GET("/friends/is/:pageindex/:pagesize", v1.ApplyFriends(Opts.AuthHost))
+			apply.GET("/friends/not/:pageindex/:pagesize", v1.UnApplyFriends(Opts.AuthHost))
+
 			apply.PUT("/friends", v1.AgreeApplyFriend())
 		}
 

@@ -79,7 +79,7 @@ func TestAddFriend(t *testing.T) {
 
 //获取用户申请列表
 func TestApplyFriends(t *testing.T) {
-	api := URI + "/v1/apply/friends"
+	api := URI + "/v1/apply/friends/is/1/100"
 	req, _ := http.NewRequest("GET", api, nil)
 
 	req.Header.Add("session_token", "b9hvLB7RFDQ85vC9TcT77W5t635a3945b2241400")
