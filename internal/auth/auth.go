@@ -17,7 +17,12 @@ import (
 
 func LoginAuth(host string, params ...int) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		token := ctx.Query("session_token")
+		token := ""
+		token = ctx.Request.Header.Get("session_token")
+		if token == "" {
+			token = ctx.Query("session_token")
+		}
+
 		url := GetUserInfoUrl(token, host)
 		if user, err := ValidationToken(url); err != nil || user == nil {
 			ctx.Abort()
