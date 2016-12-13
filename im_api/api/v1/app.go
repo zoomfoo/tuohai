@@ -423,7 +423,14 @@ func MessageRead() gin.HandlerFunc {
 
 func Unreads() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		cid := ctx.Param("cid")
+		user := ctx.MustGet("user").(*auth.MainUser)
+		if models.CleanSessionUnread(cid, user.Uid) {
+			renderJSON(ctx, true)
+		} else {
+			renderJSON(ctx, false)
+		}
+		return
 	}
 }
 

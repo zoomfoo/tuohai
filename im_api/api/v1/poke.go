@@ -162,6 +162,7 @@ func GetChuoListFrom(url string) gin.HandlerFunc {
 
 		if len(list) == 0 {
 			renderJSON(ctx, []int{})
+			return
 		}
 		renderJSON(ctx, list)
 	}
