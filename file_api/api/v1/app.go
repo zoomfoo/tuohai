@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
@@ -26,6 +28,12 @@ func Upload() gin.HandlerFunc {
 		cid := ctx.PostForm("cid")
 		user := ctx.MustGet("user").(*auth.MainUser)
 		creator := user.Uid
+		height, _ := strconv.Atoi(ctx.PostForm("h"))
+		width, _ := strconv.Atoi(ctx.PostForm("w"))
+		x, _ := strconv.Atoi(ctx.PostForm("x"))
+		y, _ := strconv.Atoi(ctx.PostForm("y"))
+		fmt.Println("参数:  (h, w, x, y) ", height, width, x, y)
+
 		if creator == "" || cid == "" {
 			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "创建者或者cid不允许为空"})
 			return
@@ -41,13 +49,25 @@ func Upload() gin.HandlerFunc {
 			To:       cid,
 			Name:     h.Filename,
 			Size:     len(buf.Bytes()),
-			Type:     0,
 			Ext:      suffix,
 			Category: h.Header.Get("Content-Type"),
 			Meta:     nil,
 			Creator:  creator,
 			Updated:  time.Now().Unix(),
 			Created:  time.Now().Unix(),
+		}
+
+		if IsImg(finfo.Category) {
+			finfo.Meta = &models.Image{
+				Id:         finfo.Id,
+				ColorModel: "",
+				Height:     height,
+				Width:      width,
+				Format:     "",
+				Updated:    time.Now().Unix(),
+				Created:    time.Now().Unix(),
+			}
+			finfo.Type = models.FileTypeImage
 		}
 
 		if err := models.WriteFileToDB(finfo, file.UploadFile(suffix, buf)); err != nil {
@@ -88,4 +108,12 @@ func renderJSON(ctx *gin.Context, json interface{}, err_status ...interface{}) {
 		ctx.JSON(http.StatusOK, gin.H{"code": err_status[0], "msg": err_status[1], "data": json})
 		break
 	}
+}
+
+func IsImg(filename string) bool {
+	names := strings.Split(filename, "/")
+	if len(names) == 0 {
+		return false
+	}
+	return names[0] == "image"
 }

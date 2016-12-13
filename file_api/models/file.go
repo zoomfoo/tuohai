@@ -31,6 +31,17 @@ type FileInfo struct {
 }
 
 type Image struct {
+	Id         string `gorm:"column:id"`
+	ColorModel string `gorm:"column:color_model"`
+	Height     int    `gorm:"column:height"`
+	Width      int    `gorm:"column:width"`
+	Format     string `gorm:"column:format"`
+	Updated    int64  `gorm:"column:updated"`
+	Created    int64  `gorm:"column:created"`
+}
+
+func (img *Image) TableName() string {
+	return "image"
 }
 
 func (file *FileInfo) TableName() string {
@@ -86,6 +97,14 @@ func WriteFileToDB(file *FileInfo, transact TransactHandle) error {
 		tx.Rollback()
 		return err
 	}
+
+	if file.Meta != nil {
+		if err := tx.Create(file.Meta).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
 	return tx.Commit().Error
 }
 
