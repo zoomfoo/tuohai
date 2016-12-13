@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"testing"
 )
 
 const (
-	url = "http://127.0.0.1:10011"
+	URI = "http://127.0.0.1:10011"
 )
 
 // /v1/groups?session_token=202cb962ac59075b964b07152d234b71
 func TestGroups(t *testing.T) {
-	u := fmt.Sprintf("%s/v1/groups?session_token=202cb962ac59075b964b07152d234b71", url)
+	u := fmt.Sprintf("%s/v1/groups?session_token=202cb962ac59075b964b07152d234b71", URI)
 	res, err := http.Get(u)
 	if err != nil {
 		t.Error(err)
@@ -27,7 +28,7 @@ func TestGroups(t *testing.T) {
 }
 
 func TestRenameGroup(t *testing.T) {
-	u := fmt.Sprintf("%s/v1/groups/g_xdfed12138/rename/zhoujielunnnnn?session_token=202cb962ac59075b964b07152d234b71", url)
+	u := fmt.Sprintf("%s/v1/groups/g_xdfed12138/rename/zhoujielunnnnn?session_token=202cb962ac59075b964b07152d234b71", URI)
 	req, err := http.NewRequest("PUT", u, nil)
 	if err != nil {
 		t.Error(err)
@@ -52,15 +53,15 @@ func TestDismissGroup(t *testing.T) {
 
 //添加好友
 func TestAddFriend(t *testing.T) {
-	api := url + "/v1/friends?session_token=QJ2NvhcWj8N2Hek4FY5jg9G80cbc5c28796cebd7"
+	api := URI + "/v1/friends?session_token=QJ2NvhcWj8N2Hek4FY5jg9G80cbc5c28796cebd7"
 
-	var v url.Values
+	v := make(url.Values)
 	v.Add("uuid", "94de7d8b6a2bf757")
 	v.Add("attach", "asdfasdfas")
 	v.Add("way", "0")
 
-	payload := &bytes.Buffer{}
-	buf.WriteString(v.Encode())
+	payload := strings.NewReader(v.Encode())
+	buf := &bytes.Buffer{}
 
 	req, _ := http.NewRequest("POST", api, payload)
 
@@ -69,9 +70,7 @@ func TestAddFriend(t *testing.T) {
 	res, _ := http.DefaultClient.Do(req)
 
 	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
+	buf.ReadFrom(res.Body)
 
-	fmt.Println(res)
-	fmt.Println(string(body))
-
+	t.Log(buf.String())
 }

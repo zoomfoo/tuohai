@@ -238,7 +238,7 @@ func DelFriend() gin.HandlerFunc {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		uid := ctx.PostForm("uuid")
 		if uid == "" {
-			renderJSON(ctx, struct{}{}, 1, "uid 不能为空")
+			renderJSON(ctx, struct{}{}, 1, "uuid 不能为空")
 			return
 		}
 

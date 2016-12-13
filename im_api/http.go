@@ -109,7 +109,7 @@ func newHTTPServer() *gin.Engine {
 			apply.PUT("/friends", v1.AgreeApplyFriend())
 		}
 
-		//获取所有未读消息
+		//消息已读确认
 		version1.GET("/unreads", v1.Unreads())
 		//获取用户信息
 		version1.GET("/user/:uid", v1.UserInfo())

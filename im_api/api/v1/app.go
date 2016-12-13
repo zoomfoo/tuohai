@@ -336,7 +336,8 @@ func Sessions() gin.HandlerFunc {
 					"sub_type": history.Subtype,
 					"time":     history.CreatedAt,
 				},
-				"type": session.SType,
+				"type":       session.SType,
+				"unread_cnt": 0,
 			})
 		}
 		if len(list) == 0 {
