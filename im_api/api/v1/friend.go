@@ -127,6 +127,12 @@ func AddFriend() gin.HandlerFunc {
 		way := ctx.PostForm("way")
 		num := ctx.PostForm("num")
 		fmt.Println(num)
+		if attach == "" {
+			attach = ""
+		}
+		if way == "" {
+			way = "0"
+		}
 
 		user := ctx.MustGet("user").(*auth.MainUser)
 		if user.Uid == uid {

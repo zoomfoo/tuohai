@@ -55,6 +55,7 @@ func newHTTPServer() *gin.Engine {
 		//反馈
 		version1.POST("/feedback", v1.Feedback())
 
+		//session
 		sessions := version1.Group("sessions")
 		{
 			//获取session列表 √
@@ -66,11 +67,13 @@ func newHTTPServer() *gin.Engine {
 			sessions.PUT("/:sid/read", v1.MessageRead())
 		}
 
+		//消息
 		messages := version1.Group("messages")
 		{
 			messages.GET("/:cid", v1.Messages())
 		}
 
+		//戳一下
 		poke := version1.Group("pokes")
 		{
 			// 戳一下
@@ -98,8 +101,10 @@ func newHTTPServer() *gin.Engine {
 			friends.DELETE("", v1.DelFriend())
 		}
 
+		//好友申请
 		apply := version1.Group("apply")
 		{
+			//获得好友申请列表
 			apply.GET("/friends", v1.ApplyFriends(Opts.AuthHost))
 			apply.PUT("/friends", v1.AgreeApplyFriend())
 		}
