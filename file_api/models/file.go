@@ -17,7 +17,7 @@ const (
 
 type FileInfo struct {
 	Id       string   `gorm:"column:id" json:"-"`
-	To       string   `gorm:"column:cid" json:"cid"`
+	To       string   `gorm:"column:to" json:"cid"`
 	Name     string   `gorm:"column:name" json:"name"`
 	Path     string   `gorm:"column:path" json:"path"`
 	Size     int      `gorm:"column:size" json:"size"`

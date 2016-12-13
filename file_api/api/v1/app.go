@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/file_api/models"
+	"tuohai/internal/auth"
 	"tuohai/internal/console"
 	"tuohai/internal/file"
 	"tuohai/internal/uuid"
@@ -19,11 +19,13 @@ func Upload() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		f, h, err := ctx.Request.FormFile("file")
 		if err != nil {
+			console.StdLog.Error(err)
 			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "解析file文件失败"})
 			return
 		}
 		cid := ctx.PostForm("cid")
-		creator := ctx.PostForm("creator")
+		user := ctx.MustGet("user").(*auth.MainUser)
+		creator := user.Uid
 		if creator == "" || cid == "" {
 			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "创建者或者cid不允许为空"})
 			return
@@ -33,14 +35,9 @@ func Upload() gin.HandlerFunc {
 		buf := &bytes.Buffer{}
 		buf.ReadFrom(f)
 		fmt.Println(buf.Len())
-		l, _ := strconv.Atoi(ctx.PostForm("size"))
-		if buf.Len() != l {
-			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "上传意外终止"})
-			return
-		}
 
 		finfo := &models.FileInfo{
-			Id:       uuid.NewV4().String(),
+			Id:       uuid.NewV4().StringMd5(),
 			To:       cid,
 			Name:     h.Filename,
 			Size:     len(buf.Bytes()),
@@ -54,10 +51,10 @@ func Upload() gin.HandlerFunc {
 		}
 
 		if err := models.WriteFileToDB(finfo, file.UploadFile(suffix, buf)); err != nil {
-			ctx.String(200, "%s", "no")
 			console.StdLog.Error(err)
+			renderJSON(ctx, false)
 		} else {
-			ctx.String(200, "%s", "ok")
+			renderJSON(ctx, true)
 		}
 		return
 	}
