@@ -53,7 +53,7 @@ func TestDismissGroup(t *testing.T) {
 
 //添加好友
 func TestAddFriend(t *testing.T) {
-	api := URI + "/v1/friends?session_token=QJ2NvhcWj8N2Hek4FY5jg9G80cbc5c28796cebd7"
+	api := URI + "/v1/friends"
 
 	v := make(url.Values)
 	v.Add("uuid", "94de7d8b6a2bf757")
@@ -64,7 +64,7 @@ func TestAddFriend(t *testing.T) {
 	buf := &bytes.Buffer{}
 
 	req, _ := http.NewRequest("POST", api, payload)
-
+	req.Header.Add("session_token", "QJ2NvhcWj8N2Hek4FY5jg9G80cbc5c28796cebd7")
 	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 
 	res, _ := http.DefaultClient.Do(req)
@@ -76,6 +76,43 @@ func TestAddFriend(t *testing.T) {
 }
 
 //戳一下
-func TestPoke() {
 
+//获取用户申请列表
+func TestApplyFriends(t *testing.T) {
+	api := URI + "/v1/apply/friends"
+	req, _ := http.NewRequest("GET", api, nil)
+
+	req.Header.Add("session_token", "b9hvLB7RFDQ85vC9TcT77W5t635a3945b2241400")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	buf := &bytes.Buffer{}
+	buf.ReadFrom(res.Body)
+
+	t.Log(buf.String())
+}
+
+//同意好友申请
+func TestAgreeApplyFriend(t *testing.T) {
+
+	api := URI + "/v1/apply/friends"
+	v := make(url.Values)
+	v.Add("id", "2b1e8840618bb2ba0ef4b7425bd012aa")
+	v.Add("status", "1")
+
+	payload := strings.NewReader(v.Encode())
+
+	req, _ := http.NewRequest("PUT", api, payload)
+
+	req.Header.Add("session_token", "b9hvLB7RFDQ85vC9TcT77W5t635a3945b2241400")
+	req.Header.Add("content-type", "application/x-www-form-urlencoded")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	buf := &bytes.Buffer{}
+	buf.ReadFrom(res.Body)
+
+	t.Log(buf.String())
 }

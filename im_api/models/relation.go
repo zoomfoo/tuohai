@@ -102,8 +102,14 @@ func CreateRelation(small, big string) error {
 }
 
 func DelRelation(small, big string) error {
+	fmt.Println(small, big)
 	r := &Relation{}
 	tx := db.Begin()
+	if err := tx.Find(r, "small_id = ? and big_id = ?", small, big).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	err := tx.Table(r.TableName()).Where("small_id = ? and big_id = ?", small, big).Updates(map[string]interface{}{"status": RelationDeleted}).Error
 	if err != nil {
 		tx.Rollback()
@@ -112,5 +118,12 @@ func DelRelation(small, big string) error {
 
 	c := rpool.Get()
 	defer c.Close()
+
+	if _, err := c.Do("hdel", "channel:member:"+r.Rid, r.SmallId, r.BigId); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
 	return nil
 }
