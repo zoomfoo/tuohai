@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 	"testing"
 )
 
-var url = "http://127.0.0.1:10011"
+const (
+	url = "http://127.0.0.1:10011"
+)
 
 // /v1/groups?session_token=202cb962ac59075b964b07152d234b71
 func TestGroups(t *testing.T) {
@@ -44,5 +47,31 @@ func TestRenameGroup(t *testing.T) {
 
 //解散群组
 func TestDismissGroup(t *testing.T) {
+
+}
+
+//添加好友
+func TestAddFriend(t *testing.T) {
+	api := url + "/v1/friends?session_token=QJ2NvhcWj8N2Hek4FY5jg9G80cbc5c28796cebd7"
+
+	var v url.Values
+	v.Add("uuid", "94de7d8b6a2bf757")
+	v.Add("attach", "asdfasdfas")
+	v.Add("way", "0")
+
+	payload := &bytes.Buffer{}
+	buf.WriteString(v.Encode())
+
+	req, _ := http.NewRequest("POST", api, payload)
+
+	req.Header.Add("content-type", "application/x-www-form-urlencoded")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(res)
+	fmt.Println(string(body))
 
 }

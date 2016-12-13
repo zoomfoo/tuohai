@@ -38,7 +38,7 @@ func ApplyFriends(url string) gin.HandlerFunc {
 				"uuid":   apply[i].ApplyUid,
 				"way":    apply[i].Way,
 				"attach": apply[i].Attach,
-				"status": apply[i].Attach,
+				"status": apply[i].Status,
 				"avatar": avatar,
 				"name":   name,
 				"time":   apply[i].LaunchTime,
