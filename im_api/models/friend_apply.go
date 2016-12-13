@@ -78,7 +78,7 @@ func FriendApplys(uid string) ([]FriendApply, error) {
 //
 func SaveFriendApply(apply *FriendApply) error {
 	tx := db.Begin()
-	if err := tx.Table(apply.TableName()).Where("id = ?", apply.Id).Updates(apply).Error; err != nil {
+	if err := tx.Table(apply.TableName()).Updates(apply).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
