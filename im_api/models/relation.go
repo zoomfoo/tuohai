@@ -113,5 +113,4 @@ func DelRelation(small, big string) error {
 	c := rpool.Get()
 	defer c.Close()
 	return nil
-	// c.Do(commandName, ...)
 }

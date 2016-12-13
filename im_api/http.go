@@ -135,7 +135,7 @@ func AccessControlAllowOrigin() gin.HandlerFunc {
 		ctx.Writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Depth, User-Agent, X-File-Size, X-Requested-With, X-Requested-By, If-Modified-Since, X-File-Name, Cache-Control, Token, session_token")
 		fmt.Println(ctx.Request.Method)
 		if ctx.Request.Method == "OPTIONS" {
-			ctx.JSON(200, "ok")
+			ctx.JSON(200, "")
 			ctx.Abort()
 		}
 		ctx.Next()
