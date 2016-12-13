@@ -126,9 +126,10 @@ func sendChuoEvent(t *models.TblChuoyixiaMeta, tos []string) error {
 }
 
 // 获取戳列表：我发出的
-func GetChuoListFrom() gin.HandlerFunc {
+func GetChuoListFrom(url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
+		token := ctx.MustGet("token").(string)
 		uid := user.Uid
 
 		clist, err := models.GetChuoFrom(uid)
@@ -138,7 +139,31 @@ func GetChuoListFrom() gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, clist)
+		var list []gin.H
+		for i, _ := range clist {
+			u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", clist[i].Sender)})
+			name := ""
+			if err == nil && len(u) > 0 {
+				name = u[0].Uname
+			}
+			list = append(list, gin.H{
+				"poke_id": clist[i].Chuoid,
+				"sender":  clist[i].Sender,
+				"urgent":  clist[i].Urgent,
+				"total":   clist[i].TotalCnt,
+				"remain":  clist[i].ConfirmedCnt,
+				"cid":     clist[i].Cid,
+				"mid":     clist[i].MsgId,
+				"content": clist[i].Content,
+				"time":    clist[i].CreatedAt,
+				"name":    name,
+			})
+		}
+
+		if len(list) == 0 {
+			renderJSON(ctx, []int{})
+		}
+		renderJSON(ctx, list)
 	}
 }
 
