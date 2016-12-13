@@ -71,9 +71,24 @@ func Files() gin.HandlerFunc {
 		//获得to_id 查询文件
 		info, err := models.GetFilesInfo(tos)
 		if err != nil {
-			ctx.String(200, "%s", "no")
+			console.StdLog.Error(err)
+			renderJSON(ctx, []int{})
 			return
 		}
-		ctx.JSON(200, info)
+		renderJSON(ctx, info)
+	}
+}
+
+func renderJSON(ctx *gin.Context, json interface{}, err_status ...interface{}) {
+	switch len(err_status) {
+	case 0:
+		ctx.JSON(http.StatusOK, gin.H{"code": 0, "data": json})
+		break
+	case 1:
+		ctx.JSON(http.StatusOK, gin.H{"code": err_status[0], "data": json})
+		break
+	case 2:
+		ctx.JSON(http.StatusOK, gin.H{"code": err_status[0], "msg": err_status[1], "data": json})
+		break
 	}
 }
