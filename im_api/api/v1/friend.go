@@ -158,7 +158,7 @@ func AddFriend() gin.HandlerFunc {
 		}
 		fmt.Println(phone)
 		//判断是否是邮箱
-
+		fmt.Println(num)
 		//通过手机号添加好友
 		if phone != "" {
 			fmt.Println("添加好友 手机号: ", phone)
@@ -205,6 +205,9 @@ func AddFriend() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, res)
 			return
 		}
+
+		renderJSON(ctx, struct{}{}, 1, "未找到phone 或者email")
+		return
 	}
 }
 
