@@ -48,8 +48,6 @@ func newHTTPServer() *gin.Engine {
 			groups.DELETE("/:gid/remove", v1.RemoveGroupMember())
 		}
 
-		//创建项目群
-		version1.POST("/project/groups", v1.CreateProjectGroup())
 		//获取团队群
 		version1.GET("/teams", v1.Teams())
 		//反馈
@@ -127,6 +125,9 @@ func newHTTPServer() *gin.Engine {
 
 	//登录
 	router.POST("/login", v1.Login())
+
+	//创建项目群
+	router.POST("/project/groups", v1.CreateProjectGroup())
 
 	Debug(router)
 	return router

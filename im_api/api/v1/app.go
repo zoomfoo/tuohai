@@ -463,7 +463,7 @@ func CreateGroup() gin.HandlerFunc {
 
 func CreateProjectGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		user := ctx.MustGet("user").(*auth.MainUser)
+		creator := ctx.PostForm("creator")
 		name := ctx.PostForm("name")
 		member := ctx.PostForm("member")
 
@@ -472,7 +472,7 @@ func CreateProjectGroup() gin.HandlerFunc {
 			return
 		}
 
-		g, err := models.CreateGroup(user.Uid, name, models.Project_Group, strings.Split(member, ","))
+		g, err := models.CreateGroup(creator, name, models.Project_Group, strings.Split(member, ","))
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 1, "未找到数据")

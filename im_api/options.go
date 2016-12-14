@@ -15,6 +15,7 @@ type Options struct {
 	HTTPAddress,
 	LogFilePath,
 	AuthHost string
+	RPCHost string
 
 	DbHost,
 	DbUser,
@@ -32,6 +33,7 @@ func NewOptions() *Options {
 		ID:          os.Getpid(),
 		HTTPAddress: "0.0.0.0:10011",
 		AuthHost:    "http://test.yunwoke.com",
+		RPCHost:     "127.0.0.1:5004",
 
 		DbHost: "120.27.45.244:3306",
 		DbUser: "root",
