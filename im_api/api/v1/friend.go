@@ -238,17 +238,16 @@ func addFriend(user *auth.MainUser, uid, way, attach string) string {
 
 func DelFriend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		user := ctx.MustGet("user").(*auth.MainUser)
-		uid := ctx.PostForm("uuid")
-		if uid == "" {
-			renderJSON(ctx, struct{}{}, 1, "uuid 不能为空")
+		cid := ctx.PostForm("cid")
+		if cid == "" {
+			renderJSON(ctx, struct{}{}, 1, "cid 不能为空")
 			return
 		}
 
-		err := models.DelRelation(convert.StringSortByRune(user.Uid, uid))
+		err := models.DelRelation(cid)
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			renderJSON(ctx, struct{}{}, 1)
 			return
 		}
 

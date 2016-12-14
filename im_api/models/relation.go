@@ -101,16 +101,15 @@ func CreateRelation(small, big string) error {
 	return createRelation(small, big, 0)
 }
 
-func DelRelation(small, big string) error {
-	fmt.Println(small, big)
+func DelRelation(cid string) error {
 	r := &Relation{}
 	tx := db.Begin()
-	if err := tx.Find(r, "small_id = ? and big_id = ?", small, big).Error; err != nil {
+	if err := tx.Find(r, "rid = ?", cid).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	err := tx.Table(r.TableName()).Where("small_id = ? and big_id = ?", small, big).Updates(map[string]interface{}{"status": RelationDeleted}).Error
+	err := tx.Table(r.TableName()).Where("rid = ?", cid).Updates(map[string]interface{}{"status": RelationDeleted}).Error
 	if err != nil {
 		tx.Rollback()
 		return err

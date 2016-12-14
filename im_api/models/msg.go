@@ -11,7 +11,7 @@ type Message struct {
 	From      string `gorm:"column:from" json:"from"`
 	To        string `gorm:"column:to" json:"cid"`
 	Type      string `gorm:"column:type" json:"type"`
-	Subtype   string `gorm:"column:subtype" json:"sub_type"`
+	Subtype   string `gorm:"column:subtype" json:"subtype"`
 	MsgId     uint64 `gorm:"column:msg_id" json:"msg_id"`
 	MsgData   string `gorm:"column:msg_data" json:"msg_data"`
 	CreatedAt int    `gorm:"column:created_at" json:"create_time"`
