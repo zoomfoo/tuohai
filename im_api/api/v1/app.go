@@ -326,16 +326,23 @@ func Sessions() gin.HandlerFunc {
 			if err != nil {
 				console.StdLog.Error(err)
 			}
+			// list = append(list, gin.H{
+			// 	"sid": session.Sid,
+			// 	"cid": session.To,
+			// 	"msg": gin.H{
+			// 		"msg_id":      history.MsgId,
+			// 		"msg_data":    history.MsgData,
+			// 		"type":        history.Type,
+			// 		"sub_type":    history.Subtype,
+			// 		"create_time": history.CreatedAt,
+			// 	},
+			// 	"type":       session.SType,
+			// 	"unread_cnt": models.ChennelUnreadNum(session.To, user.Uid),
+			// })
 			list = append(list, gin.H{
-				"sid": session.Sid,
-				"cid": session.To,
-				"msg": gin.H{
-					"id":       history.MsgId,
-					"data":     history.MsgData,
-					"type":     history.Type,
-					"sub_type": history.Subtype,
-					"time":     history.CreatedAt,
-				},
+				"sid":        session.Sid,
+				"cid":        session.To,
+				"msg":        history,
 				"type":       session.SType,
 				"unread_cnt": models.ChennelUnreadNum(session.To, user.Uid),
 			})

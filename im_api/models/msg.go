@@ -41,8 +41,9 @@ func GetMsgById(cid, mid, size string) ([]Message, error) {
 	}
 }
 
-func GetLastHistory(to string) (*Message, error) {
-	msg := &Message{To: to}
-	err := db.Order("`msg_id` desc").First(&msg, "`to` = ?", to).Error
-	return msg, err
+func GetLastHistory(cid string) (*Message, error) {
+	var msgs []Message
+	err := db.Table((&Message{To: cid}).TableName()).Where("`to` = ?", cid).
+		Order("msg_id desc").Limit(1).Scan(&msgs).Error
+	return &msgs[0], err
 }
