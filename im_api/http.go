@@ -68,8 +68,8 @@ func newHTTPServer() *gin.Engine {
 		{
 			//获取消息历史记录 √
 			messages.GET("/:cid", v1.Messages())
-			//消息已读确认 这个read 在restfull中为名词
-			messages.PUT("/:cid/read", v1.MessageRead())
+			//获取消息未读详情信息
+			messages.GET("/:cid/readinfo/:msgid/:origin", v1.MessageRead())
 		}
 
 		//戳一下
@@ -116,9 +116,6 @@ func newHTTPServer() *gin.Engine {
 		//获取用户信息
 		version1.GET("/user/:uid", v1.UserInfo())
 		//获取好友列表
-
-		//获取消息未读详情信息
-		version1.GET("/readinfo/:cid/:msgid/:origin", v1.MessageRead())
 
 		version1.GET("/get_toids", v1.GetIds())
 	}

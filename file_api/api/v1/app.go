@@ -80,6 +80,28 @@ func Upload() gin.HandlerFunc {
 	}
 }
 
+func UploadAvatar() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		f, h, err := ctx.Request.FormFile("file")
+		if err != nil {
+			console.StdLog.Error(err)
+			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "解析file文件失败"})
+			return
+		}
+		buf := &bytes.Buffer{}
+		buf.ReadFrom(f)
+		suffix := filepath.Ext(h.Filename)
+		res := file.UploadFile(suffix, buf)
+		if res.E != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, "", 1, res.E.Error())
+		} else {
+			renderJSON(ctx, res.P)
+		}
+		return
+	}
+}
+
 func Files() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		//http获取用户相关的所有toid

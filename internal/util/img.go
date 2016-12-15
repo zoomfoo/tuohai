@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"github.com/nfnt/resize"
+	// "image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
