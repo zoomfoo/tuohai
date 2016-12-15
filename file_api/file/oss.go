@@ -24,13 +24,16 @@ func (p *NetPath) Path() (string, error) {
 }
 
 func UploadFile(suffix string, buf *bytes.Buffer) *NetPath {
-	client, err := oss.New(osshost, options.Opts.AccessKeyId, options.Opts.AccessKeySecret)
+	fmt.Println("options.Opts.OSSHost:", options.Opts.OSSHost)
+	client, err := oss.New(options.Opts.OSSHost, options.Opts.AccessKeyId, options.Opts.AccessKeySecret)
 	if err != nil {
+		fmt.Println("111")
 		return &NetPath{P: "", E: err}
 	}
 
 	bucket, err := client.Bucket(options.Opts.AvatarBucket)
 	if err != nil {
+		fmt.Println("222")
 		return &NetPath{P: "", E: err}
 	}
 
@@ -44,6 +47,7 @@ func UploadFile(suffix string, buf *bytes.Buffer) *NetPath {
 
 	err = bucket.PutObject(name, buf)
 	if err != nil {
+		fmt.Println("333")
 		return &NetPath{P: "", E: err}
 	}
 	return &NetPath{P: "/" + name, E: nil}

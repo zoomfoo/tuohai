@@ -47,10 +47,10 @@ func NewOptions() *Options {
 		RedisHost: "127.0.0.1:6379",
 		RedisPwd:  "",
 
-		AccessKeyId:     "muNWzl5jWgiNzDcq",
-		AccessKeySecret: "ixlGqqPQQxZzG8hZYIpqKs51o89qmB",
-		OSSHost:         "http://zhizhiboom.img-cn-qingdao.aliyuncs.com",
-		AvatarBucket:    "zhizhiboom",
+		AccessKeyId:     "LTAIACG7yVKjx0OY",
+		AccessKeySecret: "RAYoo1YJM2Ah93pHp5qwLrCpnS24IA",
+		OSSHost:         "oss-cn-beijing.aliyuncs.com",
+		AvatarBucket:    "cloudwork",
 
 		Logger: console.New(*log.New(os.Stderr, "file_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),
 	}
