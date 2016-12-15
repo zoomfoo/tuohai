@@ -32,7 +32,7 @@ func UploadFile(suffix string, buf *bytes.Buffer) *NetPath {
 		return &NetPath{P: "", E: err}
 	}
 
-	name := FileName(*buf) + suffix
+	name := FileName(*buf) + "." + suffix
 
 	err = bucket.PutObject(name, buf)
 	if err != nil {

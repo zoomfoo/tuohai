@@ -43,7 +43,7 @@ func newHTTPServer() *gin.Engine {
 			//退出群
 			groups.DELETE("/:gid/quit", v1.QuitGroupMember())
 			//添加群成员
-			groups.POST("/:gid/add", v1.AddGroupMember())
+			groups.POST("/:gid/add", v1.AddGroupMember(Opts.RPCHost))
 			//移除群成员
 			groups.DELETE("/:gid/remove", v1.RemoveGroupMember())
 		}

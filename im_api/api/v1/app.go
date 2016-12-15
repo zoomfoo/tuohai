@@ -571,7 +571,7 @@ func DismissGroup() gin.HandlerFunc {
 }
 
 //添加群成员
-func AddGroupMember() gin.HandlerFunc {
+func AddGroupMember(RPCHost string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ids := strings.Split(ctx.Request.FormValue("member"), ",")
 		gid := ctx.Param("gid")
@@ -599,6 +599,14 @@ func AddGroupMember() gin.HandlerFunc {
 			return
 		}
 
+		//RPC通知IM
+		// msgsender.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+		// 	Type:       "event",
+		// 	Subtype:    "e_chuo_rcv",
+		// 	From:       t.Sender,
+		// 	MsgData:    b,
+		// 	CreateTime: strconv.Itoa(t.CreatedAt),
+		// })
 		renderJSON(ctx, g)
 		return
 	}
