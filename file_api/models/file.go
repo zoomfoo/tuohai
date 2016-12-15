@@ -1,6 +1,8 @@
 package models
 
-import ()
+import (
+	"fmt"
+)
 
 type FileType int8
 
@@ -70,11 +72,12 @@ func (file *FileInfo) GetFilesInfo(to []string) ([]FileInfo, error) {
 }
 
 func (file *FileInfo) GetImage() error {
-	var img *Image
+	img := &Image{}
 	err := db.Find(img, "id = ?", file.Id).Error
 	if err != nil {
 		return err
 	}
+	fmt.Println(img)
 	if img == nil {
 		file.Meta = &Image{}
 	} else {

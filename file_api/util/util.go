@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"path/filepath"
 	"strings"
 
 	"tuohai/internal/console"
@@ -29,4 +30,8 @@ func IsImg(filename string) bool {
 	}
 	fmt.Println(names[0] == "image")
 	return names[0] == "image"
+}
+
+func GetExt(name string) string {
+	return filepath.Ext(name)[1:]
 }

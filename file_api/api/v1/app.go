@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"path/filepath"
+	"net/url"
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
@@ -18,6 +18,12 @@ import (
 
 func Upload() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		var (
+			width, height = 0, 0
+			buf           = &bytes.Buffer{}
+			now           = time.Now().Unix()
+			filename      string
+		)
 		ctx.Request.ParseMultipartForm(32 << 20)
 		f, h, err := ctx.Request.FormFile("file")
 		if err != nil {
@@ -35,17 +41,21 @@ func Upload() gin.HandlerFunc {
 			return
 		}
 
-		suffix := filepath.Ext(h.Filename)
-		buf := &bytes.Buffer{}
+		filename, _ = url.QueryUnescape(h.Filename)
+		fmt.Println(filename)
+		if filename == "" {
+			filename = "随机名称"
+		}
+
+		suffix := util.GetExt(filename)
 		buf.ReadFrom(f)
-		fmt.Println(buf.Len())
-		now := time.Now().Unix()
+
 		finfo := &models.FileInfo{
 			Id:       uuid.NewV4().StringMd5(),
 			To:       cid,
-			Name:     h.Filename,
+			Name:     filename,
 			Size:     buf.Len(),
-			Ext:      suffix[1:],
+			Ext:      suffix,
 			Category: h.Header.Get("Content-Type"),
 			Meta:     nil,
 			Creator:  creator,
@@ -53,10 +63,8 @@ func Upload() gin.HandlerFunc {
 			Created:  now,
 		}
 
-		width, height := 0, 0
 		if util.IsImg(finfo.Category) {
 			//获取图片宽高
-			fmt.Println("缓冲长度", buf.Len())
 			width, height = util.ImgDimension(buf.Bytes())
 			finfo.Meta = &models.Image{
 				Id:         finfo.Id,
@@ -83,20 +91,24 @@ func Upload() gin.HandlerFunc {
 				renderJSON(ctx, gin.H{
 					"url":      path.P,
 					"preview":  path.P,
-					"type":     suffix[1:],
+					"type":     suffix,
 					"is_image": true,
 					"width":    width,
 					"height":   height,
+					"name":     finfo.Name,
+					"size":     finfo.Size,
 					"owner":    creator,
 					"time":     now,
 				})
 			} else {
 				renderJSON(ctx, gin.H{
 					"url":      path.P,
-					"type":     suffix[1:],
+					"type":     suffix,
 					"is_image": false,
 					"owner":    creator,
 					"time":     now,
+					"name":     finfo.Name,
+					"size":     finfo.Size,
 				})
 			}
 
@@ -115,7 +127,7 @@ func UploadAvatar() gin.HandlerFunc {
 		}
 		buf := &bytes.Buffer{}
 		buf.ReadFrom(f)
-		suffix := filepath.Ext(h.Filename)
+		suffix := util.GetExt(h.Filename)
 		res := file.UploadFile(suffix, buf)
 		if res.E != nil {
 			console.StdLog.Error(err)
@@ -132,6 +144,10 @@ func Files() gin.HandlerFunc {
 		//http获取用户相关的所有toid
 		cid := ctx.Query("cid")
 		tos := []string{cid}
+		if cid == "" {
+			renderJSON(ctx, []int{}, 1, "必须提供cid")
+			return
+		}
 		//获得to_id 查询文件
 		info, err := models.GetFilesInfo(tos)
 		if err != nil {
