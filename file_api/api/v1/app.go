@@ -3,9 +3,9 @@ package v1
 import (
 	"bytes"
 	"fmt"
+	"mime"
 	"net/http"
 	"path/filepath"
-	// "strconv"
 	"strings"
 	"time"
 
@@ -38,18 +38,18 @@ func Upload() gin.HandlerFunc {
 		buf := &bytes.Buffer{}
 		buf.ReadFrom(f)
 		fmt.Println(buf.Len())
-
+		now := time.Now().Unix()
 		finfo := &models.FileInfo{
 			Id:       uuid.NewV4().StringMd5(),
 			To:       cid,
 			Name:     h.Filename,
 			Size:     len(buf.Bytes()),
-			Ext:      suffix,
+			Ext:      suffix[1:],
 			Category: h.Header.Get("Content-Type"),
 			Meta:     nil,
 			Creator:  creator,
-			Updated:  time.Now().Unix(),
-			Created:  time.Now().Unix(),
+			Updated:  now,
+			Created:  now,
 		}
 		width, height := 0, 0
 		if IsImg(finfo.Category) {
@@ -68,9 +68,19 @@ func Upload() gin.HandlerFunc {
 		path := file.UploadFile(suffix, buf)
 		if err := models.WriteFileToDB(finfo, path); err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, "", 1)
+			renderJSON(ctx, struct{}{}, 1)
 		} else {
-			renderJSON(ctx, path.P)
+			a, b, c := mime.ParseMediaType(h.Header.Get("Content-Type"))
+			fmt.Println(h.Header.Get("Content-Type"))
+			fmt.Println("----------", a, b, c, "----------")
+			renderJSON(ctx, gin.H{
+				"url":      path.P,
+				"preview":  "",
+				"type":     suffix[1:],
+				"is_image": IsImg(finfo.Category),
+				"owner":    creator,
+				"time":     now,
+			})
 		}
 		return
 	}
