@@ -87,7 +87,7 @@ func newHTTPServer() *gin.Engine {
 			// 获取我发出
 			version1.GET("/poke/send", v1.GetChuoListFrom(Opts.AuthHost))
 			// 获取我收到的戳
-			version1.GET("/poke/recv", v1.GetChuoListRcv())
+			version1.GET("/poke/recv", v1.GetChuoListRcv(Opts.AuthHost))
 		}
 
 		//好友

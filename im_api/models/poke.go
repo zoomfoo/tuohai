@@ -49,10 +49,21 @@ func GetChuo(chid string) ([]TblChuoyixia, error) {
 	return t, nil
 }
 
-func GetChuoRcv(to string) ([]TblChuoyixia, error) {
-	var rs []TblChuoyixia
+func GetChuoRcv(to string) ([]TblChuoyixiaMeta, error) {
+	var (
+		rs         []TblChuoyixia
+		poke_metas []TblChuoyixiaMeta
+	)
 	if err := db.Find(&rs, "rcv = ? and is_del_by_rcv = 0", to).Error; err != nil {
 		return nil, err
 	}
-	return rs, nil
+
+	for i, _ := range rs {
+		poke, err := GetChuoMeta(rs[i].Chuoid)
+		if err != nil {
+			continue
+		}
+		poke_metas = append(poke_metas, *poke)
+	}
+	return poke_metas, nil
 }

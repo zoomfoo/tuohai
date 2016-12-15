@@ -169,10 +169,11 @@ func GetChuoListFrom(url string) gin.HandlerFunc {
 }
 
 // 获取戳列表：我收到的
-func GetChuoListRcv() gin.HandlerFunc {
+func GetChuoListRcv(url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// uid := ctx.Param("uid")
 		user := ctx.MustGet("user").(*auth.MainUser)
+		token := ctx.MustGet("token").(string)
 		uid := user.Uid
 		clist, err := models.GetChuoRcv(uid)
 		if err != nil {
@@ -181,7 +182,32 @@ func GetChuoListRcv() gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, clist)
+		var list []gin.H
+		for i, _ := range clist {
+			u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", clist[i].Sender)})
+			name := ""
+			if err == nil && len(u) > 0 {
+				name = u[0].Uname
+			}
+			list = append(list, gin.H{
+				"poke_id": clist[i].Chuoid,
+				"sender":  clist[i].Sender,
+				"urgent":  clist[i].Urgent,
+				"total":   clist[i].TotalCnt,
+				"remain":  clist[i].ConfirmedCnt,
+				"cid":     clist[i].Cid,
+				"mid":     clist[i].MsgId,
+				"content": clist[i].Content,
+				"time":    clist[i].CreatedAt,
+				"name":    name,
+			})
+		}
+
+		if len(list) == 0 {
+			renderJSON(ctx, []int{})
+			return
+		}
+		renderJSON(ctx, list)
 	}
 }
 
