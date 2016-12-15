@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
-	"strconv"
+	// "strconv"
 	"strings"
 	"time"
 
@@ -28,11 +28,6 @@ func Upload() gin.HandlerFunc {
 		cid := ctx.PostForm("cid")
 		user := ctx.MustGet("user").(*auth.MainUser)
 		creator := user.Uid
-		height, _ := strconv.Atoi(ctx.PostForm("h"))
-		width, _ := strconv.Atoi(ctx.PostForm("w"))
-		x, _ := strconv.Atoi(ctx.PostForm("x"))
-		y, _ := strconv.Atoi(ctx.PostForm("y"))
-		fmt.Println("参数:  (h, w, x, y) ", height, width, x, y)
 
 		if creator == "" || cid == "" {
 			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "创建者或者cid不允许为空"})
@@ -56,7 +51,7 @@ func Upload() gin.HandlerFunc {
 			Updated:  time.Now().Unix(),
 			Created:  time.Now().Unix(),
 		}
-
+		width, height := 0, 0
 		if IsImg(finfo.Category) {
 			finfo.Meta = &models.Image{
 				Id:         finfo.Id,
@@ -70,11 +65,12 @@ func Upload() gin.HandlerFunc {
 			finfo.Type = models.FileTypeImage
 		}
 
-		if err := models.WriteFileToDB(finfo, file.UploadFile(suffix, buf)); err != nil {
+		path := file.UploadFile(suffix, buf)
+		if err := models.WriteFileToDB(finfo, path); err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, false)
+			renderJSON(ctx, "", 1)
 		} else {
-			renderJSON(ctx, true)
+			renderJSON(ctx, path.P)
 		}
 		return
 	}
