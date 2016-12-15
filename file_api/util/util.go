@@ -1,20 +1,23 @@
 package util
 
 import (
+	"bytes"
 	"fmt"
 	"image"
-	"io"
 	"strings"
 
 	"tuohai/internal/console"
 )
 
-func ImgDimension(r io.Reader) (width, height int) {
-	Config, _, err := image.DecodeConfig(r)
+func ImgDimension(b []byte) (width, height int) {
+	Config, _, err := image.DecodeConfig(bytes.NewReader(b))
 	if err != nil {
 		console.StdLog.Error(err)
 		return
 	}
+	fmt.Println("--------------------------")
+	fmt.Println("width:", Config.Width, "height:", Config.Height)
+	fmt.Println("--------------------------")
 	width, height = Config.Width, Config.Height
 	return
 }

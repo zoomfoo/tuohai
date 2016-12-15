@@ -53,11 +53,11 @@ func Upload() gin.HandlerFunc {
 			Created:  now,
 		}
 
-		path := file.UploadFile(suffix, buf)
 		width, height := 0, 0
 		if util.IsImg(finfo.Category) {
 			//获取图片宽高
-			width, height = util.ImgDimension(buf)
+			fmt.Println("缓冲长度", buf.Len())
+			width, height = util.ImgDimension(buf.Bytes())
 			finfo.Meta = &models.Image{
 				Id:         finfo.Id,
 				ColorModel: "",
@@ -70,6 +70,9 @@ func Upload() gin.HandlerFunc {
 			finfo.Type = models.FileTypeImage
 		}
 
+		//上传图片
+		path := file.UploadFile(suffix, buf)
+		//写入数据库
 		if err := models.WriteFileToDB(finfo, path); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1)
