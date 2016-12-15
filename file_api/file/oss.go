@@ -24,7 +24,7 @@ func (p *NetPath) Path() (string, error) {
 }
 
 func UploadFile(suffix string, buf *bytes.Buffer) *NetPath {
-	client, err := oss.New(options.Opts.OSSHost, options.Opts.AccessKeyId, options.Opts.AccessKeySecret)
+	client, err := oss.New(osshost, options.Opts.AccessKeyId, options.Opts.AccessKeySecret)
 	if err != nil {
 		return &NetPath{P: "", E: err}
 	}
@@ -36,7 +36,7 @@ func UploadFile(suffix string, buf *bytes.Buffer) *NetPath {
 
 	filemd5 := FileName(*buf)
 	fmt.Println("filemd5: ", filemd5)
-	name := fmt.Sprintf("/avatar/%s/%s/%s.%s", filemd5[0:2], filemd5[2:4], uuid.NewV4().String(), suffix)
+	name := fmt.Sprintf("avatar/%s/%s/%s.%s", filemd5[0:2], filemd5[2:4], uuid.NewV4().String(), suffix)
 	fmt.Println("name: ", name)
 
 	fmt.Println(options.Opts.AccessKeyId, options.Opts.AccessKeySecret)
@@ -46,7 +46,7 @@ func UploadFile(suffix string, buf *bytes.Buffer) *NetPath {
 	if err != nil {
 		return &NetPath{P: "", E: err}
 	}
-	return &NetPath{P: name, E: nil}
+	return &NetPath{P: "/" + name, E: nil}
 }
 
 func FileName(buf bytes.Buffer) string {
