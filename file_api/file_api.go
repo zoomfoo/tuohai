@@ -6,22 +6,23 @@ import (
 	"os"
 
 	"tuohai/file_api/models"
+	"tuohai/file_api/options"
 	"tuohai/internal/svc"
 	"tuohai/internal/util"
 )
 
 type FileApi struct {
-	Opts         *Options
+	Opts         *options.Options
 	httpListener net.Listener
 	waitGroup    util.WaitGroupWrapper
 }
 
-func New(opts *Options) *FileApi {
+func New(opts *options.Options) *FileApi {
 	return &FileApi{Opts: opts}
 }
 
 func (file *FileApi) Main() {
-	httpListener, err := net.Listen("tcp", Opts.HTTPAddress)
+	httpListener, err := net.Listen("tcp", options.Opts.HTTPAddress)
 	if err != nil {
 		fmt.Println("ERROR: ", err)
 		os.Exit(1)

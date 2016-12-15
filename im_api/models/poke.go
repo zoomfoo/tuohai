@@ -5,13 +5,13 @@ import (
 )
 
 type TblChuoyixia struct {
-	ID          int `gorm:"primary_key" json:"-"`
-	Chuoid      string
-	Rcv         string
-	IsConfirmed int8
-	IsDelByRcv  int8
-	CreatedAt   int
-	ConfirmedAt int
+	ID          int    `gorm:"primary_key" json:"-"`
+	Chuoid      string `json:"poke_id"`
+	Rcv         string `json:"rcv"`
+	IsConfirmed int8   `json:"is_confirmed"`
+	IsDelByRcv  int8   `json:"is_del_by_rcv"`
+	CreatedAt   int    `json:"created"`
+	ConfirmedAt int    `json:"-"`
 }
 
 func (t *TblChuoyixia) TableName() string {

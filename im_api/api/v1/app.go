@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	// "time"
+	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
@@ -13,6 +13,7 @@ import (
 	"tuohai/internal/console"
 	// "tuohai/internal/convert"
 	httplib "tuohai/internal/http"
+	"tuohai/internal/pb/IM_Message"
 	"tuohai/internal/util"
 	"tuohai/internal/uuid"
 )
@@ -515,7 +516,7 @@ func CreateProjectGroup() gin.HandlerFunc {
 	}
 }
 
-func GroupRename() gin.HandlerFunc {
+func GroupRename(RPCHost string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
 		newname := ctx.PostForm("name")
@@ -537,13 +538,23 @@ func GroupRename() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "修改群名称失败!")
 			return
 		}
-		renderJSON(ctx, "ok")
+
+		//RPC通知IM
+		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+			Type:       "message",
+			Subtype:    "m_group_changed",
+			From:       user.Uid,
+			To:         gid,
+			MsgData:    []byte("GroupRename"),
+			CreateTime: strconv.Itoa(int(time.Now().Unix())),
+		})
+		renderJSON(ctx, true)
 		return
 	}
 }
 
 //解散群组
-func DismissGroup() gin.HandlerFunc {
+func DismissGroup(RPCHost string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -565,6 +576,15 @@ func DismissGroup() gin.HandlerFunc {
 			return
 		}
 
+		//RPC通知IM
+		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+			Type:       "message",
+			Subtype:    "m_group_changed",
+			From:       user.Uid,
+			To:         gid,
+			MsgData:    []byte("dismiss"),
+			CreateTime: strconv.Itoa(int(time.Now().Unix())),
+		})
 		renderJSON(ctx, "ok")
 		return
 	}
@@ -600,20 +620,21 @@ func AddGroupMember(RPCHost string) gin.HandlerFunc {
 		}
 
 		//RPC通知IM
-		// msgsender.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-		// 	Type:       "event",
-		// 	Subtype:    "e_chuo_rcv",
-		// 	From:       t.Sender,
-		// 	MsgData:    b,
-		// 	CreateTime: strconv.Itoa(t.CreatedAt),
-		// })
+		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+			Type:       "message",
+			Subtype:    "m_group_changed",
+			From:       user.Uid,
+			To:         g.Gid,
+			MsgData:    []byte("addmember"),
+			CreateTime: strconv.Itoa(int(time.Now().Unix())),
+		})
 		renderJSON(ctx, g)
 		return
 	}
 }
 
 //移除群成员
-func RemoveGroupMember() gin.HandlerFunc {
+func RemoveGroupMember(RPCHost string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
 		gid := ctx.Param("gid")
@@ -641,13 +662,22 @@ func RemoveGroupMember() gin.HandlerFunc {
 			return
 		}
 
+		//RPC通知IM
+		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+			Type:       "message",
+			Subtype:    "m_group_changed",
+			From:       user.Uid,
+			To:         g.Gid,
+			MsgData:    []byte("removemember"),
+			CreateTime: strconv.Itoa(int(time.Now().Unix())),
+		})
 		renderJSON(ctx, g)
 		return
 	}
 }
 
 //退出群成员
-func QuitGroupMember() gin.HandlerFunc {
+func QuitGroupMember(RPCHost string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		gid := ctx.Param("gid")
@@ -663,6 +693,15 @@ func QuitGroupMember() gin.HandlerFunc {
 			return
 		}
 
+		//RPC通知IM
+		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+			Type:       "message",
+			Subtype:    "m_group_changed",
+			From:       user.Uid,
+			To:         gid,
+			MsgData:    []byte("quitmember"),
+			CreateTime: strconv.Itoa(int(time.Now().Unix())),
+		})
 		renderJSON(ctx, true)
 		return
 	}

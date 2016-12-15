@@ -4,6 +4,7 @@ import (
 	"log"
 
 	api "tuohai/file_api"
+	"tuohai/file_api/options"
 	"tuohai/internal/svc"
 )
 
@@ -23,7 +24,7 @@ func (p *program) Init() error {
 }
 
 func (p *program) Start() error {
-	opts := api.NewOptions()
+	opts := options.NewOptions()
 	api.New(opts).Main()
 	return nil
 }

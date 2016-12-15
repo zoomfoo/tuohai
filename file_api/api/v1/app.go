@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
+	"tuohai/file_api/file"
 	"tuohai/file_api/models"
 	"tuohai/file_api/util"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
-	"tuohai/internal/file"
 	"tuohai/internal/uuid"
 )
 

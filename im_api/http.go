@@ -37,15 +37,15 @@ func newHTTPServer() *gin.Engine {
 
 			//群管理
 			//群重命名 √
-			groups.PUT("/:gid/name", v1.GroupRename())
+			groups.PUT("/:gid/name", v1.GroupRename(Opts.RPCHost))
 			//解散群 √
-			groups.DELETE("/:gid/dismiss", v1.DismissGroup())
+			groups.DELETE("/:gid/dismiss", v1.DismissGroup(Opts.RPCHost))
 			//退出群
-			groups.DELETE("/:gid/quit", v1.QuitGroupMember())
+			groups.DELETE("/:gid/quit", v1.QuitGroupMember(Opts.RPCHost))
 			//添加群成员
 			groups.POST("/:gid/add", v1.AddGroupMember(Opts.RPCHost))
 			//移除群成员
-			groups.DELETE("/:gid/remove", v1.RemoveGroupMember())
+			groups.DELETE("/:gid/remove", v1.RemoveGroupMember(Opts.RPCHost))
 		}
 
 		//获取团队群

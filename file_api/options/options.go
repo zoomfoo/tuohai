@@ -1,4 +1,4 @@
-package file_api
+package options
 
 import (
 	"fmt"
@@ -24,6 +24,12 @@ type Options struct {
 	RedisHost,
 	RedisPwd string
 
+	//oss
+	AccessKeyId,
+	AccessKeySecret,
+	OSSHost,
+	AvatarBucket string
+
 	Logger *console.Console
 }
 
@@ -40,6 +46,11 @@ func NewOptions() *Options {
 
 		RedisHost: "127.0.0.1:6379",
 		RedisPwd:  "",
+
+		AccessKeyId:     "LTAIACG7yVKjx0OY",
+		AccessKeySecret: "RAYoo1YJM2Ah93pHp5qwLrCpnS24IA",
+		OSSHost:         "https://imfile.clouderwork.com",
+		AvatarBucket:    "clouderwork",
 
 		Logger: console.New(*log.New(os.Stderr, "file_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),
 	}

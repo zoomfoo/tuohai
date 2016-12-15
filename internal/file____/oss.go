@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
-	// "fmt"
+	"fmt"
 	// "io"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"tuohai/internal/uuid"
 )
 
 var osshost = "http://img-cn-qingdao.aliyuncs.com"
@@ -32,8 +33,10 @@ func UploadFile(suffix string, buf *bytes.Buffer) *NetPath {
 		return &NetPath{P: "", E: err}
 	}
 
-	name := FileName(*buf) + "." + suffix
-
+	filemd5 := FileName(*buf)
+	fmt.Println("filemd5: ", filemd5)
+	name := fmt.Sprintf("avatar/%s/%s/%s.%s", filemd5[0:2], filemd5[2:4], uuid.NewV4().String(), suffix)
+	fmt.Println("name: ", name)
 	err = bucket.PutObject(name, buf)
 	if err != nil {
 		return &NetPath{P: "", E: err}
