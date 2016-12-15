@@ -16,9 +16,6 @@ func ImgDimension(b []byte) (width, height int) {
 		console.StdLog.Error(err)
 		return
 	}
-	fmt.Println("--------------------------")
-	fmt.Println("width:", Config.Width, "height:", Config.Height)
-	fmt.Println("--------------------------")
 	width, height = Config.Width, Config.Height
 	return
 }

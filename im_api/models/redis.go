@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -153,12 +154,13 @@ func SaveBotInfo(key string, info map[string]interface{}) error {
 func ChennelUnreadNum(cid, uid string) int {
 	c := rpool.Get()
 	defer c.Close()
-	res, err := redis.Int(c.Do("hmget", "cnt:unread"+cid, uid))
+	res, err := redis.String(c.Do("hmget", "cnt:unread"+cid, uid))
 	if err != nil {
 		console.StdLog.Error(err)
 		return 0
 	}
-	return res
+	i, _ := strconv.Atoi(res)
+	return i
 }
 
 func CleanSessionUnread(cid, uid string) bool {
