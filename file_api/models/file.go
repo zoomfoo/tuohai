@@ -19,13 +19,13 @@ type FileInfo struct {
 	Id       string   `gorm:"column:id" json:"-"`
 	To       string   `gorm:"column:to" json:"cid"`
 	Name     string   `gorm:"column:name" json:"name"`
-	Path     string   `gorm:"column:path" json:"path"`
+	Path     string   `gorm:"column:path" json:"url"`
 	Size     int      `gorm:"column:size" json:"size"`
 	Type     FileType `gorm:"column:type" json:"type"`
 	Ext      string   `gorm:"column:ext" json:"ext"`
 	Category string   `gorm:"column:category" json:"category"`
 	Meta     *Image   `gorm:"column:meta" json:"meta"`
-	Creator  string   `gorm:"column:creator" json:"creator"`
+	Creator  string   `gorm:"column:creator" json:"owner"`
 	Updated  int64    `gorm:"column:updated" json:"-"`
 	Created  int64    `gorm:"column:created" json:"time"`
 }

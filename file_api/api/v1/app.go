@@ -3,14 +3,13 @@ package v1
 import (
 	"bytes"
 	"fmt"
-	"mime"
 	"net/http"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/file_api/models"
+	"tuohai/file_api/util"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
 	"tuohai/internal/file"
@@ -19,12 +18,14 @@ import (
 
 func Upload() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		ctx.Request.ParseMultipartForm(32 << 20)
 		f, h, err := ctx.Request.FormFile("file")
 		if err != nil {
 			console.StdLog.Error(err)
 			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "解析file文件失败"})
 			return
 		}
+
 		cid := ctx.PostForm("cid")
 		user := ctx.MustGet("user").(*auth.MainUser)
 		creator := user.Uid
@@ -43,7 +44,7 @@ func Upload() gin.HandlerFunc {
 			Id:       uuid.NewV4().StringMd5(),
 			To:       cid,
 			Name:     h.Filename,
-			Size:     len(buf.Bytes()),
+			Size:     buf.Len(),
 			Ext:      suffix[1:],
 			Category: h.Header.Get("Content-Type"),
 			Meta:     nil,
@@ -51,8 +52,12 @@ func Upload() gin.HandlerFunc {
 			Updated:  now,
 			Created:  now,
 		}
+
+		path := file.UploadFile(suffix, buf)
 		width, height := 0, 0
-		if IsImg(finfo.Category) {
+		if util.IsImg(finfo.Category) {
+			//获取图片宽高
+			width, height = util.ImgDimension(buf)
 			finfo.Meta = &models.Image{
 				Id:         finfo.Id,
 				ColorModel: "",
@@ -65,22 +70,33 @@ func Upload() gin.HandlerFunc {
 			finfo.Type = models.FileTypeImage
 		}
 
-		path := file.UploadFile(suffix, buf)
 		if err := models.WriteFileToDB(finfo, path); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1)
 		} else {
-			a, b, c := mime.ParseMediaType(h.Header.Get("Content-Type"))
-			fmt.Println(h.Header.Get("Content-Type"))
-			fmt.Println("----------", a, b, c, "----------")
-			renderJSON(ctx, gin.H{
-				"url":      path.P,
-				"preview":  "",
-				"type":     suffix[1:],
-				"is_image": IsImg(finfo.Category),
-				"owner":    creator,
-				"time":     now,
-			})
+			fmt.Println("Content-Type: ", h.Header.Get("Content-Type"))
+			if util.IsImg(finfo.Category) {
+				//如果是图片
+				renderJSON(ctx, gin.H{
+					"url":      path.P,
+					"preview":  path.P,
+					"type":     suffix[1:],
+					"is_image": true,
+					"width":    width,
+					"height":   height,
+					"owner":    creator,
+					"time":     now,
+				})
+			} else {
+				renderJSON(ctx, gin.H{
+					"url":      path.P,
+					"type":     suffix[1:],
+					"is_image": false,
+					"owner":    creator,
+					"time":     now,
+				})
+			}
+
 		}
 		return
 	}
@@ -136,12 +152,4 @@ func renderJSON(ctx *gin.Context, json interface{}, err_status ...interface{}) {
 		ctx.JSON(http.StatusOK, gin.H{"code": err_status[0], "msg": err_status[1], "data": json})
 		break
 	}
-}
-
-func IsImg(filename string) bool {
-	names := strings.Split(filename, "/")
-	if len(names) == 0 {
-		return false
-	}
-	return names[0] == "image"
 }
