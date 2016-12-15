@@ -52,8 +52,6 @@ func GetChuoMeta(chid string) (*TblChuoyixiaMeta, error) {
 
 func GetChuoFrom(from string) ([]TblChuoyixiaMeta, error) {
 	var t []TblChuoyixiaMeta
-	if err := db.Find(&t, "sender = ? and is_del_by_sender = 0", from).Error; err != nil {
-		return nil, err
-	}
-	return t, nil
+	err := db.Where("sender = ? and is_del_by_sender = 0", from).Order("created_at desc").Find(&t).Error
+	return t, err
 }
