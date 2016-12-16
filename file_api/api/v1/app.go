@@ -128,7 +128,7 @@ func UploadAvatar() gin.HandlerFunc {
 		buf := &bytes.Buffer{}
 		buf.ReadFrom(f)
 		suffix := util.GetExt(h.Filename)
-		res := file.UploadFile(suffix, buf)
+		res := file.AvatarUpload(suffix, buf)
 		if res.E != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, "", 1, res.E.Error())

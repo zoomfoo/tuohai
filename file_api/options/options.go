@@ -30,6 +30,10 @@ type Options struct {
 	OSSHost,
 	AvatarBucket string
 
+	FileOSSHost,
+	FileHost,
+	FileBucket string
+
 	Logger *console.Console
 }
 
@@ -51,6 +55,10 @@ func NewOptions() *Options {
 		AccessKeySecret: "RAYoo1YJM2Ah93pHp5qwLrCpnS24IA",
 		OSSHost:         "oss-cn-beijing.aliyuncs.com",
 		AvatarBucket:    "cloudwork",
+
+		FileOSSHost: "oss-cn-qingdao.aliyuncs.com",
+		FileBucket:  "clouderwork",
+		FileHost:    "https://imfile.clouderwork.com",
 
 		Logger: console.New(*log.New(os.Stderr, "file_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),
 	}
