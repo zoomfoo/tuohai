@@ -85,14 +85,13 @@ func SyncFriends() error {
 			continue
 		}
 
-		if err := CreateUser(&User{
+		if err := ValidAndCreate(&User{
 			Uuid:   user.Uuid,
 			Uname:  user.Nickname,
 			Avatar: user.Avatar,
 			Phone:  user.Phone,
 			Email:  user.Email,
 		}); err != nil {
-			fmt.Println(err)
 			continue
 		}
 

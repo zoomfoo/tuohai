@@ -72,6 +72,10 @@ func SyncCreateFriend(small, big string, fid int) (string, error) {
 }
 
 func createRelation(small, big string, fid int) (string, error) {
+	if cid := IsRelation(small, big); cid != "" {
+		return cid, nil
+	}
+
 	cid := "r_" + uuid.NewV4().StringMd5()
 	r := &Relation{
 		Rid:          cid,
@@ -89,7 +93,7 @@ func createRelation(small, big string, fid int) (string, error) {
 		tx.Rollback()
 		return "", err
 	}
-
+	//同步到redis
 	if err := saveChennelToRedis(cid, []string{small, big}); err != nil {
 		tx.Rollback()
 		return "", err
