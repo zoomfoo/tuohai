@@ -133,5 +133,6 @@ func FriendToLogic(addr, from, cid string) {
 		RcvId:      cid,
 		CreateTime: strconv.Itoa(int(time.Now().Unix())),
 	}
+	fmt.Println(*m)
 	httplib.SendLogicMsg(addr, m)
 }
