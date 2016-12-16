@@ -128,6 +128,7 @@ func FriendToLogic(addr, from, cid string) {
 		Type:       "message",
 		Subtype:    "m_friend_added",
 		From:       from,
+		To:         cid,
 		MsgData:    []byte("我们已经成为好友"),
 		RcvId:      cid,
 		CreateTime: strconv.Itoa(int(time.Now().Unix())),
