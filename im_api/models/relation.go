@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"tuohai/internal/console"
 	"tuohai/internal/convert"
 	"tuohai/internal/uuid"
 )
@@ -125,4 +126,14 @@ func DelRelation(cid string) error {
 
 	tx.Commit()
 	return nil
+}
+
+func IsRelation(small, big string) string {
+	r := &Relation{}
+	err := db.Find(r, "small_id = ? and big_id = ? and status = 0", small, big).Error
+	if err != nil {
+		console.StdLog.Error(err)
+		return ""
+	}
+	return r.Rid
 }
