@@ -118,7 +118,7 @@ func AgreeApplyFriend(addr string) gin.HandlerFunc {
 		}
 
 		//获取好友信息cid
-		FriendToLogic(addr, main_user.Uid, cid)
+		go FriendToLogic(addr, main_user.Uid, cid)
 		renderJSON(ctx, true)
 	}
 }
@@ -128,8 +128,8 @@ func FriendToLogic(addr, from, cid string) {
 		Type:       "message",
 		Subtype:    "m_friend_added",
 		From:       from,
-		MsgData:    []byte(cid),
-		RcvId:      "我们已经成为好友",
+		MsgData:    []byte("我们已经成为好友"),
+		RcvId:      cid,
 		CreateTime: strconv.Itoa(int(time.Now().Unix())),
 	}
 	httplib.SendLogicMsg(addr, m)
