@@ -66,11 +66,11 @@ func GetMyRelationId(id string) ([]string, error) {
 	return ids, nil
 }
 
-func SyncCreateFriend(small, big string, fid int) error {
+func SyncCreateFriend(small, big string, fid int) (string, error) {
 	return createRelation(small, big, fid)
 }
 
-func createRelation(small, big string, fid int) error {
+func createRelation(small, big string, fid int) (string, error) {
 	cid := "r_" + uuid.NewV4().StringMd5()
 	r := &Relation{
 		Rid:          cid,
@@ -86,18 +86,18 @@ func createRelation(small, big string, fid int) error {
 
 	if err := tx.Create(r).Error; err != nil {
 		tx.Rollback()
-		return err
+		return "", err
 	}
 
 	if err := saveChennelToRedis(cid, []string{small, big}); err != nil {
 		tx.Rollback()
-		return err
+		return "", err
 	}
 
-	return tx.Commit().Error
+	return cid, tx.Commit().Error
 }
 
-func CreateRelation(small, big string) error {
+func CreateRelation(small, big string) (string, error) {
 	return createRelation(small, big, 0)
 }
 

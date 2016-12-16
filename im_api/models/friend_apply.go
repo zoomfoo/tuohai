@@ -1,7 +1,10 @@
 package models
 
 import (
+	"fmt"
+
 	"tuohai/internal/console"
+	"tuohai/internal/convert"
 )
 
 type ApplyType int8
@@ -111,17 +114,22 @@ func FriendApplysCount(uid string, is bool) int {
 }
 
 //
-func SaveFriendApply(apply *FriendApply) error {
+func SaveFriendApply(apply *FriendApply) (string, error) {
 	tx := db.Begin()
 	if err := tx.Table(apply.TableName()).Where("fid = ?", apply.Fid).Updates(apply).Error; err != nil {
 		tx.Rollback()
-		return err
+		return "", err
 	}
-	if err := saveChennelToRedis(apply.Fid, []string{apply.ApplyUid, apply.TargetUid}); err != nil {
+	fmt.Println("123: ", *apply)
+
+	small, big := convert.StringSortByRune(apply.ApplyUid, apply.TargetUid)
+	fmt.Println(small, big)
+	if cid, err := CreateRelation(small, big); err != nil {
 		tx.Rollback()
-		return err
+		return "", err
+	} else {
+		return cid, tx.Commit().Error
 	}
-	return tx.Commit().Error
 }
 
 //创建

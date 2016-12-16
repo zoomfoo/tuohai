@@ -120,7 +120,7 @@ func Friend(url string) gin.HandlerFunc {
 	}
 }
 
-func AddFriend() gin.HandlerFunc {
+func AddFriend(addr string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		uid := ctx.PostForm("uuid")
 		attach := ctx.PostForm("attach")
@@ -236,7 +236,7 @@ func addFriend(user *auth.MainUser, uid, way, attach string) string {
 	return ""
 }
 
-func DelFriend() gin.HandlerFunc {
+func DelFriend(addr string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		cid := ctx.PostForm("cid")
 		if cid == "" {

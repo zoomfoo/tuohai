@@ -96,8 +96,8 @@ func newHTTPServer() *gin.Engine {
 			friends.GET("", v1.Friends(Opts.AuthHost))
 			friends.GET("/:fid", v1.Friend(Opts.AuthHost))
 			//添加好友
-			friends.POST("", v1.AddFriend())
-			friends.DELETE("", v1.DelFriend())
+			friends.POST("", v1.AddFriend(Opts.RPCHost))
+			friends.DELETE("", v1.DelFriend(Opts.RPCHost))
 		}
 
 		//好友申请
@@ -107,7 +107,7 @@ func newHTTPServer() *gin.Engine {
 			apply.GET("/friends/is/:pageindex/:pagesize", v1.ApplyFriends(Opts.AuthHost))
 			apply.GET("/friends/not/:pageindex/:pagesize", v1.UnApplyFriends(Opts.AuthHost))
 
-			apply.PUT("/friends", v1.AgreeApplyFriend())
+			apply.PUT("/friends", v1.AgreeApplyFriend(Opts.RPCHost))
 		}
 
 		//chennel未读确认

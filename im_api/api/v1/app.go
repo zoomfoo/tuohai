@@ -539,15 +539,17 @@ func GroupRename(RPCHost string) gin.HandlerFunc {
 			return
 		}
 
-		//RPC通知IM
-		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-			Type:       "message",
-			Subtype:    "m_group_changed",
-			From:       user.Uid,
-			To:         gid,
-			MsgData:    []byte("GroupRename"),
-			CreateTime: strconv.Itoa(int(time.Now().Unix())),
-		})
+		go func() {
+			//RPC通知IM
+			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+				Type:       "message",
+				Subtype:    "m_group_changed",
+				From:       user.Uid,
+				To:         gid,
+				MsgData:    []byte("GroupRename"),
+				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			})
+		}()
 		renderJSON(ctx, true)
 		return
 	}
@@ -576,15 +578,17 @@ func DismissGroup(RPCHost string) gin.HandlerFunc {
 			return
 		}
 
-		//RPC通知IM
-		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-			Type:       "message",
-			Subtype:    "m_group_changed",
-			From:       user.Uid,
-			To:         gid,
-			MsgData:    []byte("dismiss"),
-			CreateTime: strconv.Itoa(int(time.Now().Unix())),
-		})
+		go func() {
+			//RPC通知IM
+			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+				Type:       "message",
+				Subtype:    "m_group_changed",
+				From:       user.Uid,
+				To:         gid,
+				MsgData:    []byte("dismiss"),
+				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			})
+		}()
 		renderJSON(ctx, "ok")
 		return
 	}
@@ -620,14 +624,16 @@ func AddGroupMember(RPCHost string) gin.HandlerFunc {
 		}
 
 		//RPC通知IM
-		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-			Type:       "message",
-			Subtype:    "m_group_changed",
-			From:       user.Uid,
-			To:         g.Gid,
-			MsgData:    []byte("addmember"),
-			CreateTime: strconv.Itoa(int(time.Now().Unix())),
-		})
+		go func() {
+			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+				Type:       "message",
+				Subtype:    "m_group_changed",
+				From:       user.Uid,
+				To:         g.Gid,
+				MsgData:    []byte("addmember"),
+				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			})
+		}()
 		renderJSON(ctx, g)
 		return
 	}
@@ -662,15 +668,17 @@ func RemoveGroupMember(RPCHost string) gin.HandlerFunc {
 			return
 		}
 
-		//RPC通知IM
-		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-			Type:       "message",
-			Subtype:    "m_group_changed",
-			From:       user.Uid,
-			To:         g.Gid,
-			MsgData:    []byte("removemember"),
-			CreateTime: strconv.Itoa(int(time.Now().Unix())),
-		})
+		go func() {
+			//RPC通知IM
+			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+				Type:       "message",
+				Subtype:    "m_group_changed",
+				From:       user.Uid,
+				To:         g.Gid,
+				MsgData:    []byte("removemember"),
+				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			})
+		}()
 		renderJSON(ctx, g)
 		return
 	}
@@ -693,15 +701,17 @@ func QuitGroupMember(RPCHost string) gin.HandlerFunc {
 			return
 		}
 
-		//RPC通知IM
-		httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-			Type:       "message",
-			Subtype:    "m_group_changed",
-			From:       user.Uid,
-			To:         gid,
-			MsgData:    []byte("quitmember"),
-			CreateTime: strconv.Itoa(int(time.Now().Unix())),
-		})
+		go func() {
+			//RPC通知IM
+			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+				Type:       "message",
+				Subtype:    "m_group_changed",
+				From:       user.Uid,
+				To:         gid,
+				MsgData:    []byte("quitmember"),
+				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			})
+		}()
 		renderJSON(ctx, true)
 		return
 	}
