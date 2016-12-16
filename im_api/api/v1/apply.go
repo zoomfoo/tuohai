@@ -98,6 +98,7 @@ func RenderApplyFriends(apply []models.FriendApply, token, url string) []gin.H {
 func AgreeApplyFriend(addr string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		main_user := ctx.MustGet("user").(*auth.MainUser)
+		//好友申请表中的唯一标识
 		id := ctx.PostForm("id")
 		status := ctx.PostForm("status")
 		if status == "" || id == "" {
@@ -105,11 +106,13 @@ func AgreeApplyFriend(addr string) gin.HandlerFunc {
 			return
 		}
 		status_int := convert.StrTo(status).MustInt()
-		cid, err := models.SaveFriendApply(&models.FriendApply{
-			Fid: id, ApplyUid: id,
-			TargetUid: main_user.Uid,
-			Status:    models.ApplyType(status_int),
-		})
+		fa, err := models.FriendApplyById(id)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "远程服务器错误1")
+			return
+		}
+		fa.Status = models.ApplyType(status_int)
+		cid, err := models.SaveFriendApply(fa)
 
 		if err != nil {
 			console.StdLog.Error(err)
