@@ -38,6 +38,8 @@ func LoginAuth(host string, params ...int) gin.HandlerFunc {
 				models.ValidAndCreate(&models.User{
 					Uuid:  user.Uid,
 					Uname: user.Nickname,
+					Phone: user.Phone,
+					Email: user.Email,
 					Token: token,
 				})
 			}
