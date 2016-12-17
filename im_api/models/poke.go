@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -23,6 +24,7 @@ func ConfirmChuo(chid, uid string) error {
 	if err := db.Find(t, "chuoid = ? and rcv = ? and is_del_by_rcv = 0", chid, uid).Error; err != nil {
 		return err
 	}
+
 	if t.IsConfirmed != 0 {
 		return nil
 	}

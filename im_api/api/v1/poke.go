@@ -26,7 +26,7 @@ func ConfirmChuo() gin.HandlerFunc {
 		fmt.Println(chuoid, rcv)
 		if err := models.ConfirmChuo(chuoid, rcv); err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 0, "数据有误")
+			renderJSON(ctx, struct{}{}, 0)
 			return
 		}
 		renderJSON(ctx, true)

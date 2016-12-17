@@ -238,7 +238,7 @@ func addFriend(user *auth.MainUser, uid, way, attach string) string {
 
 func DelFriend(addr string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		cid := ctx.PostForm("cid")
+		cid := ctx.Param("cid")
 		if cid == "" {
 			renderJSON(ctx, struct{}{}, 1, "cid 不能为空")
 			return

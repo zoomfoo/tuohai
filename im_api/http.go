@@ -97,7 +97,7 @@ func newHTTPServer() *gin.Engine {
 			friends.GET("/:fid", v1.Friend(Opts.AuthHost))
 			//添加好友
 			friends.POST("", v1.AddFriend(Opts.RPCHost))
-			friends.DELETE("", v1.DelFriend(Opts.RPCHost))
+			friends.DELETE("/:cid", v1.DelFriend(Opts.RPCHost))
 		}
 
 		//好友申请
