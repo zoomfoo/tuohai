@@ -3,6 +3,7 @@ package models
 import (
 	// "fmt"
 	"time"
+	"tuohai/internal/console"
 )
 
 type TblChuoyixia struct {
@@ -49,6 +50,15 @@ func GetChuo(chid string) ([]TblChuoyixia, error) {
 		return nil, err
 	}
 	return t, nil
+}
+
+func GetChuoByUidAndPid(pokeid, uid string) *TblChuoyixia {
+	var t TblChuoyixia
+	err := db.Find(&t, "chuoid = ? and rcv = ?", pokeid, uid).Error
+	if err != nil {
+		console.StdLog.Error(err)
+	}
+	return &t
 }
 
 func GetChuoRcv(to string) ([]TblChuoyixiaMeta, error) {

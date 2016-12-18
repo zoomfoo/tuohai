@@ -35,9 +35,10 @@ func ConfirmChuo() gin.HandlerFunc {
 }
 
 // 戳一下业务处理
-func AddChuo() gin.HandlerFunc {
+func AddChuo(auth_url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// sender, _ := ctx.GetPostForm("sender") //戳一下本人
+		token := ctx.MustGet("token").(string)
 		user := ctx.MustGet("user").(*auth.MainUser)
 		sender := user.Uid
 		cid, _ := ctx.GetPostForm("cid")
@@ -59,7 +60,7 @@ func AddChuo() gin.HandlerFunc {
 		}
 		ur, ok := ctx.GetPostForm("urgent")
 		if !ok {
-			ur = "1"
+			ur = "0"
 		}
 		urgent, err := strconv.Atoi(ur)
 		if err != nil {
@@ -67,6 +68,22 @@ func AddChuo() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 0, "urgent参数非法")
 			return
 		}
+
+		switch urgent {
+		case 1:
+			//发送短信
+			go func() {
+				auth.SendSMS(auth_url, token, []string{
+					"phones=15040565139",
+					"content=我测试看见了不用回复",
+					"site=yunliao",
+					"user_id=21",
+				})
+			}()
+		case 2:
+			//发送电话
+		}
+
 		now := time.Now().Unix()
 		t := &models.TblChuoyixiaMeta{
 			Sender:    sender,
@@ -189,17 +206,20 @@ func GetChuoListRcv(url string) gin.HandlerFunc {
 			if err == nil && len(u) > 0 {
 				name = u[0].Uname
 			}
+			t := models.GetChuoByUidAndPid(clist[i].Chuoid, user.Uid)
+
 			list = append(list, gin.H{
-				"poke_id": clist[i].Chuoid,
-				"sender":  clist[i].Sender,
-				"urgent":  clist[i].Urgent,
-				"total":   clist[i].TotalCnt,
-				"remain":  clist[i].ConfirmedCnt,
-				"cid":     clist[i].Cid,
-				"mid":     clist[i].MsgId,
-				"content": clist[i].Content,
-				"time":    clist[i].CreatedAt,
-				"name":    name,
+				"poke_id":   clist[i].Chuoid,
+				"sender":    clist[i].Sender,
+				"urgent":    clist[i].Urgent,
+				"total":     clist[i].TotalCnt,
+				"remain":    clist[i].ConfirmedCnt,
+				"cid":       clist[i].Cid,
+				"mid":       clist[i].MsgId,
+				"content":   clist[i].Content,
+				"time":      clist[i].CreatedAt,
+				"name":      name,
+				"confirmed": t.IsConfirmed,
 			})
 		}
 

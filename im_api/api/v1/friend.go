@@ -238,6 +238,7 @@ func addFriend(user *auth.MainUser, uid, way, attach string) string {
 
 func DelFriend(addr string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		user := ctx.MustGet("user").(*auth.MainUser)
 		cid := ctx.Param("cid")
 		if cid == "" {
 			renderJSON(ctx, struct{}{}, 1, "cid 不能为空")
@@ -250,6 +251,17 @@ func DelFriend(addr string) gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1)
 			return
 		}
+
+		//删除session
+		if err := models.RemoveSession(cid, user.Uid); err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, false)
+			return
+		}
+
+		//聊天记录标记
+
+		//清空未读
 
 		renderJSON(ctx, true)
 	}

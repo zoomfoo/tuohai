@@ -103,6 +103,16 @@ func GetBatchUsersUrl(token, url string, params []string) string {
 	return fmt.Sprintf("%s/api/v1.1/users/info?%s", url, SignStr(token, params...))
 }
 
+//获取邮箱服务URL
+func GetEmailServiceURL(token, url string, params []string) string {
+	return fmt.Sprintf("%s/api/i/email?%s", url, SignStr(token, params...))
+}
+
+//获取短信服务URL
+func GetSMSServiceURL(token, url string, params []string) string {
+	return fmt.Sprintf("%s/api/i/sms?%s", url, SignStr(token, params...))
+}
+
 func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
 	var result struct {
 		Msg      string `json:"msg"`
@@ -163,4 +173,38 @@ func getSign(str string) string {
 	m := md5.New()
 	m.Write([]byte(str))
 	return hex.EncodeToString(m.Sum(nil))
+}
+
+//发短信
+func SendSMS(url, token string, param []string) (bool, error) {
+	sms := GetSMSServiceURL(url, token, param)
+	fmt.Println("sms: ", sms)
+	data := httplib.Post(sms)
+	js := make(map[string]interface{})
+	if err := data.ToJson(&js); err != nil {
+		return false, err
+	}
+
+	if error_code, ok := js["error_code"].(float64); ok {
+		return error_code == 0, nil
+	} else {
+		return false, fmt.Errorf("%s", "服务器错误参数")
+	}
+}
+
+//发邮件
+func SendEmail(url, token string, param []string) (bool, error) {
+	email := GetEmailServiceURL(url, token, param)
+	fmt.Println("email: ", email)
+	data := httplib.Post(email)
+	js := make(map[string]interface{})
+	if err := data.ToJson(&js); err != nil {
+		return false, err
+	}
+
+	if error_code, ok := js["error_code"].(float64); ok {
+		return error_code == 0, nil
+	} else {
+		return false, fmt.Errorf("%s", "服务器错误参数")
+	}
 }

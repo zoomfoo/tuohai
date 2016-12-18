@@ -147,6 +147,7 @@ func Users(url string) gin.HandlerFunc {
 	}
 }
 
+//获取群组列表
 func Groups() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -182,6 +183,7 @@ func Groups() gin.HandlerFunc {
 	}
 }
 
+//获取群组信息
 func Group(url string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
@@ -275,6 +277,7 @@ func Group(url string) gin.HandlerFunc {
 	}
 }
 
+//获取团队列表
 func Teams() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -308,6 +311,7 @@ func Teams() gin.HandlerFunc {
 	}
 }
 
+//获取session列表
 func Sessions() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -392,6 +396,7 @@ func RemoveSession() gin.HandlerFunc {
 		}
 
 		//删除未读消息数
+		models.CleanSessionUnread(sid, user.Uid)
 		renderJSON(ctx, true)
 	}
 }

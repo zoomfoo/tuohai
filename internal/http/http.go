@@ -80,13 +80,3 @@ func Users(URL string) ([]byte, error) {
 	}
 	return data, nil
 }
-
-//发短信
-func SendMessage() {
-
-}
-
-//发邮件
-func SendEmail() {
-
-}

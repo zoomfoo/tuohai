@@ -76,7 +76,7 @@ func newHTTPServer() *gin.Engine {
 		poke := version1.Group("pokes")
 		{
 			// 戳一下
-			poke.POST("", v1.AddChuo())
+			poke.POST("", v1.AddChuo(Opts.AuthHost))
 			// 确认收到
 			poke.POST("/:pid/confirm", v1.ConfirmChuo())
 			// 获取戳的详情
