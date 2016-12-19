@@ -253,19 +253,13 @@ func DelFriend(addr string) gin.HandlerFunc {
 		}
 
 		//删除session
-		if err := models.RemoveSession(cid, user.Uid); err != nil {
+		if err := models.RemoveSessionByCidAndUid(cid, user.Uid); err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, false)
 			return
 		}
 
 		//聊天记录标记
-		//
-		//删除未读消息数
-		models.CleanSessionUnread(cid, user.Uid)
-
-		//清空未读
-
-		renderJSON(ctx, true)
+		renderJSON(ctx, models.CleanSessionUnread(cid, user.Uid))
 	}
 }
