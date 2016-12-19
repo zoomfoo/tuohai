@@ -263,3 +263,15 @@ func GroupGhosting(uid, fuid string) ([]GroupMember, error) {
 	err := db.Where("member in (?)", []string{uid, fuid}).Group("gid").Find(&gm).Error
 	return gm, err
 }
+
+func SyncMysqlToRedis() error {
+	var gm []GroupMember
+	err := db.Find(&gm).Error
+	for i, _ := range gm {
+		err := saveChennelToRedis(gm[i].GroupId, []string{gm[i].Member})
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	return err
+}

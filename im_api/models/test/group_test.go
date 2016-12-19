@@ -27,3 +27,7 @@ func TestAddGroupMember(t *testing.T) {
 func TestDelGroupMember(t *testing.T) {
 	t.Log(models.DelGroupMember("7072547", []string{"1ecb3665e88cdb174dec77863438662a", "202cb962ac59075b964b07152d234b71"}))
 }
+
+func TestSyncMysqlToRedis(t *testing.T) {
+	models.SyncMysqlToRedis()
+}

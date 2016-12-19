@@ -260,6 +260,9 @@ func DelFriend(addr string) gin.HandlerFunc {
 		}
 
 		//聊天记录标记
+		//
+		//删除未读消息数
+		models.CleanSessionUnread(cid, user.Uid)
 
 		//清空未读
 

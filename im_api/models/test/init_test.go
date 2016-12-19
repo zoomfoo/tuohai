@@ -1,8 +1,8 @@
 package test
 
 import (
-	api "tuohai/im_api"
 	"tuohai/im_api/models"
+	api "tuohai/im_api/options"
 )
 
 func init() {
