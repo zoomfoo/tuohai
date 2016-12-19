@@ -22,7 +22,9 @@ func newHTTPServer() *gin.Engine {
 	{
 		//列出IM常用的信息
 		version1.GET("/profile", v1.Profile())
+		//更新个人信息
 		version1.PUT("/profile", v1.PutProfile(options.Opts.AuthHost))
+		//批量获取用户信息
 		version1.GET("/users", v1.Users(options.Opts.AuthHost))
 
 		//群组创建 更新
