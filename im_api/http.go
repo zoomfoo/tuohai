@@ -5,6 +5,7 @@ import (
 	"net/http/pprof"
 
 	"gopkg.in/gin-gonic/gin.v1"
+	"tuohai/im_api/api/mainsite"
 	"tuohai/im_api/api/v1"
 	"tuohai/im_api/options"
 	"tuohai/internal/auth"
@@ -124,9 +125,8 @@ func newHTTPServer() *gin.Engine {
 	//登录
 	router.POST("/login", v1.Login())
 
-	//创建项目群
-	router.POST("/project/groups", v1.CreateProjectGroup())
-	router.POST("/team/groups", v1.CreateTeamGroup())
+	//为主站提供接口
+	mainsite.NewMainSiteRouter(router.Group("/m"))
 
 	Debug(router)
 	return router

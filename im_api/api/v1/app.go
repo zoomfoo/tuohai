@@ -475,30 +475,6 @@ func CreateGroup() gin.HandlerFunc {
 	}
 }
 
-func CreateProjectGroup() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		creator := ctx.PostForm("creator")
-		name := ctx.PostForm("name")
-		member := ctx.PostForm("member")
-
-		if name == "" {
-			renderJSON(ctx, []int{}, 1, "group_name is empty")
-			return
-		}
-
-		ProTeaGroup(ctx, creator, name, models.Project_Group, strings.Split(member, ","))
-	}
-}
-
-func CreateTeamGroup() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		creator := ctx.PostForm("creator")
-		name := ctx.PostForm("name")
-		member := ctx.PostForm("member")
-		ProTeaGroup(ctx, creator, name, models.Team_Group, strings.Split(member, ","))
-	}
-}
-
 func ProTeaGroup(ctx *gin.Context, creator, name string, gtype models.GroupType, member []string) {
 	g, err := models.CreateGroup(creator, name, gtype, member)
 	if err != nil {

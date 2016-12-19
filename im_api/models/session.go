@@ -41,6 +41,7 @@ func GetSessionById(from string) ([]Session, error) {
 }
 
 func RemoveSession(sid, uid string) error {
+	fmt.Println("删除[", sid, "]用户的session", sid)
 	s := &Session{From: uid}
 	return db.Table(s.TableName()).Where("sid = ?", sid).Updates(map[string]interface{}{"status": deleted}).Error
 }
