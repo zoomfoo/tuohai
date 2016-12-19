@@ -126,6 +126,7 @@ func newHTTPServer() *gin.Engine {
 
 	//创建项目群
 	router.POST("/project/groups", v1.CreateProjectGroup())
+	router.POST("/team/groups", v1.CreateTeamGroup())
 
 	Debug(router)
 	return router

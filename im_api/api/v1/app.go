@@ -298,7 +298,7 @@ func Teams() gin.HandlerFunc {
 				}
 				continue
 			}
-			if group.GType == models.Project_Group {
+			if group.GType == models.Team_Group {
 				groups = append(groups, *group)
 			}
 		}
@@ -486,42 +486,54 @@ func CreateProjectGroup() gin.HandlerFunc {
 			return
 		}
 
-		g, err := models.CreateGroup(creator, name, models.Project_Group, strings.Split(member, ","))
-		if err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 1, "未找到数据")
-			return
-		}
-
-		//生成botid
-		botid := uuid.NewV4().StringMd5()
-		gid := g.Gid
-		bot_access_token := uuid.NewV4().StringMd5()
-		bot_name := "clouderwork"
-		appid := "clouderwork"
-
-		bot_info := gin.H{
-			"bot_access_token": bot_access_token,
-			"bot_id":           botid,
-			"bot_name":         bot_name,
-			"app_id":           appid,
-			"cid":              gid,
-		}
-
-		if err := models.SaveBotInfo("bot:id:"+botid, bot_info); err != nil {
-			console.StdLog.Error(err)
-			renderJSON(ctx, []int{}, 1, "未找到数据")
-			return
-		}
-
-		renderJSON(ctx, gin.H{
-			"web_hook":         fmt.Sprintf("%s/hook/%s", options.Opts.WebHookHost, botid),
-			"group_id":         gid,
-			"bot_access_token": bot_access_token,
-			"bot_id":           botid,
-		})
-
+		ProTeaGroup(ctx, creator, name, models.Project_Group, strings.Split(member, ","))
 	}
+}
+
+func CreateTeamGroup() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		creator := ctx.PostForm("creator")
+		name := ctx.PostForm("name")
+		member := ctx.PostForm("member")
+		ProTeaGroup(ctx, creator, name, models.Team_Group, strings.Split(member, ","))
+	}
+}
+
+func ProTeaGroup(ctx *gin.Context, creator, name string, gtype models.GroupType, member []string) {
+	g, err := models.CreateGroup(creator, name, gtype, member)
+	if err != nil {
+		console.StdLog.Error(err)
+		renderJSON(ctx, []int{}, 1, "未找到数据")
+		return
+	}
+
+	//生成botid
+	botid := uuid.NewV4().StringMd5()
+	gid := g.Gid
+	bot_access_token := uuid.NewV4().StringMd5()
+	bot_name := "clouderwork"
+	appid := "clouderwork"
+
+	bot_info := gin.H{
+		"bot_access_token": bot_access_token,
+		"bot_id":           botid,
+		"bot_name":         bot_name,
+		"app_id":           appid,
+		"cid":              gid,
+	}
+
+	if err := models.SaveBotInfo("bot:id:"+botid, bot_info); err != nil {
+		console.StdLog.Error(err)
+		renderJSON(ctx, []int{}, 1, "未找到数据")
+		return
+	}
+
+	renderJSON(ctx, gin.H{
+		"web_hook":         fmt.Sprintf("%s/hook/%s", options.Opts.WebHookHost, botid),
+		"group_id":         gid,
+		"bot_access_token": bot_access_token,
+		"bot_id":           botid,
+	})
 }
 
 func GroupRename(RPCHost string) gin.HandlerFunc {
