@@ -6,19 +6,20 @@ import (
 	"os"
 
 	"tuohai/im_api/models"
+	"tuohai/im_api/options"
 	"tuohai/internal/svc"
 	"tuohai/internal/util"
 )
 
 type ImApi struct {
-	Opts         *Options
+	Opts         *options.Options
 	httpListener net.Listener
 	waitGroup    util.WaitGroupWrapper
 	notifySync   chan int
 	exitChan     chan int
 }
 
-func New(opts *Options) *ImApi {
+func New(opts *options.Options) *ImApi {
 	return &ImApi{Opts: opts, exitChan: make(chan int)}
 }
 

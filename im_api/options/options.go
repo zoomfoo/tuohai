@@ -1,4 +1,4 @@
-package im_api
+package options
 
 import (
 	"fmt"
@@ -15,7 +15,8 @@ type Options struct {
 	HTTPAddress,
 	LogFilePath,
 	AuthHost string
-	RPCHost string
+	RPCHost     string
+	WebHookHost string
 
 	DbHost,
 	DbUser,
@@ -34,6 +35,7 @@ func NewOptions() *Options {
 		HTTPAddress: "0.0.0.0:10011",
 		AuthHost:    "http://test.yunwoke.com",
 		RPCHost:     "127.0.0.1:9003",
+		WebHookHost: "test.yunwoke.com:8880",
 
 		DbHost: "120.27.45.244:3306",
 		DbUser: "root",

@@ -12,6 +12,7 @@ import (
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
 	// "tuohai/internal/convert"
+	"tuohai/im_api/options"
 	httplib "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
 	"tuohai/internal/util"
@@ -514,8 +515,10 @@ func CreateProjectGroup() gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, gin.H{
-			"group": g,
-			"bot":   bot_info,
+			"web_hook":         fmt.Sprintf("%s/hook/%s", options.Opts.WebHookHost, botid),
+			"group_id":         gid,
+			"bot_access_token": bot_access_token,
+			"bot_id":           botid,
 		})
 
 	}

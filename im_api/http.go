@@ -6,6 +6,7 @@ import (
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/api/v1"
+	"tuohai/im_api/options"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
 )
@@ -16,12 +17,12 @@ func newHTTPServer() *gin.Engine {
 	router.Use(console.Logger())
 	router.Use(AccessControlAllowOrigin())
 
-	version1 := router.Group("v1", auth.LoginAuth(Opts.AuthHost))
+	version1 := router.Group("v1", auth.LoginAuth(options.Opts.AuthHost))
 	{
 		//列出IM常用的信息
 		version1.GET("/profile", v1.Profile())
-		version1.PUT("/profile", v1.PutProfile(Opts.AuthHost))
-		version1.GET("/users", v1.Users(Opts.AuthHost))
+		version1.PUT("/profile", v1.PutProfile(options.Opts.AuthHost))
+		version1.GET("/users", v1.Users(options.Opts.AuthHost))
 
 		//群组创建 更新
 		//成员管理
@@ -31,21 +32,21 @@ func newHTTPServer() *gin.Engine {
 			//获取群组列表 √
 			groups.GET("", v1.Groups())
 			//获取群组信息 √
-			groups.GET("/:gid", v1.Group(Opts.AuthHost))
+			groups.GET("/:gid", v1.Group(options.Opts.AuthHost))
 			//创建群组 √
 			groups.POST("", v1.CreateGroup())
 
 			//群管理
 			//群重命名 √
-			groups.PUT("/:gid/name", v1.GroupRename(Opts.RPCHost))
+			groups.PUT("/:gid/name", v1.GroupRename(options.Opts.RPCHost))
 			//解散群 √
-			groups.DELETE("/:gid/dismiss", v1.DismissGroup(Opts.RPCHost))
+			groups.DELETE("/:gid/dismiss", v1.DismissGroup(options.Opts.RPCHost))
 			//退出群
-			groups.DELETE("/:gid/quit", v1.QuitGroupMember(Opts.RPCHost))
+			groups.DELETE("/:gid/quit", v1.QuitGroupMember(options.Opts.RPCHost))
 			//添加群成员
-			groups.POST("/:gid/add", v1.AddGroupMember(Opts.RPCHost))
+			groups.POST("/:gid/add", v1.AddGroupMember(options.Opts.RPCHost))
 			//移除群成员
-			groups.DELETE("/:gid/remove", v1.RemoveGroupMember(Opts.RPCHost))
+			groups.DELETE("/:gid/remove", v1.RemoveGroupMember(options.Opts.RPCHost))
 		}
 
 		//获取团队群
@@ -76,38 +77,38 @@ func newHTTPServer() *gin.Engine {
 		poke := version1.Group("pokes")
 		{
 			// 戳一下
-			poke.POST("", v1.AddChuo(Opts.AuthHost))
+			poke.POST("", v1.AddChuo(options.Opts.AuthHost))
 			// 确认收到
 			poke.POST("/:pid/confirm", v1.ConfirmChuo())
 			// 获取戳的详情
 			poke.GET("/:pid", v1.GetChuoInfo())
 
 			//获取戳列表
-			poke.GET("", v1.GetChuoListFrom(Opts.AuthHost))
+			poke.GET("", v1.GetChuoListFrom(options.Opts.AuthHost))
 			// 获取我发出
-			version1.GET("/poke/send", v1.GetChuoListFrom(Opts.AuthHost))
+			version1.GET("/poke/send", v1.GetChuoListFrom(options.Opts.AuthHost))
 			// 获取我收到的戳
-			version1.GET("/poke/recv", v1.GetChuoListRcv(Opts.AuthHost))
+			version1.GET("/poke/recv", v1.GetChuoListRcv(options.Opts.AuthHost))
 		}
 
 		//好友
 		friends := version1.Group("friends")
 		{
-			friends.GET("", v1.Friends(Opts.AuthHost))
-			friends.GET("/:fid", v1.Friend(Opts.AuthHost))
+			friends.GET("", v1.Friends(options.Opts.AuthHost))
+			friends.GET("/:fid", v1.Friend(options.Opts.AuthHost))
 			//添加好友
-			friends.POST("", v1.AddFriend(Opts.RPCHost))
-			friends.DELETE("/:cid", v1.DelFriend(Opts.RPCHost))
+			friends.POST("", v1.AddFriend(options.Opts.RPCHost))
+			friends.DELETE("/:cid", v1.DelFriend(options.Opts.RPCHost))
 		}
 
 		//好友申请
 		apply := version1.Group("apply")
 		{
 			//获得好友申请列表
-			apply.GET("/friends/is/:pageindex/:pagesize", v1.ApplyFriends(Opts.AuthHost))
-			apply.GET("/friends/not/:pageindex/:pagesize", v1.UnApplyFriends(Opts.AuthHost))
+			apply.GET("/friends/is/:pageindex/:pagesize", v1.ApplyFriends(options.Opts.AuthHost))
+			apply.GET("/friends/not/:pageindex/:pagesize", v1.UnApplyFriends(options.Opts.AuthHost))
 
-			apply.PUT("/friends", v1.AgreeApplyFriend(Opts.RPCHost))
+			apply.PUT("/friends", v1.AgreeApplyFriend(options.Opts.RPCHost))
 		}
 
 		//chennel未读确认

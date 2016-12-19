@@ -116,3 +116,21 @@ func TestAgreeApplyFriend(t *testing.T) {
 
 	t.Log(buf.String())
 }
+
+func TestCreateProjectGroup(t *testing.T) {
+	url := "http://127.0.0.1:10011/project/groups?session_token=KufHBfhc3Rnr7AhEXm7M8qLv5574dca8e85bc887"
+
+	payload := strings.NewReader("-----011000010111000001101001\r\nContent-Disposition: form-data; name=\"creator\"\r\n\r\n9e3a7e7659f4e865\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n测试团队看看\r\n-----011000010111000001101001\r\nContent-Disposition: form-data; name=\"member\"\r\n\r\nb45b00a270b5ac6d,9e3a7e7659f4e865\r\n-----011000010111000001101001--")
+
+	req, _ := http.NewRequest("POST", url, payload)
+
+	req.Header.Add("content-type", "multipart/form-data; boundary=---011000010111000001101001")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	t.Log(res)
+	t.Log(string(body))
+}
