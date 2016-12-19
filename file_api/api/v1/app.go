@@ -10,6 +10,7 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/file_api/file"
 	"tuohai/file_api/models"
+	"tuohai/file_api/options"
 	"tuohai/file_api/util"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
@@ -133,7 +134,10 @@ func UploadAvatar() gin.HandlerFunc {
 			console.StdLog.Error(err)
 			renderJSON(ctx, "", 1, res.E.Error())
 		} else {
-			renderJSON(ctx, res.P)
+			renderJSON(ctx, gin.H{
+				"host":   options.Opts.AvatarHost,
+				"avatar": res.P,
+			})
 		}
 		return
 	}
