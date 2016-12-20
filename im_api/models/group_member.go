@@ -111,7 +111,7 @@ func AddGroupMember(gid string, GroupMems []string) (*Group, error) {
 		tx.Where("gid = ? and member = ? ", gid, mem).Find(gm)
 		//如果Status = Normal 那么判断用户已经存在
 		if gm.GroupId != "" && gm.Status == Normal {
-			return nil, fmt.Errorf("%s 已经存在", mem)
+			continue
 		}
 		//如果 Status = Quit 那么就将Status 修改为 Normal
 		if gm.Status == Quit {

@@ -615,7 +615,7 @@ func AddGroupMember(RPCHost string) gin.HandlerFunc {
 				console.StdLog.Error(err)
 				renderJSON(ctx, struct{}{}, 0)
 			} else {
-				renderJSON(ctx, struct{}{}, 1)
+				renderJSON(ctx, struct{}{}, 1, err)
 			}
 			return
 		}
