@@ -75,6 +75,7 @@ func newHTTPServer() *gin.Engine {
 			//获取消息未读详情信息
 			messages.GET("/:cid/readinfo/:msgid/:origin", v1.MessageRead())
 		}
+		version1.POST("/message/collects", v1.AddMsgCollect)
 
 		//戳一下
 		poke := version1.Group("pokes")
