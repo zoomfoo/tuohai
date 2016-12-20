@@ -61,6 +61,7 @@ func ProTeaGroup(ctx *gin.Context, creator, name string, gtype models.GroupType,
 		"name":             bot_name,
 		"app_id":           appid,
 		"channel_id":       gid,
+		"creator":          creator,
 	}
 	console.StdLog.Debug("boti_info: ", bot_info)
 	if err := models.SaveBotInfo("bot:id:"+botid, bot_info); err != nil {
