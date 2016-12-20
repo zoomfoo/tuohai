@@ -1,0 +1,72 @@
+{
+	"code": 0,1,2...
+	"msg": ""
+	"data": [list]
+}
+注意：以下接口除非特殊说明都需要登陆，需要query中带有session_token参数，故不再在每个接口中分别列出，在此统一说明
+
+1. 查看聊天记录(默认每页30条)
+GET /v1/msg/history?start=1234567890&end=1234567891&cid=xdufeu&page_num=2
+参数：
+	start: 开始时间戳
+	end：结束时间戳
+	cid：频道ID
+	page_num：分页号，如果超出最大分页，默认为第一页
+返回：
+	"code":0,
+	"msg":"",
+	"data":[],
+	"page_num":2,  	当前页码
+	"total_num":20  总共页码
+
+2. 邀请好友
+GET /v1/friend/invite?friend=13345678910/abcd@gg.com
+参数：
+	friend：被邀请人的手机号或邮箱	
+返回：
+	"code":0
+	"msg":""
+注：在邀请成功后端需要自动添加两人为好友，需要主站配合（TODO）
+
+3. 转发消息
+GET /v1/msg/forward?cid=xdufeu&msgid=xdd12fdd
+参数：
+	cid：频道ID
+	msgid: 被转发消息的ID
+返回：
+	"code":0
+	"msg":""
+
+4. 创建临时会话
+GET /v1/session/tmp?partner=abcde
+参数：
+	partner: 对方ID
+返回：
+	"code": 0,
+	"msg": "",
+	"data":[{"cid":"xxxx","session":}]
+注：通讯录后端需要过滤掉临时好友
+
+5. 屏蔽临时消息
+GET /v1/session/tmp/shield?cid=xxdxxx
+参数：
+	cid：频道ID
+返回：
+	"code": 0,
+	"msg":"",
+注：后端增加消息屏蔽功能，目前只有临时会话具有该功能
+
+6. 后台数据统计
+GET ／backend/stat?start=1234567890&end=1234567891
+参数：
+	start: 开始日期时间戳
+	end： 结束日期时间戳
+返回：
+	"code": 0,
+	"msg": "",
+	"data":[] 按天分组
+
+
+6. 后端功能接口：邮件发送
+7. 后端功能接口：短信发送
+
