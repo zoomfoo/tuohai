@@ -58,7 +58,7 @@ func ProTeaGroup(ctx *gin.Context, creator, name string, gtype models.GroupType,
 	bot_info := gin.H{
 		"bot_access_token": bot_access_token,
 		"bot_id":           botid,
-		"bot_name":         bot_name,
+		"name":             bot_name,
 		"app_id":           appid,
 		"channel_id":       gid,
 	}
