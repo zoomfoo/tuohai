@@ -23,7 +23,7 @@ func CreateProjectGroup() gin.HandlerFunc {
 		member := ctx.PostForm("member")
 		console.StdLog.Debug("creator: ", creator, "name:", name, "member: ", member)
 		if name == "" {
-			render.RenderJSON(ctx, []int{}, 1, "group_name is empty")
+			render.RenderJSON(ctx, []int{}, 1, "name is empty")
 			return
 		}
 
