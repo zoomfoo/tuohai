@@ -639,7 +639,7 @@ func AddGroupMember(RPCHost string) gin.HandlerFunc {
 //移除群成员
 func RemoveGroupMember(RPCHost string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ids := strings.Split(ctx.Request.FormValue("ids"), ",")
+		ids := strings.Split(ctx.Request.FormValue("member"), ",")
 		gid := ctx.Param("gid")
 		user := ctx.MustGet("user").(*auth.MainUser)
 		if len(ids) == 0 {
