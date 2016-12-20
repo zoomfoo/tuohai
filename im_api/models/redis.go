@@ -19,28 +19,28 @@ func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
 
 	// 获取消息未读数
 	key := "msg:unread:cnt:" + cid + ":" + msgid + ":" + origin
-	cnt, err := c.Do("GET", key)
+
+	cc, err := redis.Int(c.Do("GET", key))
 	if err != nil {
 		log.Println(err)
 		return 0, nil, err
 	}
-	cc, _ := redis.Int(cnt, nil)
+
 	// 获取消息未读人员列表
 	key = "msg:unread:list:" + cid + ":" + msgid + ":" + origin
-	unlist, err := c.Do("SMEMBERS", key)
-	if err != nil {
-		log.Println(err)
-		return 0, nil, err
+	var unread_err error
+	if res["unread"], unread_err = redis.Strings(c.Do("SMEMBERS", key)); unread_err != nil {
+		log.Println(unread_err)
+		return 0, nil, unread_err
 	}
-	res["unread"], _ = redis.Strings(unlist, nil)
+
 	// 获取消息已读人员列表
 	key = "msg:read:list:" + cid + ":" + msgid + ":" + origin
-	rlist, err := c.Do("SMEMBERS", key)
-	if err != nil {
-		log.Println(err)
-		return 0, nil, err
+	var read_err error
+	if res["read"], read_err = redis.Strings(c.Do("SMEMBERS", key)); read_err != nil {
+		log.Println(read_err)
+		return 0, nil, read_err
 	}
-	res["read"], _ = redis.Strings(rlist, nil)
 	return cc, res, nil
 }
 
