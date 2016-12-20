@@ -33,7 +33,7 @@ func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
 		log.Println(unread_err)
 		return 0, nil, unread_err
 	}
-
+	fmt.Println("unread key: ", key)
 	// 获取消息已读人员列表
 	key = "msg:read:list:" + cid + ":" + msgid + ":" + origin
 	var read_err error

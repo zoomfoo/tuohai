@@ -73,7 +73,7 @@ func newHTTPServer() *gin.Engine {
 			//获取消息历史记录 √
 			messages.GET("/:cid", v1.Messages())
 			//获取消息未读详情信息
-			messages.GET("/:cid/readinfo/:msgid", v1.MessageRead())
+			messages.GET("/:cid/readinfo/:msgid/:origin", v1.MessageRead())
 		}
 
 		//戳一下

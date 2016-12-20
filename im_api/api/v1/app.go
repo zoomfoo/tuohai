@@ -420,8 +420,9 @@ func MessageRead() gin.HandlerFunc {
 		cid := ctx.Param("cid")
 		msgid := ctx.Param("msgid")
 		user := ctx.MustGet("user").(*auth.MainUser)
+		origin := ctx.Param("origin")
 		fmt.Printf("get read info.cid:%s,msgid:%s,origin:%s\n", cid, msgid, user.Uid)
-		cnt, res, err := models.MsgReadInfo(cid, msgid, user.Uid)
+		cnt, res, err := models.MsgReadInfo(cid, msgid, origin)
 		if err != nil {
 			renderJSON(ctx, struct{}{}, 1, "查数据出现问题")
 		} else {
