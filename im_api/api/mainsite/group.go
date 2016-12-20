@@ -21,7 +21,7 @@ func CreateProjectGroup() gin.HandlerFunc {
 		creator := ctx.PostForm("creator")
 		name := ctx.PostForm("name")
 		member := ctx.PostForm("member")
-
+		console.StdLog.Debug("creator: ", creator, "name:", name, "member: ", member)
 		if name == "" {
 			render.RenderJSON(ctx, []int{}, 1, "group_name is empty")
 			return
@@ -62,7 +62,7 @@ func ProTeaGroup(ctx *gin.Context, creator, name string, gtype models.GroupType,
 		"app_id":           appid,
 		"cid":              gid,
 	}
-
+	console.StdLog.Debug("boti_info: ", bot_info)
 	if err := models.SaveBotInfo("bot:id:"+botid, bot_info); err != nil {
 		console.StdLog.Error(err)
 		render.RenderJSON(ctx, []int{}, 1, "未找到数据")
