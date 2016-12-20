@@ -141,10 +141,12 @@ func SaveBotInfo(key string, info map[string]interface{}) error {
 	defer c.Close()
 
 	str := string(js)
+	fmt.Println("发布并缓存bot信息: ", str)
+	//缓存一份数据保证离线消息最终一致
 	if _, err := c.Do("set", key, str); err != nil {
 		return err
 	}
-
+	//发布一份数据
 	if err := Publish("cw:bot:add", str); err != nil {
 		return err
 	}
