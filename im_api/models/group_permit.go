@@ -53,7 +53,7 @@ func Permit(gid, uid string, role_info OperationVerb) *GroupPermit {
 	g := NewGroup(gid)
 	ri := RoleInfo(gid, uid)
 	//gtype 群组类型 role_info 群组权限动作 ri 为role 2是创建者
-	fmt.Println("群组权限: ", g.GType, role_info, ri)
+	fmt.Println("群组权限: 群类型:", g.GType, "动作", role_info, "角色", ri)
 	gp := &GroupPermit{}
 	err := db.Find(gp, "group_type = ? and role_info = ? and role = ? and status = 0", g.GType, role_info, ri).Error
 	if err != nil {

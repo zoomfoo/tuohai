@@ -648,7 +648,7 @@ func RemoveGroupMember(RPCHost string) gin.HandlerFunc {
 		}
 
 		//判断操作这否有权限操作群
-		if !models.Permit(gid, user.Uid, models.ADD_GROUP_MEMS).IsRemoveGroupMember() {
+		if !models.Permit(gid, user.Uid, models.DEL_GROUP_MEMS).IsRemoveGroupMember() {
 			//无权限
 			renderJSON(ctx, struct{}{}, 1, "无权删除成员!")
 			return
