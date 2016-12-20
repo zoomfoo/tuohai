@@ -427,8 +427,8 @@ func MessageRead() gin.HandlerFunc {
 		} else {
 			renderJSON(ctx, gin.H{
 				"cnt":    strconv.Itoa(cnt),
-				"read":   strings.Join(res["read"], ","),
-				"unread": strings.Join(res["unread"], ","),
+				"read":   res["read"],
+				"unread": res["unread"],
 			})
 		}
 		return
