@@ -81,6 +81,9 @@ func newHTTPServer() *gin.Engine {
 			messages.GET("/history", v1.MsgHistory())
 			messages.GET("/forward", v1.ForwardMsg())
 		}
+		version1.POST("/message/collects", v1.AddMsgCollect)
+		version1.DELETE("/message/collects", v1.DelMsgCollect)
+		version1.GET("/message/collects", v1.GetMsgCollect)
 
 		//戳一下
 		poke := version1.Group("pokes")

@@ -10,7 +10,7 @@ import (
 )
 
 type Console struct {
-	access_log, error_log log.Logger
+	access_log, error_log, debug log.Logger
 }
 
 var StdLog *Console
@@ -18,9 +18,13 @@ var StdLog *Console
 func New(l log.Logger) *Console {
 	access_log, error_log := l, l
 	// Prefix
-	access_log.SetOutput(CreateLogFile(fmt.Sprintf("/tmp/log/%saccess.log", l.Prefix())))
-	error_log.SetOutput(CreateLogFile(fmt.Sprintf("/tmp/log/%serror.log", l.Prefix())))
-	StdLog = &Console{access_log: access_log, error_log: error_log}
+	access_log.SetOutput(CreateLogFile(fmt.Sprintf("../../log/%saccess.log", l.Prefix())))
+	error_log.SetOutput(CreateLogFile(fmt.Sprintf("../../log/%serror.log", l.Prefix())))
+	//debug
+	debug := l
+	debug.SetOutput(CreateLogFile(fmt.Sprintf("../../log/%sdebug.log", l.Prefix())))
+
+	StdLog = &Console{access_log: access_log, error_log: error_log, debug: debug}
 	return StdLog
 }
 
@@ -57,12 +61,12 @@ func (c *Console) Logf(format string, v ...interface{}) {
 	c.access_log.Output(2, fmt.Sprintf(format, v))
 }
 
-func (c *Console) Debug() {
-
+func (c *Console) Debug(arg ...interface{}) {
+	c.debug.Output(2, fmt.Sprintf("Debug: %v\n", arg))
 }
 
-func Debugf() {
-
+func (c *Console) Debugf(format string, v ...interface{}) {
+	c.debug.Output(2, fmt.Sprintf(format, v))
 }
 
 func Logger() gin.HandlerFunc {

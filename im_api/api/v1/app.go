@@ -397,7 +397,24 @@ func Messages() gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, msg)
+		var messages []gin.H
+		for i, _ := range msg {
+			messages = append(messages, gin.H{
+				"from":        msg[i].From,
+				"cid":         msg[i].To,
+				"type":        msg[i].Type,
+				"subtype":     msg[i].Subtype,
+				"msg_id":      msg[i].MsgId,
+				"msg_data":    msg[i].MsgData,
+				"create_time": msg[i].CreatedAt,
+				"unread_cnt":  models.MsgUnreadCount(msg[i].To, strconv.Itoa(int(msg[i].MsgId)), msg[i].From),
+			})
+		}
+		if len(messages) == 0 {
+			renderJSON(ctx, messages)
+			return
+		}
+		renderJSON(ctx, messages)
 	}
 }
 

@@ -44,6 +44,20 @@ func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
 	return cc, res, nil
 }
 
+func MsgUnreadCount(cid, msgid, origin string) int {
+	c := rpool.Get()
+	defer c.Close()
+
+	// 获取消息未读数
+	key := "msg:unread:cnt:" + cid + ":" + msgid + ":" + origin
+	cc, err := redis.Int(c.Do("GET", key))
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+	return cc
+}
+
 func Subscribers(m chan redis.Message, key string) {
 	c := rpool.Get()
 	defer c.Close()

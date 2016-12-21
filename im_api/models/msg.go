@@ -47,3 +47,8 @@ func GetLastHistory(cid string) (*Message, error) {
 		Order("msg_id desc").Limit(1).Scan(&msgs).Error
 	return &msgs[0], err
 }
+
+func GetMessage(msg *Message) *Message {
+	db.Where("`to` = ? and msg_id = ?", msg.To, msg.MsgId).Find(msg)
+	return msg
+}
