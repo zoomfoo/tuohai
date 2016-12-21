@@ -269,6 +269,7 @@ func Group(url string) gin.HandlerFunc {
 				"name":    group.Gname,
 				"creator": group.Creator,
 				"time":    group.CreatedTime,
+				"type":    group.GType,
 				"member":  list,
 			})
 
