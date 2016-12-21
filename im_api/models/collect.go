@@ -5,13 +5,13 @@ import (
 )
 
 type MsgCollect struct {
-	Id        int    `gorm:"column:id"`
-	Collector string `gorm:"column:collector"`
-	To        string `gorm:"column:to"`
-	Type      string `gorm:"column:"type"`
-	MsgId     uint64 `gorm:"column:msg_id"`
-	Created   int64  `gorm:"column:created"`
-	Updated   int64  `gorm:"column:updated"`
+	Id        int    `json:"-"`
+	Collector string `json:"collector"`
+	To        string `json:"cid"`
+	Type      string `json:"type"`
+	MsgId     uint64 `json:"mid"`
+	Created   int64  `json:"time"`
+	Updated   int64  `json:"-"`
 
 	HistoryMsg
 }
@@ -54,34 +54,53 @@ func (c *MsgCollect) getHistoryMsg() error {
 	c.Subtype = msg.Subtype
 	return nil
 }
-func getCollect(cid string, mid uint64) *MsgCollect {
+func getCollect(cid string, mid uint64) (*MsgCollect, error) {
 	mc := &MsgCollect{}
-	db.Find(mc, "`to` = ? and msg_id = ?", cid, mid)
-	return mc
+	err := db.Find(mc, "`to` = ? and msg_id = ?", cid, mid).Error
+	fmt.Println(mc, err)
+	return mc, err
 }
 
-func (c *MsgCollect) msgCollects(collector, limit, offset string) ([]MsgCollect, error) {
-	var mc []MsgCollect
-	db.Limit(limit).Offset(offset).Order("created desc").Find(&mc, "`collector` = ?", collector)
+func (c *MsgCollect) msgCollects(collector string, limit, offset int) ([]MsgCollect, int, error) {
+	var (
+		mc    []MsgCollect
+		total int
+	)
 
+	err := db.Limit(limit).Offset(offset).Find(&mc, "`collector` = ?", collector).Error
+	db.Table(c.TableName()).Where("`collector` = ?", collector).Count(&total)
 	for i, _ := range mc {
 		mc[i].getHistoryMsg()
 	}
 
-	return mc, nil
+	return mc, total, err
 }
 
 func (c *MsgCollect) addMsgCollect() error {
 	if err_msg := c.validationField(); err_msg != "" {
 		return fmt.Errorf("%s", err_msg)
 	}
-	mc := getCollect(c.To, c.MsgId)
-	fmt.Println("mc: ", *mc)
-	return db.Create(c).Error
+	_, err := getCollect(c.To, c.MsgId)
+	fmt.Println(err, RecordNotFound, err == RecordNotFound)
+	if err != nil {
+		if err.Error() == RecordNotFound.Error() {
+			return db.Create(c).Error
+		}
+		return err
+	}
+	return nil
 }
 
-func (c *MsgCollect) DelMsgCollect() {
+func (c *MsgCollect) delMsgCollect() error {
+	return db.Delete(c, "id > 0 and `to` = ? and msg_id = ?", c.To, c.MsgId).Error
+}
 
+func DelMsgCollect(cid string, mid int) error {
+	c, err := getCollect(cid, uint64(mid))
+	if err != nil {
+		return err
+	}
+	return c.delMsgCollect()
 }
 
 //collector 收藏者
@@ -91,4 +110,21 @@ func (c *MsgCollect) DelMsgCollect() {
 func AddMsgCollect(collector, cid, ctype string, mid uint64) error {
 	mc := &MsgCollect{Collector: collector, To: cid, MsgId: mid, Type: ctype}
 	return mc.addMsgCollect()
+}
+
+func CollectsByPaging(collector string, pageindex, pagesize int) ([]MsgCollect, int, error) {
+	var mc MsgCollect
+	if pageindex == 0 || pagesize == 0 {
+		pageindex = 0
+		pagesize = 20
+	} else {
+		pageindex = (pageindex - 1) * pagesize
+	}
+	fmt.Println("pageindex", pageindex, "pagesize", pagesize)
+	return mc.msgCollects(collector, pagesize, pageindex)
+}
+
+func CollectsByOffset(collector string, limit, offset int) ([]MsgCollect, int, error) {
+	var mc MsgCollect
+	return mc.msgCollects(collector, limit, offset)
 }

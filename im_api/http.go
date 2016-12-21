@@ -76,6 +76,8 @@ func newHTTPServer() *gin.Engine {
 			messages.GET("/:cid/readinfo/:msgid/:origin", v1.MessageRead())
 		}
 		version1.POST("/message/collects", v1.AddMsgCollect)
+		version1.DELETE("/message/collects", v1.DelMsgCollect)
+		version1.GET("/message/collects", v1.GetMsgCollect)
 
 		//戳一下
 		poke := version1.Group("pokes")
