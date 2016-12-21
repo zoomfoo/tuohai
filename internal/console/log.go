@@ -18,8 +18,8 @@ var StdLog *Console
 func New(l log.Logger) *Console {
 	access_log, error_log := l, l
 	// Prefix
-	access_log.SetOutput(CreateLogFile(fmt.Sprintf("../../log/%saccess.log", l.Prefix())))
-	error_log.SetOutput(CreateLogFile(fmt.Sprintf("../../log/%serror.log", l.Prefix())))
+	access_log.SetOutput(CreateLogFile(fmt.Sprintf("/tmp/log/%saccess.log", l.Prefix())))
+	error_log.SetOutput(CreateLogFile(fmt.Sprintf("/tmp/log/%serror.log", l.Prefix())))
 	StdLog = &Console{access_log: access_log, error_log: error_log}
 	return StdLog
 }

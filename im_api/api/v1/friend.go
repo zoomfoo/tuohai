@@ -120,6 +120,13 @@ func Friend(url string) gin.HandlerFunc {
 	}
 }
 
+func InviteFriend() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		renderJSON(ctx, struct{}{})
+		return
+	}
+}
+
 func AddFriend(addr string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		uid := ctx.PostForm("uuid")

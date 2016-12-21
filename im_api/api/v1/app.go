@@ -361,6 +361,23 @@ func Sessions() gin.HandlerFunc {
 	}
 }
 
+func MsgHistory() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// start := ctx.Query("start")
+		// end := ctx.Query("end")
+		// cid := ctx.Query("cid")
+		renderJSON(ctx, []int{})
+		return
+	}
+}
+
+func ForwardMsg() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		renderJSON(ctx, []int{})
+		return
+	}
+}
+
 func Messages() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		cid := ctx.Param("cid")
@@ -399,6 +416,20 @@ func RemoveSession() gin.HandlerFunc {
 		//删除未读消息数
 		models.CleanSessionUnread(sid, user.Uid)
 		renderJSON(ctx, true)
+	}
+}
+
+// 创建临时会话
+func CreateTmpSession() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		renderJSON(ctx, struct{}{})
+	}
+}
+
+// 屏蔽或解除屏蔽临时会话
+func ShieldSession(flag bool) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		renderJSON(ctx, struct{}{})
 	}
 }
 

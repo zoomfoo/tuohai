@@ -65,6 +65,9 @@ func newHTTPServer() *gin.Engine {
 			//删除session no
 			sessions.DELETE("/:sid", v1.RemoveSession())
 			sessions.DELETE("/:sid/unread", v1.CleanSessionUnread())
+			sessions.GET("/tmp", v1.CreateTmpSession())
+			sessions.GET("/tmp/shield", v1.ShieldSession(true))
+			sessions.GET("/tmp/unshield", v1.ShieldSession(false))
 		}
 
 		//消息
@@ -74,6 +77,9 @@ func newHTTPServer() *gin.Engine {
 			messages.GET("/:cid", v1.Messages())
 			//获取消息未读详情信息
 			messages.GET("/:cid/readinfo/:msgid/:origin", v1.MessageRead())
+			// 获取历史消息(单独窗口中显示时)
+			messages.GET("/history", v1.MsgHistory())
+			messages.GET("/forward", v1.ForwardMsg())
 		}
 
 		//戳一下
@@ -102,6 +108,7 @@ func newHTTPServer() *gin.Engine {
 			//添加好友
 			friends.POST("", v1.AddFriend(options.Opts.RPCHost))
 			friends.DELETE("/:cid", v1.DelFriend(options.Opts.RPCHost))
+			friends.GET("/invite", v1.InviteFriend())
 		}
 
 		//好友申请
