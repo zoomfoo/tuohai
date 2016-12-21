@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"time"
 )
 
 type MsgCollect struct {
@@ -54,9 +55,9 @@ func (c *MsgCollect) getHistoryMsg() error {
 	c.Subtype = msg.Subtype
 	return nil
 }
-func getCollect(cid string, mid uint64) (*MsgCollect, error) {
+func getCollect(collector, cid string, mid uint64) (*MsgCollect, error) {
 	mc := &MsgCollect{}
-	err := db.Find(mc, "`to` = ? and msg_id = ?", cid, mid).Error
+	err := db.Find(mc, "collector = ? and `to` = ? and msg_id = ?", collector, cid, mid).Error
 	fmt.Println(mc, err)
 	return mc, err
 }
@@ -80,10 +81,12 @@ func (c *MsgCollect) addMsgCollect() error {
 	if err_msg := c.validationField(); err_msg != "" {
 		return fmt.Errorf("%s", err_msg)
 	}
-	_, err := getCollect(c.To, c.MsgId)
+	_, err := getCollect(c.Collector, c.To, c.MsgId)
 	fmt.Println(err, RecordNotFound, err == RecordNotFound)
 	if err != nil {
 		if err.Error() == RecordNotFound.Error() {
+			c.Created = time.Now().Unix()
+			c.Updated = time.Now().Unix()
 			return db.Create(c).Error
 		}
 		return err
@@ -95,8 +98,8 @@ func (c *MsgCollect) delMsgCollect() error {
 	return db.Delete(c, "id > 0 and `to` = ? and msg_id = ?", c.To, c.MsgId).Error
 }
 
-func DelMsgCollect(cid string, mid int) error {
-	c, err := getCollect(cid, uint64(mid))
+func DelMsgCollect(collector, cid string, mid int) error {
+	c, err := getCollect(collector, cid, uint64(mid))
 	if err != nil {
 		return err
 	}

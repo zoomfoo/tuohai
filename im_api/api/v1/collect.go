@@ -61,7 +61,7 @@ func DelMsgCollect(ctx *gin.Context) {
 	cid := ctx.Request.FormValue("cid")
 	mid, _ := strconv.Atoi(ctx.Request.FormValue("mid"))
 	// ctype := ctx.PostForm("type")
-	// main_user := ctx.MustGet("user").(*auth.MainUser)
+	main_user := ctx.MustGet("user").(*auth.MainUser)
 	fmt.Println(ctx.Request.Form)
 	if cid == "" {
 		render.RenderJSON(ctx, struct{}{}, 1, "cid 不能为空")
@@ -71,7 +71,7 @@ func DelMsgCollect(ctx *gin.Context) {
 		render.RenderJSON(ctx, struct{}{}, 1, "mid 不能为空")
 		return
 	}
-	err := models.DelMsgCollect(cid, mid)
+	err := models.DelMsgCollect(main_user.Uid, cid, mid)
 	if err != nil {
 		console.StdLog.Error(err)
 		render.RenderJSON(ctx, false)
