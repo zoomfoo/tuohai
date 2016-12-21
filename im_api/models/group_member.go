@@ -198,7 +198,13 @@ func DelGroupMember(gid string, GroupMems []string) (*Group, error) {
 	c := rpool.Get()
 	defer c.Close()
 
+	//删除redis保存的成员
 	if _, err := c.Do("hdel", append([]interface{}{fmt.Sprintf("channel:member:%s", gid)}, val...)...); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	//删除redis保存 未读数
+	if _, err := c.Do("hdel", append([]interface{}{fmt.Sprintf("cnt:unread:%s", gid)}, val...)...); err != nil {
 		tx.Rollback()
 		return nil, err
 	}
