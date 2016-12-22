@@ -156,9 +156,12 @@ func AddFriend(addr string) gin.HandlerFunc {
 		if util.ValidateMob(num) {
 			phone = num
 		}
-		fmt.Println(phone)
+
 		//判断是否是邮箱
-		fmt.Println(num)
+		if util.ValidateEmail(num) {
+			email = num
+		}
+
 		//通过手机号添加好友
 		if phone != "" {
 			fmt.Println("添加好友 手机号: ", phone)

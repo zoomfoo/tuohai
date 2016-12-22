@@ -35,7 +35,7 @@ type FriendApply struct {
 }
 
 func (fa *FriendApply) TableName() string {
-	return "friend_apply"
+	return "tbl_friend_apply"
 }
 
 func (fa *FriendApply) ValidationField() string {
