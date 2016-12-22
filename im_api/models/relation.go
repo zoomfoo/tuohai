@@ -132,7 +132,8 @@ func DelRelation(cid string) error {
 	return nil
 }
 
-func IsRelation(small, big string) string {
+func IsRelation(a, b string) string {
+	small, big := convert.StringSortByRune(a, b)
 	r := &Relation{}
 	err := db.Find(r, "small_id = ? and big_id = ? and status = 0", small, big).Error
 	if err != nil {

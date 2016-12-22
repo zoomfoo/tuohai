@@ -73,9 +73,10 @@ GET ／backend/stat?start=1234567890&end=1234567891
 
 
 7. 获取收藏列表
-GET /v1/message/collects 
-limit 页面显示条数(大于0)
-offset 偏移量或者索引(从1开始如果等于0返回所有数据)
+GET /v1/message/collects
+请求：
+	limit 页面显示条数(大于0)
+	offset 偏移量或者索引(从1开始如果等于0返回所有数据)
 返回数据: 
 [
         {
@@ -86,12 +87,13 @@ offset 偏移量或者索引(从1开始如果等于0返回所有数据)
             "msg_type": 0,         //对应message对象中subtype字段类型
             "time": 1479436950, 
             "msg_data": ""          //收藏消息
-
+            "id":	//
         }
 ]
 
 8. 添加收藏
-/v1/message/collects  [post]
+POST /v1/message/collects
+请求：
 application/x-www-form-urlencoded
 cid        房间id(chennel id)
 mid        消息id
@@ -101,11 +103,10 @@ type      只有两种选择 1 个人消息  2 群主消息
 	"msg":""
 
 9. 删除收藏
-/v1/message/collects  [delete]
-application/x-www-form-urlencoded
-cid        房间id(chennel id)
-mid        消息id
-type       只有两种选择 1 个人消息  2 群主消息
+GET /v1/message/collects/del?id=111
+请求：
+	id：收藏列表id
+
 返回数据:
 	"code":0,
 	"msg":""

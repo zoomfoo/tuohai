@@ -44,7 +44,7 @@ func AddChuo(t *TblChuoyixiaMeta, tos []string) error {
 
 func GetChuoMeta(chid string) (*TblChuoyixiaMeta, error) {
 	t := &TblChuoyixiaMeta{}
-	if err := db.Find(t, "chuoid = ? and is_del_by_sender = 0", chid).Error; err != nil {
+	if err := db.Find(t, "chuoid = ?", chid).Error; err != nil {
 		return nil, err
 	}
 	return t, nil

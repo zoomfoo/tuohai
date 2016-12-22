@@ -120,7 +120,6 @@ func SaveFriendApply(apply *FriendApply) (string, error) {
 		tx.Rollback()
 		return "", err
 	}
-	fmt.Println("123: ", *apply)
 
 	small, big := convert.StringSortByRune(apply.ApplyUid, apply.TargetUid)
 	fmt.Println(small, big)

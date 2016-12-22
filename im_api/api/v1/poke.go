@@ -10,32 +10,58 @@ import (
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
+	"tuohai/im_api/options"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
-	msgsender "tuohai/internal/http"
+	httplib "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
 )
-
-const addr = "127.0.0.1:5004"
 
 func ConfirmChuo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		chuoid := ctx.Param("pid")
 		user := ctx.MustGet("user").(*auth.MainUser)
 		rcv := user.Uid
-		fmt.Println(chuoid, rcv)
+		chuo, err := models.GetChuoMeta(chuoid)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 0, "pid is invalid")
+			return
+		}
 		if err := models.ConfirmChuo(chuoid, rcv); err != nil {
-			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 0)
 			return
 		}
+		type confirm struct {
+			Chuoid    string `json:"chuoid"`
+			Confirmer string `json:"confirmer"`
+		}
+
+		go func() {
+			sc := &confirm{
+				Chuoid:    chuoid,
+				Confirmer: user.Uid,
+			}
+			b, err := json.Marshal(sc)
+			if err != nil {
+				// log here
+				return
+			}
+			m := &IM_Message.IMMsgData{
+				Type:    "event",
+				Subtype: "e_chuo_confirmed",
+				From:    user.Uid,
+				RcvId:   chuo.Sender,
+				MsgData: b,
+			}
+			httplib.SendLogicMsg(options.Opts.RPCHost, m)
+		}()
 		renderJSON(ctx, true)
 		return
 	}
 }
 
 // 戳一下业务处理
-func AddChuo(auth_url string) gin.HandlerFunc {
+func AddChuo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// sender, _ := ctx.GetPostForm("sender") //戳一下本人
 		token := ctx.MustGet("token").(string)
@@ -49,8 +75,8 @@ func AddChuo(auth_url string) gin.HandlerFunc {
 			return
 		}
 		to := strings.Split(tos, ",")
-		if len(to) > 250 {
-			renderJSON(ctx, struct{}{}, 0, "戳的人不能超过250")
+		if len(to) > 50 {
+			renderJSON(ctx, struct{}{}, 0, "戳的人不能超过50")
 			return
 		}
 		content, ok := ctx.GetPostForm("content")
@@ -73,7 +99,7 @@ func AddChuo(auth_url string) gin.HandlerFunc {
 		case 1:
 			//发送短信
 			go func() {
-				auth.SendSMS(auth_url, token, []string{
+				auth.SendSMS(options.Opts.AuthHost, token, []string{
 					"phones=15040565139",
 					"content=我测试看见了不用回复",
 					"site=yunliao",
@@ -101,13 +127,13 @@ func AddChuo(auth_url string) gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 0, "处理错误")
 			return
 		}
-		go sendChuoEvent(t, to)
+		go sendChuoMsg(t, to)
 		renderJSON(ctx, true)
 		return
 	}
 }
 
-func sendChuoEvent(t *models.TblChuoyixiaMeta, tos []string) error {
+func sendChuoMsg(t *models.TblChuoyixiaMeta, tos []string) error {
 	type chuo struct {
 		Sender  string `json:"sender"`
 		Cid     string `json:"cid"`
@@ -128,22 +154,21 @@ func sendChuoEvent(t *models.TblChuoyixiaMeta, tos []string) error {
 		return err
 	}
 	m := &IM_Message.IMMsgData{
-		Type:       "event",
-		Subtype:    "e_chuo_rcv",
-		From:       t.Sender,
-		MsgData:    b,
-		CreateTime: strconv.Itoa(t.CreatedAt),
+		Type:    "message",
+		Subtype: "m_chuo_rcv",
+		From:    t.Sender,
+		MsgData: b,
 	}
 	for _, to := range tos {
 		m.RcvId = to
 		// 可以改为异步
-		msgsender.SendLogicMsg(addr, m)
+		httplib.SendLogicMsg(options.Opts.RPCHost, m)
 	}
 	return nil
 }
 
 // 获取戳列表：我发出的
-func GetChuoListFrom(url string) gin.HandlerFunc {
+func GetChuoListFrom() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		token := ctx.MustGet("token").(string)
@@ -158,7 +183,7 @@ func GetChuoListFrom(url string) gin.HandlerFunc {
 
 		var list []gin.H
 		for i, _ := range clist {
-			u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", clist[i].Sender)})
+			u, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", clist[i].Sender)})
 			name := ""
 			if err == nil && len(u) > 0 {
 				name = u[0].Uname
@@ -186,7 +211,7 @@ func GetChuoListFrom(url string) gin.HandlerFunc {
 }
 
 // 获取戳列表：我收到的
-func GetChuoListRcv(url string) gin.HandlerFunc {
+func GetChuoListRcv() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// uid := ctx.Param("uid")
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -201,7 +226,7 @@ func GetChuoListRcv(url string) gin.HandlerFunc {
 
 		var list []gin.H
 		for i, _ := range clist {
-			u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", clist[i].Sender)})
+			u, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", clist[i].Sender)})
 			name := ""
 			if err == nil && len(u) > 0 {
 				name = u[0].Uname

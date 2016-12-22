@@ -1,6 +1,7 @@
 package mainsite
 
 import (
+	"crypto/md5"
 	"fmt"
 	"strconv"
 	"strings"
@@ -21,13 +22,19 @@ func CreateProjectGroup() gin.HandlerFunc {
 		creator := ctx.PostForm("creator")
 		name := ctx.PostForm("name")
 		member := ctx.PostForm("member")
+		sign := ctx.Query("sign")
+		ts := ctx.Query("ts")
+		if !CheckSign(ts, sign) {
+			render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
+			return
+		}
 		console.StdLog.Debug("creator: ", creator, "name:", name, "member: ", member)
 		if name == "" {
 			render.RenderJSON(ctx, []int{}, 1, "name is empty")
 			return
 		}
 
-		ProTeaGroup(ctx, creator, name, models.Project_Group, strings.Split(member, ","))
+		ProTeamGroup(ctx, creator, name, models.Project_Group, strings.Split(member, ","))
 	}
 }
 
@@ -36,11 +43,17 @@ func CreateTeamGroup() gin.HandlerFunc {
 		creator := ctx.PostForm("creator")
 		name := ctx.PostForm("name")
 		member := ctx.PostForm("member")
-		ProTeaGroup(ctx, creator, name, models.Team_Group, strings.Split(member, ","))
+		sign := ctx.Query("sign")
+		ts := ctx.Query("ts")
+		if !CheckSign(ts, sign) {
+			render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
+			return
+		}
+		ProTeamGroup(ctx, creator, name, models.Team_Group, strings.Split(member, ","))
 	}
 }
 
-func ProTeaGroup(ctx *gin.Context, creator, name string, gtype models.GroupType, member []string) {
+func ProTeamGroup(ctx *gin.Context, creator, name string, gtype models.GroupType, member []string) {
 	g, err := models.CreateGroup(creator, name, gtype, member)
 	if err != nil {
 		console.StdLog.Error(err)
@@ -82,7 +95,12 @@ func ProTeaGroup(ctx *gin.Context, creator, name string, gtype models.GroupType,
 func QuitGroupMember(ctx *gin.Context) {
 	uid := ctx.PostForm("uid")
 	gid := ctx.Param("gid")
-
+	sign := ctx.Query("sign")
+	ts := ctx.Query("ts")
+	if !CheckSign(ts, sign) {
+		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
+		return
+	}
 	_, err := models.DelGroupMember(gid, []string{uid})
 	if err != nil {
 		if err == models.RecordNotFound {
@@ -118,6 +136,12 @@ func AddGroupMember(ctx *gin.Context) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
 	}
+	sign := ctx.Query("sign")
+	ts := ctx.Query("ts")
+	if !CheckSign(ts, sign) {
+		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
+		return
+	}
 
 	g, err := models.AddGroupMember(gid, ids)
 	if err != nil {
@@ -143,4 +167,41 @@ func AddGroupMember(ctx *gin.Context) {
 	}()
 	render.RenderJSON(ctx, true)
 	return
+}
+
+func SendSystemMsg(ctx *gin.Context) {
+	from := ctx.PostForm("from")
+	to := ctx.PostForm("to")
+	msg := ctx.PostForm("msg")
+	sign := ctx.Query("sign")
+	ts := ctx.Query("ts")
+	if !CheckSign(ts, sign) {
+		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
+		return
+	}
+	rid := models.IsRelation(from, to)
+	if rid == "" {
+		render.RenderJSON(ctx, struct{}{}, 1, "无效的好友参数")
+	}
+	if len(msg) == 0 || len(msg) > 1024 {
+		render.RenderJSON(ctx, struct{}{}, 1, "好长的消息")
+	}
+	//RPC通知IM
+	go func() {
+		httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+			Type:       "message",
+			Subtype:    "m_system",
+			From:       from,
+			To:         rid,
+			MsgData:    []byte("{\"c\":" + msg + "}"),
+			CreateTime: strconv.Itoa(int(time.Now().Unix())),
+		})
+	}()
+	render.RenderJSON(ctx, true)
+	return
+}
+
+func CheckSign(ts, sign string) bool {
+	ns := fmt.Sprintf("%v", md5.Sum([]byte("clouderworkgots="+ts)))
+	return ns == sign
 }

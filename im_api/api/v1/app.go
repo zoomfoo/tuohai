@@ -1,11 +1,11 @@
 package v1
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
@@ -16,7 +16,6 @@ import (
 	httplib "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
 	"tuohai/internal/util"
-	"tuohai/internal/uuid"
 )
 
 //获取个人信息
@@ -48,7 +47,7 @@ func Profile() gin.HandlerFunc {
 //头像 上传不带host的url 客户端首先上传文件服务器 服务器返回url
 //昵称 更改服务方名称
 //个性签名 个性签名保存在im需要保存在本地im数据库中
-func PutProfile(url string) gin.HandlerFunc {
+func PutProfile() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var result struct {
 			Msg  string `json:"msg"`
@@ -91,7 +90,7 @@ func PutProfile(url string) gin.HandlerFunc {
 		}
 
 		//更新主站用户信息
-		auth_url := auth.GetUpdateUserInfoUrl(token, url, param)
+		auth_url := auth.GetUpdateUserInfoUrl(token, options.Opts.AuthHost, param)
 		fmt.Println(auth_url)
 		if err := httplib.Put(auth_url).ToJson(&result); err != nil {
 			console.StdLog.Error(err)
@@ -113,12 +112,12 @@ func PutProfile(url string) gin.HandlerFunc {
 
 //批量获取用户信息
 //如果与操作者不是好友cid返回空
-func Users(url string) gin.HandlerFunc {
+func Users() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		token := ctx.MustGet("token").(string)
 		ids := ctx.Query("ids")
-		u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", ids)})
+		u, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", ids)})
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
@@ -185,7 +184,7 @@ func Groups() gin.HandlerFunc {
 }
 
 //获取群组信息
-func Group(url string) gin.HandlerFunc {
+func Group() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
 		main_user := ctx.MustGet("user").(*auth.MainUser)
@@ -240,7 +239,7 @@ func Group(url string) gin.HandlerFunc {
 
 			var list []gin.H
 			for _, gm := range group.GroupMems {
-				u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", gm)})
+				u, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", gm)})
 				if err != nil {
 					fmt.Println(err)
 					continue
@@ -390,6 +389,9 @@ func Messages() gin.HandlerFunc {
 			renderJSON(ctx, []int{}, 0, "size 不能为空!")
 			return
 		}
+		if size > "20" {
+			size = "20"
+		}
 		msg, err := models.GetMsgById(cid, mid, size)
 		if err != nil {
 			console.StdLog.Error(err)
@@ -398,17 +400,45 @@ func Messages() gin.HandlerFunc {
 		}
 
 		var messages []gin.H
+		user := ctx.MustGet("user").(*auth.MainUser)
 		for i, _ := range msg {
-			messages = append(messages, gin.H{
-				"from":        msg[i].From,
-				"cid":         msg[i].To,
-				"type":        msg[i].Type,
-				"subtype":     msg[i].Subtype,
-				"msg_id":      msg[i].MsgId,
-				"msg_data":    msg[i].MsgData,
-				"create_time": msg[i].CreatedAt,
-				"unread_cnt":  models.MsgUnreadCount(msg[i].To, strconv.Itoa(int(msg[i].MsgId)), msg[i].From),
-			})
+			cnt := models.MsgUnreadCount(msg[i].To, strconv.Itoa(int(msg[i].MsgId)), msg[i].From)
+			if user.Uid == msg[i].From {
+				messages = append(messages, gin.H{
+					"from":        msg[i].From,
+					"cid":         msg[i].To,
+					"type":        msg[i].Type,
+					"subtype":     msg[i].Subtype,
+					"msg_id":      msg[i].MsgId,
+					"msg_data":    msg[i].MsgData,
+					"create_time": msg[i].CreatedAt,
+					"unread_cnt":  cnt,
+				})
+			} else {
+				is_read := 0
+				if cnt > 0 {
+					rlist, err := models.MsgReadList(msg[i].To, strconv.Itoa(int(msg[i].MsgId)), msg[i].From)
+					if err == nil {
+						for i, _ := range rlist {
+							if user.Uid == rlist[i] {
+								is_read = 1
+							}
+						}
+					}
+				} else {
+					is_read = 1
+				}
+				messages = append(messages, gin.H{
+					"from":        msg[i].From,
+					"cid":         msg[i].To,
+					"type":        msg[i].Type,
+					"subtype":     msg[i].Subtype,
+					"msg_id":      msg[i].MsgId,
+					"msg_data":    msg[i].MsgData,
+					"create_time": msg[i].CreatedAt,
+					"is_read":     is_read,
+				})
+			}
 		}
 		if len(messages) == 0 {
 			renderJSON(ctx, messages)
@@ -439,6 +469,7 @@ func RemoveSession() gin.HandlerFunc {
 // 创建临时会话
 func CreateTmpSession() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		// user := ctx.MustGet("user").(*auth.MainUser)
 		renderJSON(ctx, struct{}{})
 	}
 }
@@ -497,6 +528,13 @@ func Unreads() gin.HandlerFunc {
 	}
 }
 
+type GroupChangeNotify struct {
+	Uid  string `json:"uid"`
+	Gid  string `json:"gid"`
+	Type string `json:"type"`
+	Tip  string `json:"tip"`
+}
+
 //创建普通群
 //models.NORMAL_GROUP
 func CreateGroup() gin.HandlerFunc {
@@ -519,49 +557,31 @@ func CreateGroup() gin.HandlerFunc {
 			renderJSON(ctx, []int{}, 1, "远程服务器错误")
 			return
 		}
-
+		go func() {
+			tip := "<@" + user.Uid + "> 邀请你参加群聊"
+			gcn := &GroupChangeNotify{
+				Uid:  user.Uid,
+				Gid:  g.Gid,
+				Type: "create",
+				Tip:  tip,
+			}
+			gg, err := json.Marshal(gcn)
+			if err != nil {
+				return
+			}
+			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+				Type:    "message",
+				Subtype: "m_group_changed",
+				From:    user.Uid,
+				To:      g.Gid,
+				MsgData: gg,
+			})
+		}()
 		renderJSON(ctx, g)
 	}
 }
 
-func ProTeaGroup(ctx *gin.Context, creator, name string, gtype models.GroupType, member []string) {
-	g, err := models.CreateGroup(creator, name, gtype, member)
-	if err != nil {
-		console.StdLog.Error(err)
-		renderJSON(ctx, []int{}, 1, "未找到数据")
-		return
-	}
-
-	//生成botid
-	botid := uuid.NewV4().StringMd5()
-	gid := g.Gid
-	bot_access_token := uuid.NewV4().StringMd5()
-	bot_name := "clouderwork"
-	appid := "clouderwork"
-
-	bot_info := gin.H{
-		"bot_access_token": bot_access_token,
-		"bot_id":           botid,
-		"bot_name":         bot_name,
-		"app_id":           appid,
-		"cid":              gid,
-	}
-
-	if err := models.SaveBotInfo("bot:id:"+botid, bot_info); err != nil {
-		console.StdLog.Error(err)
-		renderJSON(ctx, []int{}, 1, "未找到数据")
-		return
-	}
-
-	renderJSON(ctx, gin.H{
-		"web_hook":         fmt.Sprintf("%s/hook/%s", options.Opts.WebHookHost, botid),
-		"group_id":         gid,
-		"bot_access_token": bot_access_token,
-		"bot_id":           botid,
-	})
-}
-
-func GroupRename(RPCHost string) gin.HandlerFunc {
+func GroupRename() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
 		newname := ctx.PostForm("name")
@@ -585,14 +605,24 @@ func GroupRename(RPCHost string) gin.HandlerFunc {
 		}
 
 		go func() {
+			tip := "<@" + user.Uid + "> 将群名修改为：" + newname
+			gcn := &GroupChangeNotify{
+				Uid:  user.Uid,
+				Gid:  gid,
+				Type: "rename",
+				Tip:  tip,
+			}
+			gg, err := json.Marshal(gcn)
+			if err != nil {
+				return
+			}
 			//RPC通知IM
-			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-				Type:       "message",
-				Subtype:    "m_group_changed",
-				From:       user.Uid,
-				To:         gid,
-				MsgData:    []byte("GroupRename"),
-				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+				Type:    "message",
+				Subtype: "m_group_changed",
+				From:    user.Uid,
+				To:      gid,
+				MsgData: gg,
 			})
 		}()
 		renderJSON(ctx, true)
@@ -601,7 +631,7 @@ func GroupRename(RPCHost string) gin.HandlerFunc {
 }
 
 //解散群组
-func DismissGroup(RPCHost string) gin.HandlerFunc {
+func DismissGroup() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -624,14 +654,24 @@ func DismissGroup(RPCHost string) gin.HandlerFunc {
 		}
 
 		go func() {
+			tip := "<@" + user.Uid + "> 已将本群解散"
+			gcn := &GroupChangeNotify{
+				Uid:  user.Uid,
+				Gid:  gid,
+				Type: "dismiss",
+				Tip:  tip,
+			}
+			gg, err := json.Marshal(gcn)
+			if err != nil {
+				return
+			}
 			//RPC通知IM
-			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-				Type:       "message",
-				Subtype:    "m_group_changed",
-				From:       user.Uid,
-				To:         gid,
-				MsgData:    []byte("dismiss"),
-				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+				Type:    "message",
+				Subtype: "m_group_changed",
+				From:    user.Uid,
+				To:      gid,
+				MsgData: gg,
 			})
 		}()
 		renderJSON(ctx, "ok")
@@ -640,12 +680,12 @@ func DismissGroup(RPCHost string) gin.HandlerFunc {
 }
 
 //添加群成员
-func AddGroupMember(RPCHost string) gin.HandlerFunc {
+func AddGroupMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ids := strings.Split(ctx.Request.FormValue("member"), ",")
 		gid := ctx.Param("gid")
 		user := ctx.MustGet("user").(*auth.MainUser)
-		if len(ids) == 0 {
+		if len(ids) == 0 || len(ids) > 50 {
 			renderJSON(ctx, struct{}{}, 1, "无效的参数")
 			return
 		}
@@ -670,13 +710,27 @@ func AddGroupMember(RPCHost string) gin.HandlerFunc {
 
 		//RPC通知IM
 		go func() {
-			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-				Type:       "message",
-				Subtype:    "m_group_changed",
-				From:       user.Uid,
-				To:         g.Gid,
-				MsgData:    []byte("addmember"),
-				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			ns := " "
+			for _, id := range ids {
+				ns += ("<@" + id + "> ")
+			}
+			tip := "<@" + user.Uid + "> 邀请" + ns + "加入群聊"
+			gcn := &GroupChangeNotify{
+				Uid:  user.Uid,
+				Gid:  gid,
+				Type: "add",
+				Tip:  tip,
+			}
+			gg, err := json.Marshal(gcn)
+			if err != nil {
+				return
+			}
+			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+				Type:    "message",
+				Subtype: "m_group_changed",
+				From:    user.Uid,
+				To:      gid,
+				MsgData: gg,
 			})
 		}()
 		renderJSON(ctx, g)
@@ -685,7 +739,7 @@ func AddGroupMember(RPCHost string) gin.HandlerFunc {
 }
 
 //移除群成员
-func RemoveGroupMember(RPCHost string) gin.HandlerFunc {
+func RemoveGroupMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ids := strings.Split(ctx.Request.FormValue("member"), ",")
 		gid := ctx.Param("gid")
@@ -714,14 +768,28 @@ func RemoveGroupMember(RPCHost string) gin.HandlerFunc {
 		}
 
 		go func() {
+			ns := " "
+			for _, id := range ids {
+				ns += ("<@" + id + "> ")
+			}
+			tip := "<@" + user.Uid + "> 已将" + ns + "移出本群"
+			gcn := &GroupChangeNotify{
+				Uid:  user.Uid,
+				Gid:  gid,
+				Type: "remove",
+				Tip:  tip,
+			}
+			gg, err := json.Marshal(gcn)
+			if err != nil {
+				return
+			}
 			//RPC通知IM
-			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-				Type:       "message",
-				Subtype:    "m_group_changed",
-				From:       user.Uid,
-				To:         g.Gid,
-				MsgData:    []byte("removemember"),
-				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+				Type:    "message",
+				Subtype: "m_group_changed",
+				From:    user.Uid,
+				To:      g.Gid,
+				MsgData: gg,
 			})
 		}()
 		renderJSON(ctx, g)
@@ -730,7 +798,7 @@ func RemoveGroupMember(RPCHost string) gin.HandlerFunc {
 }
 
 //退出群成员
-func QuitGroupMember(RPCHost string) gin.HandlerFunc {
+func QuitGroupMember() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		gid := ctx.Param("gid")
@@ -747,14 +815,24 @@ func QuitGroupMember(RPCHost string) gin.HandlerFunc {
 		}
 
 		go func() {
+			tip := "<@" + user.Uid + "> 已退出群聊"
+			gcn := &GroupChangeNotify{
+				Uid:  user.Uid,
+				Gid:  gid,
+				Type: "quit",
+				Tip:  tip,
+			}
+			gg, err := json.Marshal(gcn)
+			if err != nil {
+				return
+			}
 			//RPC通知IM
-			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
-				Type:       "message",
-				Subtype:    "m_group_changed",
-				From:       user.Uid,
-				To:         gid,
-				MsgData:    []byte("quitmember"),
-				CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+				Type:    "message",
+				Subtype: "m_group_changed",
+				From:    user.Uid,
+				To:      gid,
+				MsgData: gg,
 			})
 		}()
 		renderJSON(ctx, true)

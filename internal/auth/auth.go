@@ -11,11 +11,12 @@ import (
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
+	"tuohai/im_api/options"
 	"tuohai/internal/convert"
 	httplib "tuohai/internal/http"
 )
 
-func LoginAuth(host string, params ...int) gin.HandlerFunc {
+func LoginAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token := ""
 		token = ctx.Request.Header.Get("session_token")
@@ -23,7 +24,7 @@ func LoginAuth(host string, params ...int) gin.HandlerFunc {
 			token = ctx.Query("session_token")
 		}
 
-		url := GetUserInfoUrl(token, host)
+		url := GetUserInfoUrl(token, options.Opts.AuthHost)
 		if user, err := ValidationToken(url); err != nil || user == nil {
 			ctx.Abort()
 			fmt.Println(err)
@@ -33,16 +34,14 @@ func LoginAuth(host string, params ...int) gin.HandlerFunc {
 			//每一个新的请求都会新创建Context
 			//所以Context类下面的key是不需要加锁的
 			//这里user可以放心使用
-			fmt.Println("用户id: ", user.Uid)
-			if len(params) == 0 {
-				models.ValidAndCreate(&models.User{
-					Uuid:  user.Uid,
-					Uname: user.Nickname,
-					Phone: user.Phone,
-					Email: user.Email,
-					Token: token,
-				})
-			}
+			fmt.Println("user id: ", user.Uid)
+			models.ValidAndCreate(&models.User{
+				Uuid:  user.Uid,
+				Uname: user.Nickname,
+				Phone: user.Phone,
+				Email: user.Email,
+				Token: token,
+			})
 			ctx.Set("user", user)
 			ctx.Set("token", token)
 			ctx.Next()

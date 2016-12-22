@@ -7,14 +7,17 @@ import (
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
+	"tuohai/im_api/options"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
 	"tuohai/internal/convert"
+	httplib "tuohai/internal/http"
+	"tuohai/internal/pb/IM_Message"
 	"tuohai/internal/util"
 	"tuohai/internal/uuid"
 )
 
-func Friends(url string) gin.HandlerFunc {
+func Friends() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		token := ctx.MustGet("token").(string)
@@ -35,7 +38,7 @@ func Friends(url string) gin.HandlerFunc {
 				f_uuid = rel.SmallId
 			}
 
-			u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", f_uuid)})
+			u, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", f_uuid)})
 			if err != nil {
 				fmt.Println(err)
 				continue
@@ -58,7 +61,7 @@ func Friends(url string) gin.HandlerFunc {
 	}
 }
 
-func Friend(url string) gin.HandlerFunc {
+func Friend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		f_uuid := ctx.Param("fid")
 		user := ctx.MustGet("user").(*auth.MainUser)
@@ -78,7 +81,7 @@ func Friend(url string) gin.HandlerFunc {
 		case rel.BigId:
 			id = rel.SmallId
 		}
-		u, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", id)})
+		u, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", id)})
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -127,7 +130,7 @@ func InviteFriend() gin.HandlerFunc {
 	}
 }
 
-func AddFriend(addr string) gin.HandlerFunc {
+func AddFriend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		uid := ctx.PostForm("uuid")
 		attach := ctx.PostForm("attach")
@@ -163,9 +166,9 @@ func AddFriend(addr string) gin.HandlerFunc {
 		if util.ValidateMob(num) {
 			phone = num
 		}
-		fmt.Println(phone)
+
 		//判断是否是邮箱
-		fmt.Println(num)
+
 		//通过手机号添加好友
 		if phone != "" {
 			fmt.Println("添加好友 手机号: ", phone)
@@ -239,11 +242,20 @@ func addFriend(user *auth.MainUser, uid, way, attach string) string {
 		console.StdLog.Error(err)
 		return "远程服务器错误"
 	}
-
+	go func() {
+		m := &IM_Message.IMMsgData{
+			Type:    "event",
+			Subtype: "e_friend_apply",
+			From:    user.Uid,
+			RcvId:   uid,
+		}
+		fmt.Printf("send friend apply event:%s", m)
+		httplib.SendLogicMsg(options.Opts.RPCHost, m)
+	}()
 	return ""
 }
 
-func DelFriend(addr string) gin.HandlerFunc {
+func DelFriend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		cid := ctx.Param("cid")
@@ -251,8 +263,27 @@ func DelFriend(addr string) gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "cid 不能为空")
 			return
 		}
+		// 是否是好友
+		r, err := models.Friend(user.Uid, cid)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "cid 非法")
+			return
+		}
+		var f string
+		if r.BigId == user.Uid {
+			f = r.SmallId
+		} else if r.SmallId == user.Uid {
+			f = r.BigId
+		} else {
+			renderJSON(ctx, struct{}{}, 1, "cid 不能为空")
+			return
+		}
+		if f == "" {
+			renderJSON(ctx, struct{}{}, 1, "cid 不能为空")
+			return
+		}
 
-		err := models.DelRelation(cid)
+		err = models.DelRelation(cid)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1)
@@ -265,7 +296,17 @@ func DelFriend(addr string) gin.HandlerFunc {
 			renderJSON(ctx, false)
 			return
 		}
-
+		go func() {
+			m := &IM_Message.IMMsgData{
+				Type:    "event",
+				Subtype: "e_friend_removed",
+				From:    user.Uid,
+				RcvId:   f,
+				MsgData: []byte("{\"uid\":" + user.Uid + "}"),
+			}
+			fmt.Printf("send friend apply event:%s", m)
+			httplib.SendLogicMsg(options.Opts.RPCHost, m)
+		}()
 		//聊天记录标记
 		renderJSON(ctx, models.CleanSessionUnread(cid, user.Uid))
 	}

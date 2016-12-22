@@ -3,10 +3,10 @@ package v1
 import (
 	"fmt"
 	"strconv"
-	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
+	"tuohai/im_api/options"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
 	"tuohai/internal/convert"
@@ -14,7 +14,7 @@ import (
 	"tuohai/internal/pb/IM_Message"
 )
 
-func ApplyFriends(url string) gin.HandlerFunc {
+func ApplyFriends() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		main_user := ctx.MustGet("user").(*auth.MainUser)
 		token := ctx.MustGet("token").(string)
@@ -28,7 +28,7 @@ func ApplyFriends(url string) gin.HandlerFunc {
 			return
 		}
 
-		list := RenderApplyFriends(apply, token, url)
+		list := RenderApplyFriends(apply, token)
 		if len(list) == 0 {
 			renderJSON(ctx, []int{})
 			return
@@ -55,7 +55,7 @@ func UnApplyFriends(url string) gin.HandlerFunc {
 			return
 		}
 
-		list := RenderApplyFriends(apply, token, url)
+		list := RenderApplyFriends(apply, token)
 		if len(list) == 0 {
 			renderJSON(ctx, []int{})
 			return
@@ -68,10 +68,10 @@ func UnApplyFriends(url string) gin.HandlerFunc {
 	}
 }
 
-func RenderApplyFriends(apply []models.FriendApply, token, url string) []gin.H {
+func RenderApplyFriends(apply []models.FriendApply, token string) []gin.H {
 	var list []gin.H
 	for i, _ := range apply {
-		users, err := auth.GetBatchUsers(token, url, []string{fmt.Sprintf("user_ids=%s", apply[i].ApplyUid)})
+		users, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", apply[i].ApplyUid)})
 		if err != nil {
 			console.StdLog.Error(err)
 		}
@@ -95,7 +95,7 @@ func RenderApplyFriends(apply []models.FriendApply, token, url string) []gin.H {
 	return list
 }
 
-func AgreeApplyFriend(addr string) gin.HandlerFunc {
+func AgreeApplyFriend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		main_user := ctx.MustGet("user").(*auth.MainUser)
 		//好友申请表中的唯一标识
@@ -121,21 +121,29 @@ func AgreeApplyFriend(addr string) gin.HandlerFunc {
 		}
 
 		//获取好友信息cid
-		go FriendToLogic(addr, main_user.Uid, cid)
+		go FriendToLogic(main_user.Uid, cid, id)
 		renderJSON(ctx, true)
 	}
 }
 
-func FriendToLogic(addr, from, cid string) {
+func FriendToLogic(from, cid, uid string) {
 	m := &IM_Message.IMMsgData{
-		Type:       "message",
-		Subtype:    "m_friend_added",
-		From:       from,
-		To:         cid,
-		MsgData:    []byte("我们已经成为好友"),
-		RcvId:      cid,
-		CreateTime: strconv.Itoa(int(time.Now().Unix())),
+		Type:    "message",
+		Subtype: "m_friend_added",
+		From:    from,
+		To:      cid,
+		MsgData: []byte("{\"c\":\"我们已经成为好友\"}"),
 	}
-	fmt.Println(*m)
-	httplib.SendLogicMsg(addr, m)
+	fmt.Printf("send friend added msg:%s", m)
+	httplib.SendLogicMsg(options.Opts.RPCHost, m)
+
+	m = &IM_Message.IMMsgData{
+		Type:    "event",
+		Subtype: "e_friend_added",
+		From:    from,
+		RcvId:   uid,
+		MsgData: []byte("{\"uid\":" + from + "}"),
+	}
+	fmt.Printf("send friend added event:%s", m)
+	httplib.SendLogicMsg(options.Opts.RPCHost, m)
 }

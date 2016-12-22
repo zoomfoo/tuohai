@@ -11,4 +11,6 @@ func NewMainSiteRouter(rg *gin.RouterGroup) {
 	rg.POST("/team/groups", CreateTeamGroup())
 	rg.DELETE("/groups/:gid/quit", QuitGroupMember)
 	rg.POST("/groups/:gid/add", AddGroupMember)
+
+	rg.POST("/sysmsg", SendSystemMsg)
 }
