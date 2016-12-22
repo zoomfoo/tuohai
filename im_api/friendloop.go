@@ -10,7 +10,7 @@ import (
 func (api *ImApi) friendLoop() {
 	err := models.SyncFriends()
 	fmt.Println(err)
-	ticker := time.Tick(10 * time.Second)
+	ticker := time.Tick(10 * time.Minute)
 	for {
 		select {
 		case <-ticker:

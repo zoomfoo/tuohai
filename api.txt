@@ -6,7 +6,7 @@
 注意：以下接口除非特殊说明都需要登陆，需要query中带有session_token参数，故不再在每个接口中分别列出，在此统一说明
 
 1. 查看聊天记录(默认每页30条)
-GET /v1/messages/history?start=1234567890&end=1234567891&cid=xdufeu&page_num=2
+GET /v1/message/history?start=1234567890&end=1234567891&cid=xdufeu&page_num=2
 参数：
 	start: 开始时间戳
 	end：结束时间戳
@@ -20,7 +20,7 @@ GET /v1/messages/history?start=1234567890&end=1234567891&cid=xdufeu&page_num=2
 	"total_num":20  总共页码
 
 2. 邀请好友
-GET /v1/friends/invite?friend=13345678910/abcd@gg.com
+GET /v1/friend/invite?friend=13345678910/abcd@gg.com
 参数：
 	friend：被邀请人的手机号或邮箱	
 返回：
@@ -29,7 +29,7 @@ GET /v1/friends/invite?friend=13345678910/abcd@gg.com
 注：在邀请成功后端需要自动添加两人为好友，需要主站配合（TODO）
 
 3. 转发消息
-GET /v1/messages/forward?cid=xdufeu&msgid=xdd12fdd&to=abcd,efg,hhef
+GET /v1/message/forward?cid=xdufeu&msgid=xdd12fdd&to=abcd,efg,hhef
 参数：
 	cid：频道ID
 	msgid: 被转发消息的ID
@@ -39,7 +39,7 @@ GET /v1/messages/forward?cid=xdufeu&msgid=xdd12fdd&to=abcd,efg,hhef
 	"msg":""
 
 4. 创建临时会话
-GET /v1/sessions/tmp?partner=abcde
+GET /v1/session/tmp?partner=abcde
 参数：
 	partner: 对方ID
 返回：
@@ -49,9 +49,9 @@ GET /v1/sessions/tmp?partner=abcde
 注：通讯录后端需要过滤掉临时好友
 
 5. 屏蔽临时消息
-GET /v1/sessions/tmp/shield?cid=xxdxxx
+GET /v1/session/tmp/shield?cid=xxdxxx
 取消屏蔽
-GET /v1/sessions/tmp/unshield?cid=xxdxxx
+GET /v1/session/tmp/unshield?cid=xxdxxx
 参数：
 	cid：频道ID
 返回：
