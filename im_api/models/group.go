@@ -65,7 +65,7 @@ type Group struct {
 	Admincnt    uint8     `gorm:"column:admincnt" json:"admin_cnt"`
 	Membercnt   uint      `gorm:"column:membercnt" json:"mem_cnt"`
 	Version     uint      `gorm:"column:version" json:"version"`
-	GType       GroupType `gorm:"column:type" json:"-"`
+	GType       GroupType `gorm:"column:type" json:"type"`
 	IsPublic    uint8     `gorm:"column:is_public" json:"is_public"`
 	Status      uint8     `gorm:"column:status" json:"-"`
 	CreatedTime int64     `gorm:"column:created_at" json:"time"`

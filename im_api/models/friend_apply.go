@@ -35,7 +35,7 @@ type FriendApply struct {
 }
 
 func (fa *FriendApply) TableName() string {
-	return "friend_apply"
+	return "tbl_friend_apply"
 }
 
 func (fa *FriendApply) ValidationField() string {
@@ -86,11 +86,11 @@ func FriendApplys(uid string, is bool, pageindex, pagesize int) ([]FriendApply, 
 	if pageindex != 0 && pagesize != 0 {
 		pageindex = (pageindex - 1) * pagesize
 	} else {
-		err := db.Where("target_uid = ? and status in (?)", uid, status).Find(&applys).Error
+		err := db.Where("target_uid = ? and status in (?)", uid, status).Order("launch_time desc").Find(&applys).Error
 		return applys, err
 	}
 
-	err := db.Offset(pageindex).Limit(pagesize).Where("target_uid = ? and status in (?)", uid, status).Find(&applys).Error
+	err := db.Offset(pageindex).Limit(pagesize).Where("target_uid = ? and status in (?)", uid, status).Order("launch_time desc").Find(&applys).Error
 	return applys, err
 }
 

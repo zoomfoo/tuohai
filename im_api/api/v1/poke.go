@@ -13,6 +13,7 @@ import (
 	"tuohai/im_api/options"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
+	"tuohai/internal/convert"
 	httplib "tuohai/internal/http"
 	"tuohai/internal/pb/IM_Message"
 )
@@ -95,6 +96,18 @@ func AddChuo() gin.HandlerFunc {
 			return
 		}
 
+		us, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", tos)})
+		if err != nil {
+			fmt.Println(err)
+			renderJSON(ctx, struct{}{}, 0, "获取用户手机失败!")
+			return
+		}
+
+		var str_phones string
+		for i, _ := range us {
+			str_phones += us[i].Phone + ","
+		}
+
 		switch urgent {
 		case 1:
 			//发送短信
@@ -103,7 +116,7 @@ func AddChuo() gin.HandlerFunc {
 					"phones=15040565139",
 					"content=我测试看见了不用回复",
 					"site=yunliao",
-					"user_id=21",
+					"user_id=" + convert.ToStr(user.Id),
 				})
 			}()
 		case 2:

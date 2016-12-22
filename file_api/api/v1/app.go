@@ -14,6 +14,7 @@ import (
 	"tuohai/file_api/util"
 	"tuohai/internal/auth"
 	"tuohai/internal/console"
+	"tuohai/internal/convert"
 	"tuohai/internal/uuid"
 )
 
@@ -126,10 +127,21 @@ func UploadAvatar() gin.HandlerFunc {
 			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "解析file文件失败"})
 			return
 		}
+		x := convert.StrTo(ctx.PostForm("x")).MustInt()
+		y := convert.StrTo(ctx.PostForm("y")).MustInt()
+		width := convert.StrTo(ctx.PostForm("w")).MustInt()
+		height := convert.StrTo(ctx.PostForm("h")).MustInt()
+
 		buf := &bytes.Buffer{}
 		buf.ReadFrom(f)
 		suffix := util.GetExt(h.Filename)
-		res := file.AvatarUpload(suffix, buf)
+		reader, err := file.ChangeImgeSize(buf, x, y, width, height)
+		if err != nil {
+			console.StdLog.Error(err)
+			ctx.JSON(http.StatusOK, gin.H{"code": 1, "data": struct{}{}, "message": "图片切割失败"})
+			return
+		}
+		res := file.AvatarUpload(suffix, reader)
 		if res.E != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, "", 1, res.E.Error())

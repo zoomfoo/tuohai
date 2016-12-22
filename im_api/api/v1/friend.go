@@ -111,7 +111,7 @@ func Friend() gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, gin.H{
-			"uid":      u[0].Uuid,
+			"uuid":     u[0].Uuid,
 			"name":     u[0].Uname,
 			"cid":      rel.Rid,
 			"avatar":   u[0].Avatar,
@@ -168,6 +168,9 @@ func AddFriend() gin.HandlerFunc {
 		}
 
 		//判断是否是邮箱
+		if util.ValidateEmail(num) {
+			email = num
+		}
 
 		//通过手机号添加好友
 		if phone != "" {
