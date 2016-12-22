@@ -108,7 +108,7 @@ func Friend(url string) gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, gin.H{
-			"uid":      u[0].Uuid,
+			"uuid":     u[0].Uuid,
 			"name":     u[0].Uname,
 			"cid":      rel.Rid,
 			"avatar":   u[0].Avatar,
