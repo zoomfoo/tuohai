@@ -492,11 +492,11 @@ func CreateGroup() gin.HandlerFunc {
 
 		go func() {
 			//RPC通知IM
-			httplib.SendLogicMsg(RPCHost, &IM_Message.IMMsgData{
+			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
 				Type:       "message",
 				Subtype:    "m_group_changed",
 				From:       user.Uid,
-				To:         gid,
+				To:         g.Gid,
 				MsgData:    []byte("GroupRename"),
 				CreateTime: strconv.Itoa(int(time.Now().Unix())),
 			})
