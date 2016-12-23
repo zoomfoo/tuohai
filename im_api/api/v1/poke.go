@@ -167,8 +167,8 @@ func sendChuoMsg(t *models.TblChuoyixiaMeta, tos []string) error {
 		return err
 	}
 	m := &IM_Message.IMMsgData{
-		Type:    "message",
-		Subtype: "m_chuo_rcv",
+		Type:    "event",
+		Subtype: "e_chuo_rcv",
 		From:    t.Sender,
 		MsgData: b,
 	}
