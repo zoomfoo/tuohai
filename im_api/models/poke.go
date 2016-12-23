@@ -66,7 +66,7 @@ func GetChuoRcv(to string) ([]TblChuoyixiaMeta, error) {
 		rs         []TblChuoyixia
 		poke_metas []TblChuoyixiaMeta
 	)
-	if err := db.Order("created desc").Find(&rs, "rcv = ? and is_del_by_rcv = 0", to).Error; err != nil {
+	if err := db.Order("created_at desc").Find(&rs, "rcv = ? and is_del_by_rcv = 0", to).Error; err != nil {
 		return nil, err
 	}
 
