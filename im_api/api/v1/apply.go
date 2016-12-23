@@ -41,7 +41,7 @@ func ApplyFriends() gin.HandlerFunc {
 	}
 }
 
-func UnApplyFriends(url string) gin.HandlerFunc {
+func UnApplyFriends() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		main_user := ctx.MustGet("user").(*auth.MainUser)
 		token := ctx.MustGet("token").(string)
