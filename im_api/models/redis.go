@@ -195,7 +195,7 @@ func ChannelUnreadNum(cid, uid string) int {
 func CleanSessionUnread(cid, uid string) bool {
 	c := rpool.Get()
 	defer c.Close()
-	_, err := c.Do("hdel", "cnt:unread"+cid, uid)
+	_, err := c.Do("hdel", "cnt:unread:"+cid, uid)
 	if err != nil {
 		console.StdLog.Error(err)
 		return false
