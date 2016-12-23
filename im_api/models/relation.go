@@ -71,7 +71,8 @@ func SyncCreateFriend(small, big string, fid int) (string, error) {
 	return createRelation(small, big, fid)
 }
 
-func createRelation(small, big string, fid int) (string, error) {
+func createRelation(a, b string, fid int) (string, error) {
+	small, big := convert.StringSortByRune(a, b)
 	if cid := IsRelation(small, big); cid != "" {
 		return cid, nil
 	}

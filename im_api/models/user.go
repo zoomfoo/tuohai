@@ -4,6 +4,8 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+
+	"tuohai/im_api/options"
 )
 
 type User struct {
@@ -51,8 +53,16 @@ func ValidAndCreate(u *User) error {
 	fmt.Println(*user)
 	if user == nil || user.Uuid == "" {
 		//用户不存在
-		fmt.Println("创建用户")
-		return db.Create(u).Error
+		fmt.Println("create new user in yunliao")
+		err := db.Create(u).Error
+		// 自动添加系统好友
+		go func() {
+			_, err := createRelation(options.Opts.SysUserYunliao, user.Uuid, 0)
+			if err != nil {
+				fmt.Println("add system relation fails")
+			}
+		}()
+		return err
 	}
 	return nil
 }
