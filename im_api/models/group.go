@@ -281,7 +281,7 @@ func CreateGroup(creator, gname string, group_type GroupType, members []string) 
 		//将数据更新redis中
 		c := rpool.Get()
 		defer c.Close()
-		if err := saveChennelToRedis(g.Gid, append(members, creator)); err != nil {
+		if err := saveChannelToRedis(g.Gid, append(members, creator)); err != nil {
 			tx.Rollback()
 			return nil, err
 		}

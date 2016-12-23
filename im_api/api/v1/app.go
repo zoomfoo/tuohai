@@ -350,7 +350,7 @@ func Sessions() gin.HandlerFunc {
 				"cid":        session.To,
 				"msg":        history,
 				"type":       session.SType,
-				"unread_cnt": models.ChennelUnreadNum(session.To, user.Uid),
+				"unread_cnt": models.ChannelUnreadNum(session.To, user.Uid),
 			})
 		}
 		if len(list) == 0 {

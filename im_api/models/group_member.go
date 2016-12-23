@@ -68,7 +68,7 @@ func GroupMemsId(gid string) ([]GroupMember, error) {
 	var (
 		mems []GroupMember
 	)
-	err := db.Find(&mems, "gid = ? and status = 0", gid).Error
+	err := db.Find(&mems, "gid = ? and status = 0 and is_bot = 0", gid).Error
 	return mems, err
 }
 
@@ -274,7 +274,7 @@ func SyncMysqlToRedis() error {
 	var gm []GroupMember
 	err := db.Find(&gm).Error
 	for i, _ := range gm {
-		err := saveChennelToRedis(gm[i].GroupId, []string{gm[i].Member})
+		err := saveChannelToRedis(gm[i].GroupId, []string{gm[i].Member})
 		if err != nil {
 			fmt.Println(err)
 		}

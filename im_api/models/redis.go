@@ -127,7 +127,7 @@ func IsGroupMember(gid, uid string) (bool, error) {
 	return res == 1, nil
 }
 
-func saveChennelToRedis(cid string, members []string) error {
+func saveChannelToRedis(cid string, members []string) error {
 	var (
 		val = []interface{}{"channel:member:" + cid}
 		now = time.Now().Unix()
@@ -180,10 +180,10 @@ func SaveBotInfo(key string, info map[string]interface{}) error {
 	return nil
 }
 
-func ChennelUnreadNum(cid, uid string) int {
+func ChannelUnreadNum(cid, uid string) int {
 	c := rpool.Get()
 	defer c.Close()
-	res, err := redis.String(c.Do("hmget", "cnt:unread"+cid, uid))
+	res, err := redis.String(c.Do("hmget", "cnt:unread:"+cid, uid))
 	if err != nil {
 		console.StdLog.Error(err)
 		return 0

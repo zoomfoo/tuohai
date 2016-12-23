@@ -94,7 +94,7 @@ func createRelation(small, big string, fid int) (string, error) {
 		return "", err
 	}
 	//同步到redis
-	if err := saveChennelToRedis(cid, []string{small, big}); err != nil {
+	if err := saveChannelToRedis(cid, []string{small, big}); err != nil {
 		tx.Rollback()
 		return "", err
 	}
