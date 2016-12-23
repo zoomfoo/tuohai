@@ -128,9 +128,9 @@ func newHTTPServer() *gin.Engine {
 		{
 			//获得好友申请列表
 			apply.GET("", v1.ApplyFriends())
-            apply.GET("/friends/is/:pageindex/:pagesize", v1.ApplyFriends())
-            apply.GET("/friends/not/:pageindex/:pagesize", v1.UnApplyFriends())
-			apply.PUT("/friends", v1.AgreeApplyFriend())
+			apply.GET("/friends/is/:pageindex/:pagesize", v1.ApplyFriends())
+			apply.GET("/friends/not/:pageindex/:pagesize", v1.UnApplyFriends())
+			apply.PUT("/friends", v1.ProcessApplyFriend())
 		}
 
 		//chennel未读确认

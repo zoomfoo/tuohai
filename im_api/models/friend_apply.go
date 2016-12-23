@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"time"
 
 	"tuohai/internal/console"
 	"tuohai/internal/convert"
@@ -26,12 +27,12 @@ type FriendApply struct {
 	Id          int       `gorm:"column:id" json:"-"`
 	Fid         string    `gorm:"column:fid" json:"id"`
 	ApplyUid    string    `gorm:"column:apply_uid" json:"uuid"`
-	TargetUid   string    `gorm:"column:target_uid" json:"-"`
+	TargetUid   string    `gorm:"column:target_uid" json:"target"`
 	Way         ApplyWay  `gorm:"column:way" json:"way"`
 	Attach      string    `gorm:"column:attach" json:"attach"`
 	Status      ApplyType `gorm:"column:status" json:"status"`
 	LaunchTime  int64     `gorm:"column:launch_time" json:"time"`
-	ConfirmTime int64     `gorm:"column:confirm_time" json:"-"`
+	ConfirmTime int64     `gorm:"column:confirm_time" json:"confirm_time"`
 }
 
 func (fa *FriendApply) TableName() string {
@@ -65,9 +66,9 @@ func (fa *FriendApply) ValidationField() string {
 	return ""
 }
 
-func FriendApplyById(fid string) (*FriendApply, error) {
+func FriendApplyById(fid, uid string) (*FriendApply, error) {
 	apply := &FriendApply{}
-	err := db.Find(apply, "fid = ?", fid).Error
+	err := db.Find(apply, "fid = ?  and uuid = ? and status= 0", fid, uid).Error
 	return apply, err
 }
 
@@ -114,29 +115,41 @@ func FriendApplysCount(uid string, is bool) int {
 }
 
 //
-func SaveFriendApply(apply *FriendApply) (string, error) {
+func ProcessFriendApply(apply *FriendApply) (string, error) {
+	if apply.Status == AgreedApply {
+		apply.ConfirmTime = time.Now().Unix()
+	}
 	tx := db.Begin()
 	if err := tx.Table(apply.TableName()).Where("fid = ?", apply.Fid).Updates(apply).Error; err != nil {
 		tx.Rollback()
 		return "", err
 	}
+	if apply.Status == AgreedApply {
+		small, big := convert.StringSortByRune(apply.ApplyUid, apply.TargetUid)
+		fmt.Println(small, big)
 
-	small, big := convert.StringSortByRune(apply.ApplyUid, apply.TargetUid)
-	fmt.Println(small, big)
+		if cid := IsRelation(small, big); cid != "" {
+			return cid, tx.Commit().Error
+		}
 
-	if cid := IsRelation(small, big); cid != "" {
-		return cid, tx.Commit().Error
+		if cid, err := CreateRelation(small, big); err != nil {
+			tx.Rollback()
+			return "", err
+		} else {
+			return cid, tx.Commit().Error
+		}
 	}
-
-	if cid, err := CreateRelation(small, big); err != nil {
-		tx.Rollback()
-		return "", err
-	} else {
-		return cid, tx.Commit().Error
-	}
+	return "", nil
 }
 
 //创建
 func CreateFriendApply(apply *FriendApply) error {
-	return db.Create(apply).Error
+	ns := &FriendApply{}
+	var count int
+	err := db.Find(ns, "target = ? and uuid = ? and status= 0", ns.TargetUid, ns.ApplyUid).Count(&count).Error
+	if count == 0 || err != nil {
+		return db.Create(apply).Error
+	} else {
+		return db.Updates(apply).Error
+	}
 }
