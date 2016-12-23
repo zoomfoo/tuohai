@@ -530,7 +530,7 @@ func Unreads() gin.HandlerFunc {
 }
 
 type GroupChangeNotify struct {
-	Uid  string `json:"uid"`
+	Uid  string `json:"uuid"`
 	Gid  string `json:"gid"`
 	Type string `json:"type"`
 	Tip  string `json:"tip"`
@@ -647,9 +647,13 @@ func DismissGroup() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "无权解散群!")
 			return
 		}
-
+		// 获取当前所有群成员
+		gmb, err := models.GetGroupMem(gid)
+		if err != nil {
+			return
+		}
+		ginfo, _ := models.GetGroupById(gid)
 		if err := models.DismissGroup(gid); err != nil {
-			console.StdLog.Error(err)
 			renderJSON(ctx, struct{}{}, 1, "解散群失败!")
 			return
 		}
@@ -674,6 +678,39 @@ func DismissGroup() gin.HandlerFunc {
 				To:      gid,
 				MsgData: gg,
 			})
+			// 发送系统通知
+			type sysmsg struct {
+				Content string `json:"c"`
+				Title   string `json:"title"`
+				Cid     string `json:"cid"`
+			}
+			sm := &sysmsg{
+				Content: fmt.Sprintf("用户<@%s> 解散了群组", user.Uid, ginfo.Gname),
+				Title:   "群组解散",
+			}
+			gs, err := json.Marshal(sm)
+			if err != nil {
+				fmt.Printf("json marshal error,err:%s", err)
+				return
+			}
+
+			m := &IM_Message.IMMsgData{
+				Type:    "message",
+				Subtype: "m_system",
+				From:    options.Opts.SysUserYunliao,
+				MsgData: gs,
+			}
+			for _, xid := range gmb {
+				srid := models.GetSysRid(options.Opts.SysUserYunliao, xid)
+				if srid == "" {
+					fmt.Printf("system relation no exist,uuid: %s\n", xid)
+					return
+				}
+				m.To = srid
+				m.RcvId = xid
+				fmt.Printf("send group dismissed event:%s", m)
+				httplib.SendLogicMsg(options.Opts.RPCHost, m)
+			}
 		}()
 		renderJSON(ctx, "ok")
 		return

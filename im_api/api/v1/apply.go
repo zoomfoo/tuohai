@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -120,19 +121,66 @@ func AgreeApplyFriend() gin.HandlerFunc {
 			return
 		}
 
-		//获取好友信息cid
-		go FriendToLogic(main_user.Uid, cid, id)
+		// 发送通知和消息
+		if status_int == 1 {
+			go FriendAddMsg(main_user.Uid, cid, id)
+		} else if status_int == 2 {
+			go FriendRefuseMsg(main_user.Uid, cid, id)
+		}
 		renderJSON(ctx, true)
 	}
 }
 
-func FriendToLogic(from, cid, uid string) {
+func FriendRefuseMsg(from, cid, uid string) {
+	m := &IM_Message.IMMsgData{
+		Type:    "event",
+		Subtype: "e_friend_refused",
+		From:    from,
+		RcvId:   uid,
+		MsgData: []byte("{\"uid\":" + from + "}"),
+	}
+	fmt.Printf("send friend refused event:%s", m)
+	httplib.SendLogicMsg(options.Opts.RPCHost, m)
+
+	// 系统消息发送
+	type sysmsg struct {
+		Content string `json:"c"`
+		Title   string `json:"title"`
+		Cid     string `json:"cid"`
+	}
+	sm := &sysmsg{
+		Content: fmt.Sprintf("用户【<@%s>】拒绝了您的好友申请", from),
+		Title:   "好友申请拒绝",
+	}
+	srid := models.GetSysRid(options.Opts.SysUserYunliao, uid)
+	if srid == "" {
+		fmt.Printf("system relation no exist,uuid: %s\n", uid)
+		return
+	}
+	gs, err := json.Marshal(sm)
+	if err != nil {
+		fmt.Printf("json marshal error,err:%s", err)
+		return
+	}
+	m = &IM_Message.IMMsgData{
+		Type:    "message",
+		Subtype: "m_system",
+		From:    options.Opts.SysUserYunliao,
+		To:      srid,
+		RcvId:   uid,
+		MsgData: gs,
+	}
+	fmt.Printf("send friend refused event:%s", m)
+	httplib.SendLogicMsg(options.Opts.RPCHost, m)
+}
+
+func FriendAddMsg(from, cid, uid string) {
 	m := &IM_Message.IMMsgData{
 		Type:    "message",
 		Subtype: "m_friend_added",
 		From:    from,
 		To:      cid,
-		MsgData: []byte("{\"c\":\"我们已经成为好友\"}"),
+		MsgData: []byte("{\"c\":\"我们已经成为好友了，开始聊天吧\"}"),
 	}
 	fmt.Printf("send friend added msg:%s", m)
 	httplib.SendLogicMsg(options.Opts.RPCHost, m)
@@ -143,6 +191,38 @@ func FriendToLogic(from, cid, uid string) {
 		From:    from,
 		RcvId:   uid,
 		MsgData: []byte("{\"uid\":" + from + "}"),
+	}
+	fmt.Printf("send friend added event:%s", m)
+	httplib.SendLogicMsg(options.Opts.RPCHost, m)
+
+	// 系统消息发送
+	type sysmsg struct {
+		Content string `json:"c"`
+		Title   string `json:"title"`
+		Cid     string `json:"cid"`
+	}
+	sm := &sysmsg{
+		Content: fmt.Sprintf("用户【<@%s>】通过了您的好友申请，你们可以开始沟通啦", from),
+		Title:   "好友申请通过",
+		Cid:     cid,
+	}
+	srid := models.GetSysRid(options.Opts.SysUserYunliao, uid)
+	if srid == "" {
+		fmt.Printf("system relation no exist,uuid: %s\n", uid)
+		return
+	}
+	gs, err := json.Marshal(sm)
+	if err != nil {
+		fmt.Printf("json marshal error,err:%s", err)
+		return
+	}
+	m = &IM_Message.IMMsgData{
+		Type:    "message",
+		Subtype: "m_system",
+		From:    options.Opts.SysUserYunliao,
+		To:      srid,
+		RcvId:   uid,
+		MsgData: gs,
 	}
 	fmt.Printf("send friend added event:%s", m)
 	httplib.SendLogicMsg(options.Opts.RPCHost, m)

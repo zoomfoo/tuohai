@@ -142,3 +142,13 @@ func IsRelation(a, b string) string {
 	}
 	return r.Rid
 }
+
+func GetSysRid(sys, x string) string {
+	small, big := convert.StringSortByRune(sys, x)
+	r := &Relation{}
+	err := db.Find(r, "small_id = ? and big_id = ? and status = 0 and type = 2", small, big).Error
+	if err != nil {
+		return ""
+	}
+	return r.Rid
+}

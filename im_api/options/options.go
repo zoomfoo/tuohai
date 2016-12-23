@@ -11,20 +11,23 @@ import (
 var Opts *Options
 
 type Options struct {
-	ID int
-	HTTPAddress,
-	LogFilePath,
-	AuthHost string
+	ID          int
+	HTTPAddress string
+	LogFilePath string
+	AuthHost    string
 	RPCHost     string
 	WebHookHost string
 
-	DbHost,
-	DbUser,
-	DbPwd,
+	DbHost string
+	DbUser string
+	DbPwd  string
 	DbName string
 
-	RedisHost,
-	RedisPwd string
+	RedisHost string
+	RedisPwd  string
+
+	SysUserYunliao     string
+	SysUserClouderwork string
 
 	Logger *console.Console
 }
@@ -44,6 +47,9 @@ func NewOptions() *Options {
 
 		RedisHost: "120.27.45.244:6379",
 		RedisPwd:  "",
+
+		SysUserYunliao:     "84558b0cf90a4166",
+		SysUserClouderwork: "e4b1b4018c147b1c",
 
 		Logger: console.New(*log.New(os.Stderr, "im_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),
 	}
