@@ -50,7 +50,7 @@ func Login(uname, pwd string) (*User, error) {
 
 func ValidAndCreate(u *User) error {
 	user, _ := GetUserById(u.Uuid)
-	fmt.Println(*user)
+	//fmt.Println(*user)
 	if user == nil || user.Uuid == "" {
 		//用户不存在
 		fmt.Println("create new user in yunliao")

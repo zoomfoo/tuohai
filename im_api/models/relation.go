@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"tuohai/internal/console"
@@ -41,7 +40,7 @@ func Friends(uuid string) ([]Relation, error) {
 func Friend(uid, fuid string) (*Relation, error) {
 	var rel Relation
 	err := db.Find(&rel, "status = 0 and rid = ? and (small_id = ? or big_id = ?)", fuid, uid, uid).Error
-	fmt.Println("获取好友详细信息: ", rel)
+	//fmt.Println("获取好友详细信息: ", rel)
 	return &rel, err
 }
 
