@@ -132,7 +132,7 @@ func ProcessFriendApply(apply *FriendApply) (string, error) {
 			return cid, tx.Commit().Error
 		}
 
-		if cid, err := CreateRelation(small, big); err != nil {
+		if cid, err := CreateRelation(small, big, 0); err != nil {
 			tx.Rollback()
 			return "", err
 		} else {

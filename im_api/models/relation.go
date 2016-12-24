@@ -23,6 +23,7 @@ type Relation struct {
 	SyncFriendId int    `gorm:"column:sync_friend_id"`
 	CreatedAt    int64  `gorm:"column:created_at"`
 	UpatedAt     int64  `gorm:"column:upated_at"`
+	Rtype        int    `gorm:"column:rtype"`
 }
 
 func (r *Relation) TableName() string {
@@ -68,10 +69,10 @@ func GetMyRelationId(id string) ([]string, error) {
 }
 
 func SyncCreateFriend(small, big string, fid int) (string, error) {
-	return createRelation(small, big, fid)
+	return createRelation(small, big, fid, 0)
 }
 
-func createRelation(a, b string, fid int) (string, error) {
+func createRelation(a, b string, fid, rtype int) (string, error) {
 	small, big := convert.StringSortByRune(a, b)
 	if cid := IsRelation(small, big); cid != "" {
 		return cid, nil
@@ -103,14 +104,15 @@ func createRelation(a, b string, fid int) (string, error) {
 	return cid, tx.Commit().Error
 }
 
-func CreateRelation(small, big string) (string, error) {
-	return createRelation(small, big, 0)
+func CreateRelation(small, big string, rtype int) (string, error) {
+	return createRelation(small, big, 0, rtype)
 }
 
 func DelRelation(cid string) error {
 	r := &Relation{}
 	tx := db.Begin()
-	if err := tx.Find(r, "rid = ?", cid).Error; err != nil {
+	// 系统好友不能删除
+	if err := tx.Find(r, "rid = ? and rtype != 2", cid).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

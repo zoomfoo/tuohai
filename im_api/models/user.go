@@ -57,7 +57,7 @@ func ValidAndCreate(u *User) error {
 		err := db.Create(u).Error
 		// 自动添加系统好友
 		go func() {
-			_, err := createRelation(options.Opts.SysUserYunliao, user.Uuid, 0)
+			_, err := createRelation(options.Opts.SysUserYunliao, user.Uuid, 0, 2)
 			if err != nil {
 				fmt.Println("add system relation fails")
 			}
@@ -95,5 +95,11 @@ func GetBatchUsers(uids []string) ([]User, error) {
 func SelectUsers(u *User) ([]User, error) {
 	var users []User
 	err := db.Table(u.TableName()).Where(u).Scan(&users).Error
+	return users, err
+}
+
+func GetAllUsers() ([]User, error) {
+	var users []User
+	err := db.Find(&users).Error
 	return users, err
 }
