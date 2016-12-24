@@ -27,12 +27,7 @@ func main() {
 			if u == sys {
 				continue
 			}
-			is := models.IsRelation(u, sys)
-			if is != "" {
-				fmt.Printf("系统好友已存在\n")
-				continue
-			}
-			is, err := models.CreateRelation(u, sys, 2)
+			_, err := models.CreateRelation(u, sys, 2)
 			if err != nil {
 				fmt.Printf("error:user[%s],sys[%s]", u, sys)
 			}

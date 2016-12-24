@@ -179,7 +179,7 @@ func SendSystemMsg(ctx *gin.Context) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
 	}
-	rid := models.IsRelation(from, to)
+	rid := models.IsRelation(from, to, 2)
 	if rid == "" {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的好友参数")
 	}

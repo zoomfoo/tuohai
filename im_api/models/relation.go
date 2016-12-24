@@ -73,7 +73,7 @@ func SyncCreateFriend(small, big string, fid int) (string, error) {
 
 func createRelation(a, b string, fid, rtype int) (string, error) {
 	small, big := convert.StringSortByRune(a, b)
-	if cid := IsRelation(small, big); cid != "" {
+	if cid := IsRelation(small, big, rtype); cid != "" {
 		return cid, nil
 	}
 
@@ -87,6 +87,7 @@ func createRelation(a, b string, fid, rtype int) (string, error) {
 		SyncFriendId: fid,
 		CreatedAt:    time.Now().Unix(),
 		UpatedAt:     time.Now().Unix(),
+		Rtype:        rtype,
 	}
 	tx := db.Begin()
 
@@ -134,10 +135,10 @@ func DelRelation(cid string) error {
 	return nil
 }
 
-func IsRelation(a, b string) string {
+func IsRelation(a, b string, rtype int) string {
 	small, big := convert.StringSortByRune(a, b)
 	r := &Relation{}
-	err := db.Find(r, "small_id = ? and big_id = ? and status = 0", small, big).Error
+	err := db.Find(r, "small_id = ? and big_id = ? and status = 0 and rtype = ?", small, big, rtype).Error
 	if err != nil {
 		console.StdLog.Error(err)
 		return ""
@@ -148,7 +149,7 @@ func IsRelation(a, b string) string {
 func GetSysRid(sys, x string) string {
 	small, big := convert.StringSortByRune(sys, x)
 	r := &Relation{}
-	err := db.Find(r, "small_id = ? and big_id = ? and status = 0 and type = 2", small, big).Error
+	err := db.Find(r, "small_id = ? and big_id = ? and status = 0 and rtype = 2", small, big).Error
 	if err != nil {
 		return ""
 	}

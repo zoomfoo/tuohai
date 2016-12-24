@@ -128,7 +128,7 @@ func ProcessFriendApply(apply *FriendApply) (string, error) {
 		small, big := convert.StringSortByRune(apply.ApplyUid, apply.TargetUid)
 		fmt.Println(small, big)
 
-		if cid := IsRelation(small, big); cid != "" {
+		if cid := IsRelation(small, big, 0); cid != "" {
 			return cid, tx.Commit().Error
 		}
 
