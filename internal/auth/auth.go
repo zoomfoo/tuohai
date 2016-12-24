@@ -66,7 +66,7 @@ func ValidationToken(url string) (*MainUser, error) {
 		MainUser  *MainUser `json:"user"`
 		ErrorCode float64   `json:"error_code"`
 	}
-	fmt.Println("auth URL: ", url)
+	//fmt.Println("auth URL: ", url)
 	if url == "" {
 		return nil, fmt.Errorf("%v", "url is empty")
 	}
@@ -98,7 +98,6 @@ func GetFriendsUrl(token, url string) string {
 
 //批量获取用户信息
 func GetBatchUsersUrl(token, url string, params []string) string {
-	fmt.Println("sigin:", token)
 	return fmt.Sprintf("%s/api/v1.1/users/info?%s", url, SignStr(token, params...))
 }
 
@@ -163,7 +162,7 @@ func SignStr(token string, params ...string) (session_token string) {
 	)
 	sort.Strings(params)
 	sign_str := fmt.Sprintf("%scloudwork", strings.Join(params, ""))
-	fmt.Println("签名字符串: ", sign_str)
+	//fmt.Println("签名字符串: ", sign_str)
 	session_token = fmt.Sprintf("session_token=%s&stamp=%s&sign=%s%s", token, stamp, getSign(sign_str), par_str)
 	return
 }

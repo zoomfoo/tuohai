@@ -118,12 +118,13 @@ func QuitGroup(gid string, member []string) (bool, error) {
 func IsGroupMember(gid, uid string) (bool, error) {
 	c := rpool.Get()
 	defer c.Close()
-
-	res, err := redis.Int64(c.Do("hexists", fmt.Sprintf("channel:member:%s", gid), uid))
+	key := fmt.Sprintf("channel:member:%s", gid)
+	fmt.Println("redis key: ", key)
+	res, err := redis.Int64(c.Do("hexists", key, uid))
 	if err != nil {
 		return false, err
 	}
-	fmt.Println("当前[", uid, "]是否在群中", res)
+	fmt.Println("当前[", uid, "]是否在群", gid, "中", res)
 	return res == 1, nil
 }
 
