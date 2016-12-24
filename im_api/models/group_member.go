@@ -172,8 +172,9 @@ func DelGroupMember(gid string, GroupMems []string) (*Group, error) {
 	}
 
 	tx := db.Begin()
+	// 创建者不能被删除
 	err := tx.Table(gm.TableName()).
-		Where("gid = ? and member in (?)", gid, GroupMems).
+		Where("gid = ? and member in (?) and role = 2", gid, GroupMems).
 		Updates(map[string]interface{}{"status": Quit, "updated_at": time.Now().Unix()}).Error
 	if err != nil {
 		tx.Rollback()
