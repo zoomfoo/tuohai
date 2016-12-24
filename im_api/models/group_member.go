@@ -205,7 +205,9 @@ func DelGroupMember(gid string, GroupMems []string) (*Group, error) {
 		return nil, err
 	}
 	//删除redis保存 未读数
-	if _, err := c.Do("hdel", append([]interface{}{fmt.Sprintf("cnt:unread:%s", gid)}, val...)...); err != nil {
+	sc := append([]interface{}{fmt.Sprintf("cnt:unread:%s", gid)}, val...)
+	fmt.Printf("delete member:%s\n", sc)
+	if _, err := c.Do("hdel", sc...); err != nil {
 		tx.Rollback()
 		return nil, err
 	}
