@@ -123,7 +123,7 @@ func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
 		} `json:"users"`
 		ErrorCode float64 `json:"error_code"`
 	}
-	fmt.Println("URL: ", GetBatchUsersUrl(token, url, params))
+	//fmt.Println("URL: ", GetBatchUsersUrl(token, url, params))
 	err := httplib.Get(GetBatchUsersUrl(token, url, params)).ToJson(&result)
 	if err != nil {
 		return nil, err

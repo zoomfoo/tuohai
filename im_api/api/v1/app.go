@@ -189,49 +189,25 @@ func Group() gin.HandlerFunc {
 		gid := ctx.Param("gid")
 		main_user := ctx.MustGet("user").(*auth.MainUser)
 		token := ctx.MustGet("token").(string)
-		wg := &util.WaitGroupWrapper{}
 
-		var (
-			group *models.Group
-			user  *models.User
-			err   error
-		)
-		wg.Add(2)
-		wg.Wrap(func() {
-			group, err = models.GetGroupById(gid)
-			wg.Done()
-		})
-
-		wg.Wrap(func() {
-			user, err = models.GetUserById(main_user.Uid)
-			wg.Done()
-		})
-
-		wg.Wait()
-
+		group, err := models.GetGroupById(gid)
 		if err != nil {
-			console.StdLog.Error(err)
-			fmt.Println(err.Error(), err == models.RecordNotFound, models.RecordNotFound.Error())
-			if err.Error() == models.RecordNotFound.Error() {
-				renderJSON(ctx, struct{}{})
-				return
-			}
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误!")
+			renderJSON(ctx, struct{}{}, 1, "群组获取有误!")
 			return
 		}
-
 		if group == nil {
 			renderJSON(ctx, struct{}{})
+			return
+		}
+		user, err := models.GetUserById(main_user.Uid)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "用户获取有误!")
 			return
 		}
 
 		ig, err := models.IsGroupMember(group.Gid, user.Uuid)
 		if err != nil {
-			console.StdLog.Error(err)
-			if err == models.RecordNotFound {
-				renderJSON(ctx, struct{}{})
-			}
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误!")
+			renderJSON(ctx, struct{}{}, 1, "群成员获取有误!")
 			return
 		}
 
