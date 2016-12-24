@@ -186,7 +186,6 @@ func ChannelUnreadNum(cid, uid string) int {
 	defer c.Close()
 	res, err := redis.String(c.Do("hmget", "cnt:unread:"+cid, uid))
 	if err != nil {
-		console.StdLog.Error(err)
 		return 0
 	}
 	i, _ := strconv.Atoi(res)
