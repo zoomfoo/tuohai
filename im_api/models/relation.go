@@ -76,8 +76,11 @@ func createRelation(a, b string, fid, rtype int) (string, error) {
 	if cid := IsRelation(small, big, rtype); cid != "" {
 		return cid, nil
 	}
-
-	cid := "r_" + uuid.NewV4().StringMd5()
+	prefix := "r_"
+	if rtype == 1 {
+		prefix = "t_"
+	}
+	cid := prefix + uuid.NewV4().StringMd5()
 	r := &Relation{
 		Rid:          cid,
 		SmallId:      small,
@@ -104,8 +107,8 @@ func createRelation(a, b string, fid, rtype int) (string, error) {
 	return cid, tx.Commit().Error
 }
 
-func CreateRelation(small, big string, rtype int) (string, error) {
-	return createRelation(small, big, 0, rtype)
+func CreateRelation(a, b string, rtype int) (string, error) {
+	return createRelation(a, b, 0, rtype)
 }
 
 func DelRelation(cid string) error {

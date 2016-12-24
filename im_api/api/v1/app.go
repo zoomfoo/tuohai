@@ -443,21 +443,6 @@ func RemoveSession() gin.HandlerFunc {
 	}
 }
 
-// 创建临时会话
-func CreateTmpSession() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		// user := ctx.MustGet("user").(*auth.MainUser)
-		renderJSON(ctx, struct{}{})
-	}
-}
-
-// 屏蔽或解除屏蔽临时会话
-func ShieldSession(flag bool) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		renderJSON(ctx, struct{}{})
-	}
-}
-
 func CleanSessionUnread() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)

@@ -314,3 +314,31 @@ func DelFriend() gin.HandlerFunc {
 		renderJSON(ctx, models.CleanSessionUnread(cid, user.Uid))
 	}
 }
+
+// 创建临时好友
+func CreateTmpFriend() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := ctx.MustGet("user").(*auth.MainUser)
+		partner := ctx.Query("partner")
+		if len(partner) == 0 {
+			renderJSON(ctx, struct{}{}, 1, "参数为空")
+			return
+		}
+		_, err := models.GetUserById(partner)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "该用户不存在")
+			return
+		}
+		rid, err := models.CreateRelation(user.Uid, partner, 1)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "临时好友创建错误")
+			return
+		}
+		r, err := models.Friend(partner, rid)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "临时好友创建失败")
+			return
+		}
+		renderJSON(ctx, r)
+	}
+}

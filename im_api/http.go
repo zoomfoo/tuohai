@@ -68,7 +68,6 @@ func newHTTPServer() *gin.Engine {
 
 		session := version1.Group("session")
 		{
-			session.GET("/tmp", v1.CreateTmpSession())
 			session.GET("/tmp/shield", v1.ShieldSession(true))
 			session.GET("/tmp/unshield", v1.ShieldSession(false))
 		}
@@ -122,6 +121,7 @@ func newHTTPServer() *gin.Engine {
 		}
 		// 邀请好友
 		version1.GET("/friend/invite", v1.InviteFriend())
+		version1.GET("/friend/tmp", v1.CreateTmpFriend())
 
 		//好友申请
 		apply := version1.Group("apply")
