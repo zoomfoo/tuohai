@@ -135,7 +135,6 @@ func AddGroupMember(gid string, GroupMems []string) (*Group, error) {
 	//将数据更新redis中
 	c := rpool.Get()
 	defer c.Close()
-	c.Do("select", "5")
 	if _, err := c.Do("hmset", append([]interface{}{fmt.Sprintf("group:member:%s", g.Gid)}, val...)...); err != nil {
 		tx.Rollback()
 		return nil, err
@@ -186,7 +185,7 @@ func DelGroupMember(gid string, GroupMems []string) (*Group, error) {
 		session := (&Session{From: GroupMems[i]})
 		fmt.Println(session.TableName())
 		if err := tx.Table(session.TableName()).Where("`to` = ? and `from` = ?", gid, GroupMems[i]).
-			Updates(map[string]interface{}{"status": deleted}).Error; err != nil {
+			Updates(map[string]interface{}{"status": deleted, "updated_at": time.Now().Unix()}).Error; err != nil {
 			tx.Rollback()
 			return nil, err
 		}
