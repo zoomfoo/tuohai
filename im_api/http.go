@@ -130,7 +130,7 @@ func newHTTPServer() *gin.Engine {
 			apply.GET("", v1.ApplyFriends())
 			apply.GET("/friends/is/:pageindex/:pagesize", v1.ApplyFriends())
 			apply.GET("/friends/not/:pageindex/:pagesize", v1.UnApplyFriends())
-			apply.PUT("/friends", v1.ProcessApplyFriend())
+			apply.POST("/friends", v1.ProcessApplyFriend())
 		}
 
 		//chennel未读确认

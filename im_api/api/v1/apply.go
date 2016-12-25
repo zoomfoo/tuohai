@@ -113,7 +113,7 @@ func ProcessApplyFriend() gin.HandlerFunc {
 		}
 		fa, err := models.FriendApplyById(id, main_user.Uid)
 		if err != nil {
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误1")
+			renderJSON(ctx, struct{}{}, 1, "处理的数据不存在")
 			return
 		}
 		fa.Status = models.ApplyType(status_int)
@@ -122,7 +122,7 @@ func ProcessApplyFriend() gin.HandlerFunc {
 
 		if err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误")
+			renderJSON(ctx, struct{}{}, 1, "数据处理有误")
 			return
 		}
 
