@@ -349,7 +349,45 @@ func MsgHistory() gin.HandlerFunc {
 
 func ForwardMsg() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		renderJSON(ctx, []int{})
+		user := ctx.MustGet("user").(*auth.MainUser)
+		cid := ctx.PostForm("cid")
+		msgid := ctx.PostForm("msgid")
+		to := ctx.PostForm("to")
+
+		// check
+		if len(msgid) > 11 || len(cid) > 64 || len(to) == 0 {
+			renderJSON(ctx, struct{}{}, 1, "parmeter is invalid")
+			return
+		}
+		_, err := models.IsGroupMember(cid, user.Uid)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "the msg forwared is invalid")
+			return
+		}
+		// get msg
+		msg, err := models.GetMsgById(cid, msgid, "1")
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "the msg forwared is invalid")
+			return
+		}
+		tos := strings.Split(to, ",")
+		if len(tos) > 30 {
+			renderJSON(ctx, struct{}{}, 1, "the msg is forwared to too many users, be less 30")
+			return
+		}
+		nm := &IM_Message.IMMsgData{
+			From:    user.Uid,
+			MsgData: []byte(msg[0].MsgData),
+			Type:    "message",
+			Subtype: "m_common",
+		}
+		go func() {
+			for _, u := range tos {
+				nm.To = u
+				httplib.SendLogicMsg(options.Opts.RPCHost, nm)
+			}
+		}()
+		renderJSON(ctx, struct{}{})
 		return
 	}
 }
@@ -366,7 +404,8 @@ func Messages() gin.HandlerFunc {
 			renderJSON(ctx, []int{}, 0, "size 不能为空!")
 			return
 		}
-		if size > "20" {
+		n, err := strconv.Atoi(size)
+		if n > 20 || err != nil {
 			size = "20"
 		}
 		msg, err := models.GetMsgById(cid, mid, size)

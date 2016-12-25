@@ -1,9 +1,6 @@
 package im_api
 
 import (
-	"fmt"
-	"net/http/pprof"
-
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/api/mainsite"
 	"tuohai/im_api/api/v1"
@@ -85,7 +82,7 @@ func newHTTPServer() *gin.Engine {
 		{
 			// 获取历史消息(单独窗口中显示时)
 			message.GET("/history", v1.MsgHistory())
-			message.GET("/forward", v1.ForwardMsg())
+			message.POST("/forward", v1.ForwardMsg())
 			message.POST("/collects", v1.AddMsgCollect())
 			message.DELETE("/collects", v1.DelMsgCollect())
 			message.GET("/collects", v1.GetMsgCollect())
@@ -158,47 +155,11 @@ func AccessControlAllowOrigin() gin.HandlerFunc {
 		ctx.Writer.Header().Add("Access-Control-Allow-Origin", "*")
 		ctx.Writer.Header().Add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
 		ctx.Writer.Header().Add("Access-Control-Allow-Headers", "Content-Type, Depth, User-Agent, X-File-Size, X-Requested-With, X-Requested-By, If-Modified-Since, X-File-Name, Cache-Control, Token, session_token")
-		fmt.Println(ctx.Request.Method)
+
 		if ctx.Request.Method == "OPTIONS" {
 			ctx.JSON(200, "")
 			ctx.Abort()
 		}
 		ctx.Next()
 	}
-}
-
-func Debug(router *gin.Engine) {
-
-	r := router.Group("/im/sys/debug")
-	r.GET("/pprof", func(ctx *gin.Context) {
-		pprof.Index(ctx.Writer, ctx.Request)
-	})
-	r.GET("/pprof/cmdline", func(ctx *gin.Context) {
-		pprof.Cmdline(ctx.Writer, ctx.Request)
-	})
-	r.GET("/pprof/symbol", func(ctx *gin.Context) {
-		pprof.Symbol(ctx.Writer, ctx.Request)
-	})
-	r.POST("/pprof/symbol", func(ctx *gin.Context) {
-		pprof.Symbol(ctx.Writer, ctx.Request)
-	})
-	r.GET("/pprof/profile", func(ctx *gin.Context) {
-		pprof.Profile(ctx.Writer, ctx.Request)
-	})
-	r.GET("/pprof/heap", func(ctx *gin.Context) {
-		pprof.Handler("heap")
-	})
-
-	r.GET("/goroutine", func(ctx *gin.Context) {
-		pprof.Handler("goroutine").ServeHTTP(ctx.Writer, ctx.Request)
-	})
-	r.GET("/block", func(ctx *gin.Context) {
-		pprof.Handler("block").ServeHTTP(ctx.Writer, ctx.Request)
-	})
-	r.GET("/heap", func(ctx *gin.Context) {
-		pprof.Handler("heap").ServeHTTP(ctx.Writer, ctx.Request)
-	})
-	r.GET("/threadcreate", func(ctx *gin.Context) {
-		pprof.Handler("threadcreate").ServeHTTP(ctx.Writer, ctx.Request)
-	})
 }
