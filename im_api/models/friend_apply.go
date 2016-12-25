@@ -147,10 +147,11 @@ func CreateFriendApply(apply *FriendApply) error {
 	ns := &FriendApply{}
 	err := db.Find(ns, "target_uid = ? and apply_uid = ? and status= 0", apply.TargetUid, apply.ApplyUid).Error
 	if err != nil {
-        fmt.Println("friend apply create")
+		fmt.Println("friend apply create")
 		return db.Create(apply).Error
 	} else {
-        fmt.Println("friend apply update")
-		return db.Table(ns.TableName()).Where("target_uid = ? and apply_uid = ? and status= 0", apply.TargetUid, apply.ApplyUid).Updates(apply).Error
+		fmt.Println("friend apply update")
+		apply.Id = ns.Id
+		return db.Save(apply).Error
 	}
 }
