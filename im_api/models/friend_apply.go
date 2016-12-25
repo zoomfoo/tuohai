@@ -145,11 +145,12 @@ func ProcessFriendApply(apply *FriendApply) (string, error) {
 //创建
 func CreateFriendApply(apply *FriendApply) error {
 	ns := &FriendApply{}
-	var count int
-	err := db.Find(ns, "target = ? and uuid = ? and status= 0", ns.TargetUid, ns.ApplyUid).Count(&count).Error
-	if count == 0 || err != nil {
+	err := db.Find(ns, "target_uid = ? and apply_uid = ? and status= 0", apply.TargetUid, apply.ApplyUid).Error
+	if err != nil {
+        fmt.Println("friend apply create")
 		return db.Create(apply).Error
 	} else {
-		return db.Updates(apply).Error
+        fmt.Println("friend apply update")
+		return db.Table(ns.TableName()).Where("target_uid = ? and apply_uid = ? and status= 0", apply.TargetUid, apply.ApplyUid).Updates(apply).Error
 	}
 }
