@@ -138,6 +138,7 @@ func DelRelation(cid string) error {
 	return nil
 }
 
+// 这个接口需要重构或者二次封装,以方便使用
 func IsRelation(a, b string, rtype int) string {
 	small, big := convert.StringSortByRune(a, b)
 	r := &Relation{}

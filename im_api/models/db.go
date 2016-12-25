@@ -6,6 +6,8 @@ import (
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+
+	"tuohai/im_api/options"
 )
 
 var (
@@ -26,7 +28,7 @@ func InitDB(MysqlOptions string) (m *DbModel, err error) {
 	db = m.gorm
 	db.DB().SetMaxOpenConns(100)
 	db.DB().SetMaxIdleConns(10)
-
+	db.LogMode(options.Opts.LogMode)
 	if err != nil {
 		log.Fatalln(err)
 		return nil, err

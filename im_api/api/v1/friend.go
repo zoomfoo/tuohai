@@ -136,7 +136,7 @@ func AddFriend() gin.HandlerFunc {
 		attach := ctx.PostForm("attach")
 		way := ctx.PostForm("way")
 		num := ctx.PostForm("num")
-		fmt.Println(num)
+		fmt.Println("add friend phone: ", num)
 		if attach == "" {
 			attach = ""
 		}
@@ -152,6 +152,23 @@ func AddFriend() gin.HandlerFunc {
 
 		//通过uid添加好友
 		if uid != "" {
+			// 判断该uuid是否存在
+			users, err := models.SelectUsers(&models.User{Uuid: uid})
+			if err != nil {
+				renderJSON(ctx, []int{}, 1, "查询有误")
+				return
+			}
+
+			if len(users) == 0 {
+				renderJSON(ctx, struct{}{}, 1, "未找到好友")
+				return
+			}
+			// 判断两人是否已经是好友
+			rid := models.IsRelation(uid, user.Uid, 0)
+			if rid != "" {
+				renderJSON(ctx, struct{}{}, 1, "已经是好友了")
+				return
+			}
 			res := addFriend(user, uid, way, attach)
 			if res == "" {
 				renderJSON(ctx, true)
@@ -165,10 +182,8 @@ func AddFriend() gin.HandlerFunc {
 		//判断是否是手机号
 		if util.ValidateMob(num) {
 			phone = num
-		}
-
-		//判断是否是邮箱
-		if util.ValidateEmail(num) {
+		} else if util.ValidateEmail(num) {
+			//判断是否是邮箱
 			email = num
 		}
 
@@ -177,8 +192,7 @@ func AddFriend() gin.HandlerFunc {
 			fmt.Println("添加好友 手机号: ", phone)
 			users, err := models.SelectUsers(&models.User{Phone: phone})
 			if err != nil {
-				console.StdLog.Error(err)
-				renderJSON(ctx, []int{}, 1, "远程服务器错误")
+				renderJSON(ctx, []int{}, 1, "查询有误")
 				return
 			}
 
@@ -186,7 +200,12 @@ func AddFriend() gin.HandlerFunc {
 				renderJSON(ctx, struct{}{}, 1, "未找到好友")
 				return
 			}
-
+			//判断是否已经是好友了
+			rid := models.IsRelation(users[0].Uuid, user.Uid, 0)
+			if rid != "" {
+				renderJSON(ctx, struct{}{}, 1, "已经是好友了")
+				return
+			}
 			res := addFriend(user, users[0].Uuid, way, attach)
 			if res == "" {
 				renderJSON(ctx, true)
@@ -201,7 +220,7 @@ func AddFriend() gin.HandlerFunc {
 			users, err := models.SelectUsers(&models.User{Email: email})
 			if err != nil {
 				console.StdLog.Error(err)
-				renderJSON(ctx, []int{}, 1, "远程服务器错误")
+				renderJSON(ctx, []int{}, 1, "查询有误")
 				return
 			}
 
@@ -209,7 +228,12 @@ func AddFriend() gin.HandlerFunc {
 				renderJSON(ctx, struct{}{}, 1, "未找到好友")
 				return
 			}
-
+			//判断是否已经是好友了
+			rid := models.IsRelation(users[0].Uuid, user.Uid, 0)
+			if rid != "" {
+				renderJSON(ctx, struct{}{}, 1, "已经是好友了")
+				return
+			}
 			res := addFriend(user, users[0].Uuid, way, attach)
 			if res == "" {
 				renderJSON(ctx, true)
@@ -242,7 +266,6 @@ func addFriend(user *auth.MainUser, uid, way, attach string) string {
 	err := models.CreateFriendApply(fa)
 
 	if err != nil {
-		console.StdLog.Error(err)
 		return "远程服务器错误"
 	}
 	go func() {

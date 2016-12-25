@@ -29,7 +29,8 @@ type Options struct {
 	SysUserYunliao     string
 	SysUserClouderwork string
 
-	Logger *console.Console
+	Logger  *console.Console
+	LogMode bool //gorm 是否输出调试日志
 }
 
 func NewOptions() *Options {
@@ -51,7 +52,8 @@ func NewOptions() *Options {
 		SysUserYunliao:     "84558b0cf90a4166",
 		SysUserClouderwork: "e4b1b4018c147b1c",
 
-		Logger: console.New(*log.New(os.Stderr, "im_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),
+		LogMode: true,
+		Logger:  console.New(*log.New(os.Stderr, "im_api-", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)),
 	}
 	return Opts
 }
