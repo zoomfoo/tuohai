@@ -375,6 +375,13 @@ func ForwardMsg() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "the msg is forwared to too many users, be less 30")
 			return
 		}
+		for _, u := range tos {
+			_, err := models.IsGroupMember(u, user.Uid)
+			if err != nil {
+				renderJSON(ctx, struct{}{}, 1, "the paramter to is invalid")
+				return
+			}
+		}
 		nm := &IM_Message.IMMsgData{
 			From:    user.Uid,
 			MsgData: []byte(msg[0].MsgData),
