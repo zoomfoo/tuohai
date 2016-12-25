@@ -68,7 +68,7 @@ func (fa *FriendApply) ValidationField() string {
 
 func FriendApplyById(fid, uid string) (*FriendApply, error) {
 	apply := &FriendApply{}
-	err := db.Find(apply, "fid = ?  and uuid = ? and status= 0", fid, uid).Error
+	err := db.Find(apply, "fid = ?  and target_uid = ? and status= 0", fid, uid).Error
 	return apply, err
 }
 
