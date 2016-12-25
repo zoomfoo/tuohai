@@ -128,9 +128,9 @@ func ProcessApplyFriend() gin.HandlerFunc {
 
 		// 发送通知和消息
 		if status_int == 1 {
-			go FriendAddMsg(main_user.Uid, cid, id)
+			go FriendAddMsg(main_user.Uid, cid, fa.ApplyUid)
 		} else if status_int == 2 {
-			go FriendRefuseMsg(main_user.Uid, cid, id)
+			go FriendRefuseMsg(main_user.Uid, cid, fa.ApplyUid)
 		}
 		renderJSON(ctx, true)
 	}
