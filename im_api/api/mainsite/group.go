@@ -22,8 +22,8 @@ func CreateProjectGroup() gin.HandlerFunc {
 		creator := ctx.PostForm("creator")
 		name := ctx.PostForm("name")
 		member := ctx.PostForm("member")
-		sign := ctx.Query("sign")
-		ts := ctx.Query("ts")
+		sign := ctx.PostForm("sign")
+		ts := ctx.PostForm("ts")
 		if !CheckSign(ts, sign) {
 			render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 			return
@@ -43,8 +43,8 @@ func CreateTeamGroup() gin.HandlerFunc {
 		creator := ctx.PostForm("creator")
 		name := ctx.PostForm("name")
 		member := ctx.PostForm("member")
-		sign := ctx.Query("sign")
-		ts := ctx.Query("ts")
+		sign := ctx.PostForm("sign")
+		ts := ctx.PostForm("ts")
 		if !CheckSign(ts, sign) {
 			render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 			return
@@ -95,8 +95,8 @@ func ProTeamGroup(ctx *gin.Context, creator, name string, gtype models.GroupType
 func QuitGroupMember(ctx *gin.Context) {
 	uid := ctx.PostForm("uid")
 	gid := ctx.Param("gid")
-	sign := ctx.Query("sign")
-	ts := ctx.Query("ts")
+	sign := ctx.PostForm("sign")
+	ts := ctx.PostForm("ts")
 	if !CheckSign(ts, sign) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
@@ -136,8 +136,8 @@ func AddGroupMember(ctx *gin.Context) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
 	}
-	sign := ctx.Query("sign")
-	ts := ctx.Query("ts")
+	sign := ctx.PostForm("sign")
+	ts := ctx.PostForm("ts")
 	if !CheckSign(ts, sign) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
@@ -173,8 +173,8 @@ func SendSystemMsg(ctx *gin.Context) {
 	from := ctx.PostForm("from")
 	to := ctx.PostForm("to")
 	msg := ctx.PostForm("msg")
-	sign := ctx.Query("sign")
-	ts := ctx.Query("ts")
+	sign := ctx.PostForm("sign")
+	ts := ctx.PostForm("ts")
 	if !CheckSign(ts, sign) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
@@ -202,6 +202,6 @@ func SendSystemMsg(ctx *gin.Context) {
 }
 
 func CheckSign(ts, sign string) bool {
-	ns := fmt.Sprintf("%v", md5.Sum([]byte("clouderworkgots="+ts)))
+	ns := fmt.Sprintf("%x", md5.Sum([]byte("clouderworkgots="+ts)))
 	return ns == sign
 }
