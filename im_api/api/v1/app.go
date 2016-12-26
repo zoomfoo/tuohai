@@ -382,11 +382,15 @@ func ForwardMsg() gin.HandlerFunc {
 				return
 			}
 		}
+		if msg[0].Subtype == "m_audio" {
+			renderJSON(ctx, struct{}{}, 1, "语音消息暂不支持转发")
+			return
+		}
 		nm := &IM_Message.IMMsgData{
 			From:    user.Uid,
 			MsgData: []byte(msg[0].MsgData),
 			Type:    "message",
-			Subtype: "m_common",
+			Subtype: msg[0].Subtype,
 		}
 		go func() {
 			for _, u := range tos {

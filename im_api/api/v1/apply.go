@@ -128,15 +128,16 @@ func ProcessApplyFriend() gin.HandlerFunc {
 
 		// 发送通知和消息
 		if status_int == 1 {
-			go FriendAddMsg(main_user.Uid, cid, fa.ApplyUid)
+			go FriendAddMsg(cid, fa.ApplyUid, main_user)
 		} else if status_int == 2 {
-			go FriendRefuseMsg(main_user.Uid, cid, fa.ApplyUid)
+			go FriendRefuseMsg(cid, fa.ApplyUid, main_user)
 		}
 		renderJSON(ctx, true)
 	}
 }
 
-func FriendRefuseMsg(from, cid, uid string) {
+func FriendRefuseMsg(cid, uid string, user *auth.MainUser) {
+	from := user.Uid
 	m := &IM_Message.IMMsgData{
 		Type:    "event",
 		Subtype: "e_friend_refused",
@@ -154,7 +155,7 @@ func FriendRefuseMsg(from, cid, uid string) {
 		Cid     string `json:"cid"`
 	}
 	sm := &sysmsg{
-		Content: fmt.Sprintf("用户【<@%s>】拒绝了您的好友申请", from),
+		Content: fmt.Sprintf("用户【%s】拒绝了您的好友申请", user.Nickname),
 		Title:   "好友申请拒绝",
 	}
 	srid := models.GetSysRid(options.Opts.SysUserYunliao, uid)
@@ -179,7 +180,8 @@ func FriendRefuseMsg(from, cid, uid string) {
 	httplib.SendLogicMsg(options.Opts.RPCHost, m)
 }
 
-func FriendAddMsg(from, cid, uid string) {
+func FriendAddMsg(cid, uid string, user *auth.MainUser) {
+	from := user.Uid
 	m := &IM_Message.IMMsgData{
 		Type:    "message",
 		Subtype: "m_friend_added",
@@ -207,7 +209,7 @@ func FriendAddMsg(from, cid, uid string) {
 		Cid     string `json:"cid"`
 	}
 	sm := &sysmsg{
-		Content: fmt.Sprintf("用户【<@%s>】通过了您的好友申请，你们可以开始沟通啦", from),
+		Content: fmt.Sprintf("用户【%s】通过了您的好友申请，你们可以开始沟通啦", user.Nickname),
 		Title:   "好友申请通过",
 		Cid:     cid,
 	}
