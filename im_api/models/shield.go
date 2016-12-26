@@ -30,9 +30,20 @@ func ShieldProcess(cid, uid string, flag int) error {
 	err := db.Table(ns.TableName()).Where("cid = ? and shielded_by = ?", cid, uid).Scan(ns).Error
 	if err != nil {
 		fmt.Println("no find ")
-		return db.Create(shield).Error
+		err = db.Create(shield).Error
 	} else {
 		shield.Id = ns.Id
-		return db.Save(shield).Error
+		err = db.Save(shield).Error
 	}
+	// delete session
+	go func() {
+		session := &Session{From: uid}
+		//fmt.Println(session.TableName())
+		err := db.Table(session.TableName()).Where("`to` = ? and `from` = ?", cid, uid).
+			Updates(map[string]interface{}{"status": deleted, "updated_at": time.Now().Unix()}).Error
+		if err != nil {
+			fmt.Printf("tmp session delete fails,from:%s,to:%s\n", uid, cid)
+		}
+	}()
+	return err
 }
