@@ -113,8 +113,8 @@ func AddChuo() gin.HandlerFunc {
 			//发送短信
 			go func() {
 				auth.SendSMS(options.Opts.AuthHost, token, []string{
-					"phones=15040565139",
-					"content=我测试看见了不用回复",
+					"phones=" + str_phones[:len(str_phones)-1],
+					"content=" + content,
 					"site=yunliao",
 					"user_id=" + convert.ToStr(user.Id),
 				})
