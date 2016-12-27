@@ -5,11 +5,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	urlencode "net/url"
 	"sort"
 	"strings"
 	"time"
 
+	bhttplib "github.com/astaxie/beego/httplib"
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
 	"tuohai/im_api/options"
@@ -109,7 +109,7 @@ func GetEmailServiceURL(token, url string, params []string) string {
 
 //获取短信服务URL
 func GetSMSServiceURL(token, url string, params []string) string {
-	return urlencode.QueryEscape(fmt.Sprintf("%s/api/i/sms?%s", url, SignStr(token, params...)))
+	return fmt.Sprintf("%s/api/i/sms?%s", url, SignStr(token, params...))
 }
 
 func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
@@ -176,11 +176,13 @@ func getSign(str string) string {
 
 //发短信
 func SendSMS(url, token string, param []string) (bool, error) {
-	sms := GetSMSServiceURL(token, url, param)
-	fmt.Println("sms: ", sms)
-	data := httplib.Post(sms)
+	smsurl := url + "/api/i/sms"
+	fmt.Println("sms url: ", smsurl)
+	req := bhttplib.Post(smsurl).Debug(true)
+	req.Header("content-type", "application/x-www-form-urlencoded")
+	req.Body(SignStr(token, param...))
 	js := make(map[string]interface{})
-	if err := data.ToJson(&js); err != nil {
+	if err := req.ToJSON(&js); err != nil {
 		return false, err
 	}
 	fmt.Println("sms ret: ", js)
