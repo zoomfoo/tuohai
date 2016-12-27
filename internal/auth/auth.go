@@ -178,7 +178,7 @@ func getSign(str string) string {
 func SendSMS(url, token string, param []string) (bool, error) {
 	smsurl := url + "/api/i/sms"
 	fmt.Println("sms url: ", smsurl)
-	req := bhttplib.Post(smsurl).Debug(true)
+	req := bhttplib.Post(smsurl).SetTimeout(3*time.Second, 2*time.Second)
 	req.Header("content-type", "application/x-www-form-urlencoded")
 	req.Body(SignStr(token, param...))
 	js := make(map[string]interface{})
