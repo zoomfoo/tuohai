@@ -37,10 +37,10 @@ func SetDefaultSetting(setting Settings) {
 	defer settingMutex.Unlock()
 	defaultSetting = setting
 	if defaultSetting.ConnectTimeout == 0 {
-		defaultSetting.ConnectTimeout = 60 * time.Second
+		defaultSetting.ConnectTimeout = 2 * time.Second
 	}
 	if defaultSetting.ReadWriteTimeout == 0 {
-		defaultSetting.ReadWriteTimeout = 60 * time.Second
+		defaultSetting.ReadWriteTimeout = 3 * time.Second
 	}
 }
 
@@ -63,8 +63,8 @@ func Get(url string) *Request {
 }
 
 // Post returns *Request with POST method.
-func Post(url string) *Request {
-	return newRequest(url, "POST")
+func Post(url, body string) *Request {
+	return newRequest(url, "POST").Body(body)
 }
 
 // Put returns *Request with PUT method.

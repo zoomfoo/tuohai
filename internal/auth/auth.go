@@ -175,14 +175,12 @@ func getSign(str string) string {
 
 //发短信
 func SendSMS(url, token string, param []string) (bool, error) {
-	sms := GetSMSServiceURL(token, url, param)
-	fmt.Println("sms: ", sms)
-	data := httplib.Post(sms)
+	data := httplib.Post(url, SignStr(token, param...))
 	js := make(map[string]interface{})
 	if err := data.ToJson(&js); err != nil {
 		return false, err
 	}
-
+	fmt.Println("sms ret: ", js)
 	if error_code, ok := js["error_code"].(float64); ok {
 		return error_code == 0, nil
 	} else {
@@ -192,9 +190,7 @@ func SendSMS(url, token string, param []string) (bool, error) {
 
 //发邮件
 func SendEmail(url, token string, param []string) (bool, error) {
-	email := GetEmailServiceURL(url, token, param)
-	fmt.Println("email: ", email)
-	data := httplib.Post(email)
+	data := httplib.Post(url, SignStr(token, param...))
 	js := make(map[string]interface{})
 	if err := data.ToJson(&js); err != nil {
 		return false, err
