@@ -200,6 +200,11 @@ func AddFriend() gin.HandlerFunc {
 				renderJSON(ctx, struct{}{}, 1, "未找到好友")
 				return
 			}
+			// 不能添加自己为好友
+			if user.Uid == users[0].Uuid {
+				renderJSON(ctx, struct{}{}, 1, "不允许添加自己为好友")
+				return
+			}
 			//判断是否已经是好友了
 			rid := models.IsRelation(users[0].Uuid, user.Uid, 0)
 			if rid != "" {
@@ -226,6 +231,11 @@ func AddFriend() gin.HandlerFunc {
 
 			if len(users) == 0 {
 				renderJSON(ctx, struct{}{}, 1, "未找到好友")
+				return
+			}
+			// 不能添加自己为好友
+			if user.Uid == users[0].Uuid {
+				renderJSON(ctx, struct{}{}, 1, "不允许添加自己为好友")
 				return
 			}
 			//判断是否已经是好友了
@@ -363,5 +373,11 @@ func CreateTmpFriend() gin.HandlerFunc {
 			return
 		}
 		renderJSON(ctx, r)
+	}
+}
+
+func MatchFriend() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
 	}
 }
