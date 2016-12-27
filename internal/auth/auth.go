@@ -175,7 +175,7 @@ func getSign(str string) string {
 
 //发短信
 func SendSMS(url, token string, param []string) (bool, error) {
-	sms := GetSMSServiceURL(url, token, param)
+	sms := GetSMSServiceURL(token, url, param)
 	fmt.Println("sms: ", sms)
 	data := httplib.Post(sms)
 	js := make(map[string]interface{})
