@@ -175,9 +175,10 @@ func getSign(str string) string {
 
 //发短信
 func SendSMS(url, token string, param []string) (bool, error) {
-	data := httplib.Post(url, SignStr(token, param...))
+	data := httplib.Post(url+"/api/i/sms", SignStr(token, param...))
 	js := make(map[string]interface{})
 	if err := data.ToJson(&js); err != nil {
+	    fmt.Println("sms ret: ", err)
 		return false, err
 	}
 	fmt.Println("sms ret: ", js)

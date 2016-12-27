@@ -131,6 +131,7 @@ func AddChuo() gin.HandlerFunc {
 			//发送短信
 			go func() {
 				cs := fmt.Sprintf("【云聊】%s戳了您一下：%s  请尽快登录云聊确认回复", user.Nickname, content)
+                fmt.Println("sms send: ",cs)
 				auth.SendSMS(options.Opts.AuthHost, token, []string{
 					"phones=" + str_phones[:len(str_phones)-1],
 					"content=" + cs,
