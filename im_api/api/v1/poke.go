@@ -108,21 +108,6 @@ func AddChuo() gin.HandlerFunc {
 			str_phones += us[i].Phone + ","
 		}
 
-		switch urgent {
-		case 1:
-			//发送短信
-			go func() {
-				auth.SendSMS(options.Opts.AuthHost, token, []string{
-					"phones=" + str_phones[:len(str_phones)-1],
-					"content=" + content,
-					"site=yunliao",
-					"user_id=" + convert.ToStr(user.Id),
-				})
-			}()
-		case 2:
-			//发送电话
-		}
-
 		now := time.Now().Unix()
 		t := &models.TblChuoyixiaMeta{
 			Sender:    sender,
@@ -141,6 +126,21 @@ func AddChuo() gin.HandlerFunc {
 			return
 		}
 		go sendChuoMsg(t, to)
+		switch urgent {
+		case 1:
+			//发送短信
+			go func() {
+				cs := fmt.Sprintf("【云聊】%s戳了您一下：%s  请尽快登录云聊确认回复", user.Nickname, content)
+				auth.SendSMS(options.Opts.AuthHost, token, []string{
+					"phones=" + str_phones[:len(str_phones)-1],
+					"content=" + cs,
+					"site=yunliao",
+					"user_id=" + convert.ToStr(user.Id),
+				})
+			}()
+		case 2:
+			//发送电话
+		}
 		renderJSON(ctx, true)
 		return
 	}
