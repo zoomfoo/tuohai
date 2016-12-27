@@ -63,8 +63,8 @@ func Get(url string) *Request {
 }
 
 // Post returns *Request with POST method.
-func Post(url, body string) *Request {
-	return newRequest(url, "POST").Body(body)
+func Post(url string) *Request {
+	return newRequest(url, "POST")
 }
 
 // Put returns *Request with PUT method.
