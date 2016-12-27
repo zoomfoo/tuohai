@@ -119,6 +119,7 @@ func newHTTPServer() *gin.Engine {
 		// 邀请好友
 		version1.GET("/friend/invite", v1.InviteFriend())
 		version1.GET("/friend/tmp", v1.CreateTmpFriend())
+		version1.POST("/friend/match", v1.MatchFriend())
 
 		//好友申请
 		apply := version1.Group("apply")
