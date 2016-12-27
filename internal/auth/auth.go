@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	bhttplib "github.com/astaxie/beego/httplib"
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
 	"tuohai/im_api/options"
@@ -178,11 +177,11 @@ func getSign(str string) string {
 func SendSMS(url, token string, param []string) (bool, error) {
 	smsurl := url + "/api/i/sms"
 	fmt.Println("sms url: ", smsurl)
-	req := bhttplib.Post(smsurl).SetTimeout(3*time.Second, 2*time.Second)
+	req := httplib.Post(smsurl)
 	req.Header("content-type", "application/x-www-form-urlencoded")
 	req.Body(SignStr(token, param...))
 	js := make(map[string]interface{})
-	if err := req.ToJSON(&js); err != nil {
+	if err := req.ToJson(&js); err != nil {
 		return false, err
 	}
 	fmt.Println("sms ret: ", js)

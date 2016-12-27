@@ -1,5 +1,7 @@
 package http
 
+// copy from beego httplib
+
 import (
 	"bytes"
 	"crypto/tls"
@@ -20,7 +22,7 @@ import (
 	"time"
 )
 
-var defaultSetting = Settings{false, "GogsServer", 60 * time.Second, 60 * time.Second, nil, nil, nil, false}
+var defaultSetting = Settings{false, "GogsServer", 3 * time.Second, 3 * time.Second, nil, nil, nil, false}
 var defaultCookieJar http.CookieJar
 var settingMutex sync.Mutex
 
@@ -37,7 +39,7 @@ func SetDefaultSetting(setting Settings) {
 	defer settingMutex.Unlock()
 	defaultSetting = setting
 	if defaultSetting.ConnectTimeout == 0 {
-		defaultSetting.ConnectTimeout = 2 * time.Second
+		defaultSetting.ConnectTimeout = 3 * time.Second
 	}
 	if defaultSetting.ReadWriteTimeout == 0 {
 		defaultSetting.ReadWriteTimeout = 3 * time.Second
