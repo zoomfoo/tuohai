@@ -36,11 +36,12 @@ func LoginAuth() gin.HandlerFunc {
 			//这里user可以放心使用
 			fmt.Println("user id: ", user.Uid)
 			models.ValidAndCreate(&models.User{
-				Uuid:  user.Uid,
-				Uname: user.Nickname,
-				Phone: user.Phone,
-				Email: user.Email,
-				Token: token,
+				Uuid:         user.Uid,
+				Uname:        user.Nickname,
+				Phone:        user.Phone,
+				Email:        user.Email,
+				Token:        token,
+				IsFirstlogin: 1,
 			})
 			ctx.Set("user", user)
 			ctx.Set("token", token)

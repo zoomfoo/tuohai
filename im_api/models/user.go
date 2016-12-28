@@ -9,14 +9,15 @@ import (
 )
 
 type User struct {
-	Id     int64  `gorm:"column:id" json:"-"`
-	Uuid   string `gorm:"column:uuid" json:"uuid"`
-	Uname  string `gorm:"column:uname" json:"name"`
-	Phone  string `gorm:"column:phone" json:"phone"`
-	Email  string `gorm:"column:email" json:"email"`
-	Avatar string `gorm:"-" json:"avatar"`
-	Desc   string `gorm:"column:description" json:"desc"` //个性签名
-	Token  string `gorm:"column:token" json:"-"`
+	Id           int64  `gorm:"column:id" json:"-"`
+	Uuid         string `gorm:"column:uuid" json:"uuid"`
+	Uname        string `gorm:"column:uname" json:"name"`
+	Phone        string `gorm:"column:phone" json:"phone"`
+	Email        string `gorm:"column:email" json:"email"`
+	Avatar       string `gorm:"-" json:"avatar"`
+	Desc         string `gorm:"column:description" json:"desc"` //个性签名
+	Token        string `gorm:"column:token" json:"-"`
+	IsFirstlogin int    `gorm:"column:is_fristlogin" json:"is_firstlogin"`
 }
 
 func (t *User) TableName() string {
@@ -73,7 +74,7 @@ func SaveUser(u *User) error {
 	}
 	fmt.Println("Save User: ", *u)
 	return db.Table(u.TableName()).Where("uuid = ?", u.Uuid).
-		Updates(u).Error
+		Updates(map[string]interface{}{"description": u.Desc, "is_firstlogin": u.IsFirstlogin, "uname": u.Uname}).Error
 }
 
 func CreateUser(u *User) error {

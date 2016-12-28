@@ -104,6 +104,13 @@ func (g *Group) GetGroupById() error {
 	return db.Find(g, "gid = ? and status = 0", g.Gid).Error
 }
 
+func (g *Group) GetTeamGroupById() error {
+	if g.Gid == "" {
+		return errors.New("gid is empty")
+	}
+	return db.Find(g, "gid = ? and status = 0 and type = 4", g.Gid).Error
+}
+
 func (g *Group) validation() bool {
 	return true
 }
@@ -175,6 +182,18 @@ func GetGroupById(gid string) (*Group, error) {
 	g := NewGroup(gid)
 
 	if err := g.GetGroupById(); err != nil {
+		return nil, err
+	}
+	if err := g.GetGroupMemsForSQL(); err != nil {
+		return nil, err
+	}
+	return &g, nil
+}
+
+func GetTeamById(gid string) (*Group, error) {
+	g := NewGroup(gid)
+
+	if err := g.GetTeamGroupById(); err != nil {
 		return nil, err
 	}
 	if err := g.GetGroupMemsForSQL(); err != nil {

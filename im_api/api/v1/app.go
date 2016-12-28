@@ -31,13 +31,14 @@ func Profile() gin.HandlerFunc {
 		}
 
 		renderJSON(ctx, gin.H{
-			"username": main_user.Username,
-			"uuid":     main_user.Uid,
-			"phone":    main_user.Phone,
-			"avatar":   main_user.Avatar,
-			"name":     main_user.Nickname,
-			"email":    main_user.Username,
-			"desc":     u.Desc,
+			"username":      main_user.Username,
+			"uuid":          main_user.Uid,
+			"phone":         main_user.Phone,
+			"avatar":        main_user.Avatar,
+			"name":          main_user.Nickname,
+			"email":         main_user.Username,
+			"desc":          u.Desc,
+			"is_fristlogin": u.IsFirstlogin,
 		})
 
 	}
@@ -65,22 +66,24 @@ func PutProfile() gin.HandlerFunc {
 		avatar := ctx.PostForm("avatar")
 		desc := ctx.PostForm("desc")
 
+		uu := &models.User{Uuid: user.Uid, IsFirstlogin: 0}
 		if desc != "" {
-			fmt.Println("desc: ", desc)
-			err := models.SaveUser(&models.User{Uuid: user.Uid, Desc: desc})
-			if err != nil {
-				console.StdLog.Error(err)
-				renderJSON(ctx, struct{}{}, 1, "远程服务器错误2")
-				return
-			}
+			uu.Desc = desc
 		}
 
 		param := []string{fmt.Sprintf("user_id=%d", user.Id)}
 		if nickname != "" {
+			uu.Uname = nickname
 			param = append(param, fmt.Sprintf("nickname=%s", nickname))
 		}
 		if avatar != "" {
 			param = append(param, fmt.Sprintf("avatar=%s", avatar))
+		}
+		err := models.SaveUser(uu)
+		if err != nil {
+			console.StdLog.Error(err)
+			renderJSON(ctx, struct{}{}, 1, "更新用户数据错误")
+			return
 		}
 
 		if len(param) < 2 {
@@ -94,7 +97,7 @@ func PutProfile() gin.HandlerFunc {
 		fmt.Println(auth_url)
 		if err := httplib.Put(auth_url).ToJson(&result); err != nil {
 			console.StdLog.Error(err)
-			renderJSON(ctx, struct{}{}, 1, "远程服务器错误3")
+			renderJSON(ctx, struct{}{}, 1, "更新主站数据错误")
 			return
 		}
 
@@ -260,18 +263,15 @@ func Teams() gin.HandlerFunc {
 		user := ctx.MustGet("user").(*auth.MainUser)
 		mems_groups, err := models.AssociationGroups(user.Uid)
 		if err != nil {
-			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, "未找到数据")
 			return
 		}
 
 		var groups []models.Group
 		for _, mems := range mems_groups {
-			group, err := models.GetGroupById(mems.GroupId)
+			group, err := models.GetTeamById(mems.GroupId)
 			if err != nil {
-				if err != models.RecordNotFound {
-					console.StdLog.Error(err)
-				}
+				fmt.Printf("get group:%s", err)
 				continue
 			}
 			if group.GType == models.Team_Group {
