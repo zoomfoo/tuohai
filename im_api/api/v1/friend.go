@@ -2,7 +2,7 @@ package v1
 
 import (
 	"fmt"
-	// "strings"
+	"strings"
 	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
@@ -378,6 +378,22 @@ func CreateTmpFriend() gin.HandlerFunc {
 
 func MatchFriend() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-
+		user := ctx.MustGet("user").(*auth.MainUser)
+		phones := ctx.PostForm("phones")
+		if len(phones) == 0 || len(phones) > 2500 {
+			renderJSON(ctx, struct{}{}, 1, "手机号参数非法")
+			return
+		}
+		ps := strings.Split(phones, ",")
+		if len(ps) > 200 {
+			renderJSON(ctx, struct{}{}, 1, "手机号超过了200个")
+			return
+		}
+		ret, err := models.MatchFriends(user.Uid, ps)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "通讯录匹配查询错误")
+			return
+		}
+		renderJSON(ctx, ret)
 	}
 }

@@ -1,9 +1,9 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
-	"tuohai/internal/console"
 	"tuohai/internal/convert"
 	"tuohai/internal/uuid"
 )
@@ -139,12 +139,12 @@ func DelRelation(cid string) error {
 }
 
 // 这个接口需要重构或者二次封装,以方便使用
+// rtype,0：普通关系，1:临时好友，2:系统好友
 func IsRelation(a, b string, rtype int) string {
 	small, big := convert.StringSortByRune(a, b)
 	r := &Relation{}
 	err := db.Find(r, "small_id = ? and big_id = ? and status = 0 and rtype = ?", small, big, rtype).Error
 	if err != nil {
-		console.StdLog.Error(err)
 		return ""
 	}
 	return r.Rid
@@ -158,4 +158,41 @@ func GetSysRid(sys, x string) string {
 		return ""
 	}
 	return r.Rid
+}
+
+func MatchFriends(uid string, phones []string) (map[string]interface{}, error) {
+	// TODO 防止一次查询太多
+	ps, err := GetUserByPhones(phones)
+	if err != nil {
+		fmt.Printf("get user error:%s", err)
+		return nil, err
+	}
+	pu := []string{}
+	pf := map[string]string{}
+	for i, _ := range ps {
+		pu = append(pu, ps[i].Phone)
+		ir := IsRelation(uid, ps[i].Uuid, 0)
+		if ir != "" {
+			pf[ps[i].Phone] = ir
+		} else {
+			go func() {
+				pm := &PersonMatched{
+					From:      uid,
+					Partner:   ps[i].Uuid,
+					Status:    0,
+					CreatedAt: time.Now().Unix(),
+					UpdatedAt: time.Now().Unix(),
+				}
+				err := AddPersonMatched(pm)
+				if err != nil {
+					fmt.Printf("save person matched error:%s", err)
+				}
+			}()
+		}
+	}
+	ret := map[string]interface{}{
+		"platform_users": pu,
+		"friends":        pf,
+	}
+	return ret, nil
 }

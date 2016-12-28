@@ -103,3 +103,9 @@ func GetAllUsers() ([]User, error) {
 	err := db.Find(&users).Error
 	return users, err
 }
+
+func GetUserByPhones(phones []string) ([]User, error) {
+	var users []User
+	err := db.Find(&users, "phone in (?)", phones).Error
+	return users, err
+}
