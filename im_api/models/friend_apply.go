@@ -19,8 +19,9 @@ const (
 type ApplyWay int8
 
 const (
-	FriendSeek ApplyWay = 0
-	GroupSeek  ApplyWay = 1
+	FriendSeek  ApplyWay = 0
+	GroupSeek   ApplyWay = 1
+	AddressBook ApplyWay = 2
 )
 
 type FriendApply struct {
@@ -116,9 +117,8 @@ func FriendApplysCount(uid string, is bool) int {
 
 //
 func ProcessFriendApply(apply *FriendApply) (string, error) {
-	if apply.Status == AgreedApply {
-		apply.ConfirmTime = time.Now().Unix()
-	}
+	apply.ConfirmTime = time.Now().Unix()
+
 	tx := db.Begin()
 	if err := tx.Table(apply.TableName()).Where("fid = ?", apply.Fid).Updates(apply).Error; err != nil {
 		tx.Rollback()
@@ -154,4 +154,10 @@ func CreateFriendApply(apply *FriendApply) error {
 		apply.Id = ns.Id
 		return db.Save(apply).Error
 	}
+}
+
+func GetFriendApplyes(uuid string) ([]FriendApply, error) {
+	var fa []FriendApply
+	err := db.Order("confirm_time desc").Find(&fa, "target_uid = ?", uuid).Error
+	return fa, err
 }

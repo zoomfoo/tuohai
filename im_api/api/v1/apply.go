@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
@@ -75,6 +76,7 @@ func RenderApplyFriends(apply []models.FriendApply, token string) []gin.H {
 		users, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{fmt.Sprintf("user_ids=%s", apply[i].ApplyUid)})
 		if err != nil {
 			console.StdLog.Error(err)
+			continue
 		}
 		avatar, name := "", ""
 		if len(users) != 0 {
@@ -117,6 +119,7 @@ func ProcessApplyFriend() gin.HandlerFunc {
 			return
 		}
 		fa.Status = models.ApplyType(status_int)
+		fa.ConfirmTime = time.Now().Unix()
 		// TODO rework
 		cid, err := models.ProcessFriendApply(fa)
 

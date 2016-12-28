@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"tuohai/internal/convert"
@@ -195,4 +196,119 @@ func MatchFriends(uid string, phones []string) (map[string]interface{}, error) {
 		"friends":        pf,
 	}
 	return ret, nil
+}
+
+type NewPerson struct {
+	Name      string `json:"name"`
+	Way       int    `json:"way"`
+	Attach    string `json:"attach"`
+	Status    int    `json:"status"`
+	UpdatedAt int64  `json:"updated_at"`
+}
+
+type NP []*NewPerson
+
+func (n NP) Len() int {
+	return len(n)
+}
+
+func (n NP) Swap(i, j int) {
+	n[i], n[j] = n[j], n[i]
+}
+
+func (n NP) Less(i, j int) bool {
+	return n[i].UpdatedAt > n[j].UpdatedAt
+}
+
+func NewPersons(uid string) ([]*NewPerson, error) {
+	var np NP
+	pm, err1 := GetPersonMatched(uid)
+	if err1 != nil {
+		fmt.Printf("get person matched error:%s", err1)
+	}
+	apply, err2 := GetFriendApplyes(uid)
+	if err2 != nil {
+		fmt.Printf("get friend apply error:%s", err2)
+	}
+	if err1 != nil && err2 != nil {
+		return np, nil
+	}
+	if len(pm) == 0 && len(apply) == 0 {
+		return np, nil
+	}
+	if len(pm) == 0 {
+		for _, a := range apply {
+			ua, err := GetUserById(a.ApplyUid)
+			if err != nil {
+				fmt.Printf("get user error,err:%s", err)
+				continue
+			}
+			t := &NewPerson{
+				Name:      ua.Uname,
+				Way:       int(a.Way),
+				Attach:    a.Attach,
+				Status:    int(a.Status),
+				UpdatedAt: a.ConfirmTime,
+			}
+			np = append(np, t)
+		}
+	} else if len(apply) == 0 {
+		for _, m := range pm {
+			ua, err := GetUserById(m.Partner)
+			if err != nil {
+				fmt.Printf("get user error,err:%s", err)
+				continue
+			}
+			t := &NewPerson{
+				Name:      ua.Uname,
+				Way:       -1,
+				Attach:    "",
+				Status:    -1,
+				UpdatedAt: m.UpdatedAt,
+			}
+			np = append(np, t)
+		}
+	} else {
+		for _, a := range apply {
+			ua, err := GetUserById(a.ApplyUid)
+			if err != nil {
+				fmt.Printf("get user error,err:%s", err)
+				continue
+			}
+			t := &NewPerson{
+				Name:      ua.Uname,
+				Way:       int(a.Way),
+				Attach:    a.Attach,
+				Status:    int(a.Status),
+				UpdatedAt: a.ConfirmTime,
+			}
+			np = append(np, t)
+		}
+		for _, m := range pm {
+			flag := false
+			for _, a := range apply {
+				if a.ApplyUid == m.Partner {
+					flag = true
+					break
+				}
+			}
+			if !flag {
+				ua, err := GetUserById(m.Partner)
+				if err != nil {
+					fmt.Printf("get user error,err:%s", err)
+					continue
+				}
+				t := &NewPerson{
+					Name:      ua.Uname,
+					Way:       -1,
+					Attach:    "",
+					Status:    -1,
+					UpdatedAt: m.UpdatedAt,
+				}
+				np = append(np, t)
+			}
+		}
+	}
+	sort.Sort(np)
+	return np, nil
 }

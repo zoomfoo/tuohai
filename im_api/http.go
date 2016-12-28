@@ -120,6 +120,7 @@ func newHTTPServer() *gin.Engine {
 		version1.GET("/friend/invite", v1.InviteFriend())
 		version1.GET("/friend/tmp", v1.CreateTmpFriend())
 		version1.POST("/friend/match", v1.MatchFriend())
+		version1.GET("/friend/new", v1.NewPersons())
 
 		//好友申请
 		apply := version1.Group("apply")

@@ -260,13 +260,14 @@ func AddFriend() gin.HandlerFunc {
 
 func addFriend(user *auth.MainUser, uid, way, attach string) string {
 	fa := &models.FriendApply{
-		Fid:        uuid.NewV4().StringMd5(),
-		ApplyUid:   user.Uid,
-		TargetUid:  uid,
-		Way:        models.ApplyWay(convert.StrTo(way).MustInt()),
-		Attach:     attach,
-		Status:     models.UntreatedApply,
-		LaunchTime: time.Now().Unix(),
+		Fid:         uuid.NewV4().StringMd5(),
+		ApplyUid:    user.Uid,
+		TargetUid:   uid,
+		Way:         models.ApplyWay(convert.StrTo(way).MustInt()),
+		Attach:      attach,
+		Status:      models.UntreatedApply,
+		LaunchTime:  time.Now().Unix(),
+		ConfirmTime: time.Now().Unix(),
 	}
 	res := fa.ValidationField()
 	if res != "" {
@@ -392,6 +393,18 @@ func MatchFriend() gin.HandlerFunc {
 		ret, err := models.MatchFriends(user.Uid, ps)
 		if err != nil {
 			renderJSON(ctx, struct{}{}, 1, "通讯录匹配查询错误")
+			return
+		}
+		renderJSON(ctx, ret)
+	}
+}
+
+func NewPersons() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user := ctx.MustGet("user").(*auth.MainUser)
+		ret, err := models.NewPersons(user.Uid)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, "内部处理有误")
 			return
 		}
 		renderJSON(ctx, ret)

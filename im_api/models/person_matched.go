@@ -25,3 +25,12 @@ func AddPersonMatched(pm *PersonMatched) error {
 	}
 	return nil
 }
+
+func GetPersonMatched(uuid string) ([]PersonMatched, error) {
+	var pms []PersonMatched
+	err := db.Order("updated_at desc").Find(&pms, "`from` = ?", uuid).Error
+	if err != nil {
+		return nil, err
+	}
+	return pms, nil
+}
