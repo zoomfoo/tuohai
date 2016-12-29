@@ -846,7 +846,7 @@ func RemoveGroupMember() gin.HandlerFunc {
 				Type: "remove",
 				Tip:  "",
 			}
-			gg, err := json.Marshal(gcn)
+			gg, err = json.Marshal(gcn)
 			if err != nil {
 				return
 			}
