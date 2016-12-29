@@ -19,9 +19,13 @@ const (
 type ApplyWay int8
 
 const (
-	FriendSeek  ApplyWay = 0
-	GroupSeek   ApplyWay = 1
-	AddressBook ApplyWay = 2
+	UuidWay        ApplyWay = 0
+	PhoneWay       ApplyWay = 1
+	EmailWay       ApplyWay = 2
+	TeamWay        ApplyWay = 3
+	AddressbookWay ApplyWay = 4
+	ClouderworkWay ApplyWay = 5
+	OthersWay      ApplyWay = 6
 )
 
 type FriendApply struct {
@@ -53,10 +57,9 @@ func (fa *FriendApply) ValidationField() string {
 		return "uuid 不能为空"
 	}
 
-	switch fa.Way {
-	case FriendSeek, GroupSeek:
-	default:
-		return "未知的Way值 (添加途径(0: 通过账号查找，1: 通过群组添加))"
+	if int(fa.Way) > 6 || int(fa.Way) < 0 {
+
+		return "未知的Way值 (添加途径(0:uuid,1: 手机号,2: 邮箱,3,团队,4:通讯录,5:云沃客,6:其他))"
 	}
 
 	switch fa.Status {

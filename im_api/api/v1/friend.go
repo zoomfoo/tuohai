@@ -136,31 +136,39 @@ func AddFriend() gin.HandlerFunc {
 		attach := ctx.PostForm("attach")
 		way := ctx.PostForm("way")
 		num := ctx.PostForm("num")
-		fmt.Println("add friend phone: ", num)
-		if attach == "" {
-			attach = ""
-		}
-		if way == "" {
-			way = "0"
-		}
+		token := ctx.Query("session_token")
 
-		user := ctx.MustGet("user").(*auth.MainUser)
-		if user.Uid == uid {
-			renderJSON(ctx, struct{}{}, 1, "不允许添加自己为好友")
+		if uid == "" && num == "" {
+			renderJSON(ctx, struct{}{}, 1, "参数缺失")
 			return
 		}
 
+		if attach == "" {
+			renderJSON(ctx, struct{}{}, 1, "附言缺失")
+			return
+		}
+		if way == "" {
+			renderJSON(ctx, struct{}{}, 1, "来源方式缺失")
+			return
+		}
+
+		user := ctx.MustGet("user").(*auth.MainUser)
+
 		//通过uid添加好友
 		if uid != "" {
+			if user.Uid == uid {
+				renderJSON(ctx, struct{}{}, 1, "不允许添加自己为好友")
+				return
+			}
 			// 判断该uuid是否存在
-			users, err := models.SelectUsers(&models.User{Uuid: uid})
+			users, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{"user_ids=" + uid})
 			if err != nil {
 				renderJSON(ctx, []int{}, 1, "查询有误")
 				return
 			}
 
 			if len(users) == 0 {
-				renderJSON(ctx, struct{}{}, 1, "未找到好友")
+				renderJSON(ctx, struct{}{}, 1, "您所添加的好友不是云沃客用户，无法添加好友")
 				return
 			}
 			// 判断两人是否已经是好友
@@ -169,6 +177,7 @@ func AddFriend() gin.HandlerFunc {
 				renderJSON(ctx, struct{}{}, 1, "已经是好友了")
 				return
 			}
+
 			res := addFriend(user, uid, way, attach)
 			if res == "" {
 				renderJSON(ctx, true)
@@ -189,15 +198,15 @@ func AddFriend() gin.HandlerFunc {
 
 		//通过手机号添加好友
 		if phone != "" {
-			fmt.Println("添加好友 手机号: ", phone)
-			users, err := models.SelectUsers(&models.User{Phone: phone})
+
+			users, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{"user_ids=" + phone, "t=phone"})
 			if err != nil {
 				renderJSON(ctx, []int{}, 1, "查询有误")
 				return
 			}
 
 			if len(users) == 0 {
-				renderJSON(ctx, struct{}{}, 1, "未找到好友")
+				renderJSON(ctx, struct{}{}, 1, "您所添加的好友不是云沃客用户，无法添加好友")
 				return
 			}
 			// 不能添加自己为好友
@@ -211,6 +220,7 @@ func AddFriend() gin.HandlerFunc {
 				renderJSON(ctx, struct{}{}, 1, "已经是好友了")
 				return
 			}
+
 			res := addFriend(user, users[0].Uuid, way, attach)
 			if res == "" {
 				renderJSON(ctx, true)
@@ -222,7 +232,7 @@ func AddFriend() gin.HandlerFunc {
 
 		//通过邮箱添加好友
 		if email != "" {
-			users, err := models.SelectUsers(&models.User{Email: email})
+			users, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{"user_ids=" + email, "t=email"})
 			if err != nil {
 				console.StdLog.Error(err)
 				renderJSON(ctx, []int{}, 1, "查询有误")
@@ -230,7 +240,7 @@ func AddFriend() gin.HandlerFunc {
 			}
 
 			if len(users) == 0 {
-				renderJSON(ctx, struct{}{}, 1, "未找到好友")
+				renderJSON(ctx, struct{}{}, 1, "您所添加的好友不是云沃客用户，无法添加好友")
 				return
 			}
 			// 不能添加自己为好友
@@ -244,6 +254,7 @@ func AddFriend() gin.HandlerFunc {
 				renderJSON(ctx, struct{}{}, 1, "已经是好友了")
 				return
 			}
+
 			res := addFriend(user, users[0].Uuid, way, attach)
 			if res == "" {
 				renderJSON(ctx, true)
@@ -253,7 +264,7 @@ func AddFriend() gin.HandlerFunc {
 			return
 		}
 
-		renderJSON(ctx, struct{}{}, 1, "未找到phone 或者email")
+		renderJSON(ctx, struct{}{}, 1, "数据处理有误")
 		return
 	}
 }

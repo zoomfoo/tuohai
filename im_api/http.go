@@ -86,7 +86,6 @@ func newHTTPServer() *gin.Engine {
 			message.POST("/collects", v1.AddMsgCollect())
 			message.DELETE("/collects", v1.DelMsgCollect())
 			message.GET("/collects", v1.GetMsgCollect())
-			message.GET("/info", v1.MessageRead())
 		}
 
 		//戳一下
