@@ -178,7 +178,7 @@ func AddFriend() gin.HandlerFunc {
 				return
 			}
 
-			res := addFriend(user, uid, way, attach)
+			res := addFriend(user, uid, way, attach, users[0].Uname)
 			if res == "" {
 				renderJSON(ctx, true)
 				return
@@ -221,7 +221,7 @@ func AddFriend() gin.HandlerFunc {
 				return
 			}
 
-			res := addFriend(user, users[0].Uuid, way, attach)
+			res := addFriend(user, users[0].Uuid, way, attach, users[0].Uname)
 			if res == "" {
 				renderJSON(ctx, true)
 				return
@@ -255,7 +255,7 @@ func AddFriend() gin.HandlerFunc {
 				return
 			}
 
-			res := addFriend(user, users[0].Uuid, way, attach)
+			res := addFriend(user, users[0].Uuid, way, attach, users[0].Uname)
 			if res == "" {
 				renderJSON(ctx, true)
 				return
@@ -269,7 +269,7 @@ func AddFriend() gin.HandlerFunc {
 	}
 }
 
-func addFriend(user *auth.MainUser, uid, way, attach string) string {
+func addFriend(user *auth.MainUser, uid, way, attach, uname string) string {
 	fa := &models.FriendApply{
 		Fid:         uuid.NewV4().StringMd5(),
 		ApplyUid:    user.Uid,
@@ -296,6 +296,7 @@ func addFriend(user *auth.MainUser, uid, way, attach string) string {
 			Subtype: "e_friend_apply",
 			From:    user.Uid,
 			RcvId:   uid,
+			MsgData: []byte("{\"name\":\"" + uname + "\"}"),
 		}
 		fmt.Printf("send friend apply event:%s", m)
 		httplib.SendLogicMsg(options.Opts.RPCHost, m)
