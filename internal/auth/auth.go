@@ -99,7 +99,7 @@ func GetFriendsUrl(token, url string) string {
 
 //批量获取用户信息
 func GetBatchUsersUrl(token, url string, params []string) string {
-	return fmt.Sprintf("%s/api/users/info?%s", url, SignStr(token, params...))
+	return fmt.Sprintf("%s/api/v1.1/users/info?%s", url, SignStr(token, params...))
 }
 
 //获取邮箱服务URL

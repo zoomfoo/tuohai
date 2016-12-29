@@ -358,8 +358,8 @@ func CreateTmpFriend() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "参数为空")
 			return
 		}
-		_, err := models.GetUserById(partner)
-		if err != nil {
+		u, err := auth.GetBatchUsers(ctx.Query("session_token"), options.Opts.AuthHost, []string{"user_ids=" + partner})
+		if err != nil || len(u) == 0 {
 			renderJSON(ctx, struct{}{}, 1, "该用户不存在")
 			return
 		}

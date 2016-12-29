@@ -840,6 +840,25 @@ func RemoveGroupMember() gin.HandlerFunc {
 				To:      g.Gid,
 				MsgData: gg,
 			})
+			gcn = &GroupChangeNotify{
+				Uid:  user.Uid,
+				Gid:  gid,
+				Type: "remove",
+				Tip:  "",
+			}
+			gg, err := json.Marshal(gcn)
+			if err != nil {
+				return
+			}
+			for _, id := range ids {
+				httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+					Type:    "event",
+					Subtype: "e_group_changed",
+					From:    user.Uid,
+					RcvId:   id,
+					MsgData: gg,
+				})
+			}
 		}()
 		renderJSON(ctx, g)
 		return
