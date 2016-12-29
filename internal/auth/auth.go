@@ -99,7 +99,7 @@ func GetFriendsUrl(token, url string) string {
 
 //批量获取用户信息
 func GetBatchUsersUrl(token, url string, params []string) string {
-	return fmt.Sprintf("%s/api/v1.1/users/info?%s", url, SignStr(token, params...))
+	return fmt.Sprintf("%s/api/users/info?%s", url, SignStr(token, params...))
 }
 
 //获取邮箱服务URL
@@ -142,7 +142,7 @@ func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
 		}
 		users = append(users, u)
 	}
-	return users, err
+	return users, nil
 }
 
 //生成签名参数

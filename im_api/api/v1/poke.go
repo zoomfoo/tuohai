@@ -289,9 +289,22 @@ func GetChuoInfo() gin.HandlerFunc {
 				con = append(con, x.Rcv)
 			}
 		}
-		xd := map[string][]string{
-			"con":   con,
-			"uncon": uncon,
+		var cons, uncons []models.User
+		if len(con) > 0 {
+			cons, err = auth.GetBatchUsers(ctx.Query("session_token"), options.Opts.AuthHost, []string{"user_ids=" + strings.Join(con, ",")})
+			if err != nil {
+				fmt.Printf("get batch user error:%s", err)
+			}
+		}
+		if len(uncon) > 0 {
+			uncons, err = auth.GetBatchUsers(ctx.Query("session_token"), options.Opts.AuthHost, []string{"user_ids=" + strings.Join(uncon, ",")})
+			if err != nil {
+				fmt.Printf("get batch user error:%s", err)
+			}
+		}
+		xd := map[string][]models.User{
+			"con":   cons,
+			"uncon": uncons,
 		}
 		renderJSON(ctx, xd)
 	}
