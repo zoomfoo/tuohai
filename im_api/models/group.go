@@ -241,7 +241,21 @@ func CreateGroup(creator, gname string, group_type GroupType, members []string) 
 	tx := db.Begin()
 
 	g := initGroup()
-	g.Membercnt = uint(len(members) + 1)
+	flag := false
+	for _, m := range members {
+		if m == "" {
+			return nil, errors.New("group member is empty")
+		}
+		if creator == m {
+			flag = true
+			break
+		}
+	}
+	if flag {
+		g.Membercnt = uint(len(members))
+	} else {
+		g.Membercnt = uint(len(members) + 1)
+	}
 	g.Creator = creator
 	g.Gname = gname
 	g.GType = group_type
