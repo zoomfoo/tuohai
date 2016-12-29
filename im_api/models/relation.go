@@ -161,13 +161,7 @@ func GetSysRid(sys, x string) string {
 	return r.Rid
 }
 
-func MatchFriends(uid string, phones []string) (map[string]interface{}, error) {
-	// TODO 防止一次查询太多
-	ps, err := GetUserByPhones(phones)
-	if err != nil {
-		fmt.Printf("get user error:%s", err)
-		return nil, err
-	}
+func MatchFriends(uid string, ps []User) (map[string]interface{}, error) {
 	pu := []string{}
 	pf := map[string]string{}
 	for i, _ := range ps {
@@ -199,6 +193,7 @@ func MatchFriends(uid string, phones []string) (map[string]interface{}, error) {
 }
 
 type NewPerson struct {
+	Uuid      string `json:"uuid"`
 	Name      string `json:"name"`
 	Way       int    `json:"way"`
 	Attach    string `json:"attach"`
@@ -244,6 +239,7 @@ func NewPersons(uid string) ([]*NewPerson, error) {
 				continue
 			}
 			t := &NewPerson{
+				Uuid:      a.ApplyUid,
 				Name:      ua.Uname,
 				Way:       int(a.Way),
 				Attach:    a.Attach,
@@ -260,6 +256,7 @@ func NewPersons(uid string) ([]*NewPerson, error) {
 				continue
 			}
 			t := &NewPerson{
+				Uuid:      m.Partner,
 				Name:      ua.Uname,
 				Way:       -1,
 				Attach:    "",
@@ -276,6 +273,7 @@ func NewPersons(uid string) ([]*NewPerson, error) {
 				continue
 			}
 			t := &NewPerson{
+				Uuid:      a.ApplyUid,
 				Name:      ua.Uname,
 				Way:       int(a.Way),
 				Attach:    a.Attach,
@@ -299,6 +297,7 @@ func NewPersons(uid string) ([]*NewPerson, error) {
 					continue
 				}
 				t := &NewPerson{
+					Uuid:      m.Partner,
 					Name:      ua.Uname,
 					Way:       -1,
 					Attach:    "",

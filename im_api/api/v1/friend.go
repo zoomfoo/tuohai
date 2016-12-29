@@ -390,7 +390,13 @@ func MatchFriend() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "手机号超过了200个")
 			return
 		}
-		ret, err := models.MatchFriends(user.Uid, ps)
+		params := []string{"t=phone", "user_ids=" + phones}
+		users, err := auth.GetBatchUsers(ctx.Query("session_token"), options.Opts.AuthHost, params)
+		if err != nil {
+			renderJSON(ctx, struct{}{}, 1, "手机号查询失败")
+			return
+		}
+		ret, err := models.MatchFriends(user.Uid, users)
 		if err != nil {
 			renderJSON(ctx, struct{}{}, 1, "通讯录匹配查询错误")
 			return
