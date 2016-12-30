@@ -54,6 +54,8 @@ func Friends() gin.HandlerFunc {
 				"avatar": u[0].Avatar,
 				"phone":  u[0].Phone,
 				"desc":   u[0].Desc,
+				"way":    rel.Way,
+				"note":   rel.Note,
 			})
 		}
 

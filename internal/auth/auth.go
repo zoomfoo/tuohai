@@ -121,6 +121,7 @@ func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
 			Avatar string `json:"avatar"`
 			Phone  string `json:"phone"`
 			Email  string `json:"email"`
+			Yltype int    `json:"yltype"`
 		} `json:"users"`
 		ErrorCode float64 `json:"error_code"`
 	}
@@ -139,6 +140,7 @@ func GetBatchUsers(token, url string, params []string) ([]models.User, error) {
 			Phone:  result.MainUser[i].Phone,
 			Email:  result.MainUser[i].Email,
 			Desc:   localuser.Desc,
+			Yltype: result.MainUser[i].Yltype,
 		}
 		users = append(users, u)
 	}
