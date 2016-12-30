@@ -5,6 +5,7 @@ import (
 	"sort"
 	"time"
 
+	"tuohai/im_api/options"
 	"tuohai/internal/convert"
 	"tuohai/internal/uuid"
 )
@@ -195,6 +196,9 @@ func MatchFriends(uid string, ps []User) (map[string]interface{}, error) {
 type NewPerson struct {
 	Uuid      string `json:"uuid"`
 	Name      string `json:"name"`
+	Phone     string `json:"phone"`
+	Avatar    string `json:"avatar"`
+	Email     string `json:"email"`
 	Way       int    `json:"way"`
 	Attach    string `json:"attach"`
 	Status    int    `json:"status"`
@@ -215,7 +219,7 @@ func (n NP) Less(i, j int) bool {
 	return n[i].UpdatedAt > n[j].UpdatedAt
 }
 
-func NewPersons(uid string) ([]*NewPerson, error) {
+func NewPersons(uid, token string) ([]*NewPerson, error) {
 	var np NP
 	pm, err1 := GetPersonMatched(uid)
 	if err1 != nil {
@@ -233,14 +237,18 @@ func NewPersons(uid string) ([]*NewPerson, error) {
 	}
 	if len(pm) == 0 {
 		for _, a := range apply {
-			ua, err := GetUserById(a.ApplyUid)
+			params := []string{"user_ids=" + a.ApplyUid}
+			ua, err := GetBatchUsersFromMain(token, options.Opts.AuthHost, params)
 			if err != nil {
 				fmt.Printf("get user error,err:%s", err)
 				continue
 			}
 			t := &NewPerson{
 				Uuid:      a.ApplyUid,
-				Name:      ua.Uname,
+				Name:      ua[0].Uname,
+				Phone:     ua[0].Phone,
+				Avatar:    ua[0].Avatar,
+				Email:     ua[0].Email,
 				Way:       int(a.Way),
 				Attach:    a.Attach,
 				Status:    int(a.Status),
@@ -250,14 +258,18 @@ func NewPersons(uid string) ([]*NewPerson, error) {
 		}
 	} else if len(apply) == 0 {
 		for _, m := range pm {
-			ua, err := GetUserById(m.Partner)
+			params := []string{"user_ids=" + m.Partner}
+			ua, err := GetBatchUsersFromMain(token, options.Opts.AuthHost, params)
 			if err != nil {
 				fmt.Printf("get user error,err:%s", err)
 				continue
 			}
 			t := &NewPerson{
 				Uuid:      m.Partner,
-				Name:      ua.Uname,
+				Name:      ua[0].Uname,
+				Phone:     ua[0].Phone,
+				Avatar:    ua[0].Avatar,
+				Email:     ua[0].Email,
 				Way:       -1,
 				Attach:    "",
 				Status:    -1,
@@ -267,14 +279,18 @@ func NewPersons(uid string) ([]*NewPerson, error) {
 		}
 	} else {
 		for _, a := range apply {
-			ua, err := GetUserById(a.ApplyUid)
+			params := []string{"user_ids=" + a.ApplyUid}
+			ua, err := GetBatchUsersFromMain(token, options.Opts.AuthHost, params)
 			if err != nil {
 				fmt.Printf("get user error,err:%s", err)
 				continue
 			}
 			t := &NewPerson{
 				Uuid:      a.ApplyUid,
-				Name:      ua.Uname,
+				Name:      ua[0].Uname,
+				Phone:     ua[0].Phone,
+				Avatar:    ua[0].Avatar,
+				Email:     ua[0].Email,
 				Way:       int(a.Way),
 				Attach:    a.Attach,
 				Status:    int(a.Status),
@@ -291,14 +307,18 @@ func NewPersons(uid string) ([]*NewPerson, error) {
 				}
 			}
 			if !flag {
-				ua, err := GetUserById(m.Partner)
+				params := []string{"user_ids=" + m.Partner}
+				ua, err := GetBatchUsersFromMain(token, options.Opts.AuthHost, params)
 				if err != nil {
 					fmt.Printf("get user error,err:%s", err)
 					continue
 				}
 				t := &NewPerson{
 					Uuid:      m.Partner,
-					Name:      ua.Uname,
+					Name:      ua[0].Uname,
+					Phone:     ua[0].Phone,
+					Avatar:    ua[0].Avatar,
+					Email:     ua[0].Email,
 					Way:       -1,
 					Attach:    "",
 					Status:    -1,

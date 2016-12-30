@@ -420,7 +420,8 @@ func MatchFriend() gin.HandlerFunc {
 func NewPersons() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
-		ret, err := models.NewPersons(user.Uid)
+		st := ctx.Query("session_token")
+		ret, err := models.NewPersons(user.Uid, st)
 		if err != nil {
 			renderJSON(ctx, struct{}{}, "内部处理有误")
 			return
