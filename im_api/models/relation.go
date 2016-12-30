@@ -160,8 +160,13 @@ func GetSysRid(sys, x string) string {
 	small, big := convert.StringSortByRune(sys, x)
 	r := &Relation{}
 	err := db.Find(r, "small_id = ? and big_id = ? and status = 0 and rtype = 2", small, big).Error
-	if err != nil {
-		return ""
+	if err != nil || r == nil {
+		rid, err := createRelation(sys, x, 0, 2, 0, "")
+		if err != nil {
+			fmt.Println("create system friend fails,sys:%s,uid:%s", sys, x)
+			return ""
+		}
+		return rid
 	}
 	return r.Rid
 }
