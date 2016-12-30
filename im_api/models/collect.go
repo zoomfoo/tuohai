@@ -8,7 +8,7 @@ import (
 type MsgCollect struct {
 	Id        int    `json:"-"`
 	Collector string `json:"collector"`
-	To        string `json:"cid"`
+	Cid       string `json:"cid"`
 	Type      string `json:"type"`
 	MsgId     uint64 `json:"mid"`
 	Created   int64  `json:"time"`
@@ -32,7 +32,7 @@ func (c *MsgCollect) validationField() string {
 	if c.Collector == "" {
 		return "collector 不能为空"
 	}
-	if c.To == "" {
+	if c.Cid == "" {
 		return "to 不能为空"
 	}
 	if c.Type == "" {
@@ -46,7 +46,7 @@ func (c *MsgCollect) validationField() string {
 
 func (c *MsgCollect) getHistoryMsg() error {
 	msg := &Message{}
-	msg.To = c.To
+	msg.To = c.Cid
 	msg.MsgId = c.MsgId
 	GetMessage(msg)
 
@@ -57,7 +57,7 @@ func (c *MsgCollect) getHistoryMsg() error {
 }
 func getCollect(collector, cid string, mid uint64) (*MsgCollect, error) {
 	mc := &MsgCollect{}
-	err := db.Find(mc, "collector = ? and `to` = ? and msg_id = ?", collector, cid, mid).Error
+	err := db.Find(mc, "collector = ? and `cid` = ? and msg_id = ?", collector, cid, mid).Error
 	fmt.Println(mc, err)
 	return mc, err
 }
@@ -81,7 +81,7 @@ func (c *MsgCollect) addMsgCollect() error {
 	if err_msg := c.validationField(); err_msg != "" {
 		return fmt.Errorf("%s", err_msg)
 	}
-	_, err := getCollect(c.Collector, c.To, c.MsgId)
+	_, err := getCollect(c.Collector, c.Cid, c.MsgId)
 	fmt.Println(err, RecordNotFound, err == RecordNotFound)
 	if err != nil {
 		if err.Error() == RecordNotFound.Error() {
@@ -95,7 +95,7 @@ func (c *MsgCollect) addMsgCollect() error {
 }
 
 func (c *MsgCollect) delMsgCollect() error {
-	return db.Delete(c, "id > 0 and `to` = ? and msg_id = ?", c.To, c.MsgId).Error
+	return db.Delete(c, "id > 0 and `cid` = ? and msg_id = ?", c.Cid, c.MsgId).Error
 }
 
 func DelMsgCollect(collector, cid string, mid int) error {
@@ -111,7 +111,7 @@ func DelMsgCollect(collector, cid string, mid int) error {
 //mid消息唯一标识
 //ctype 1单聊 2群聊
 func AddMsgCollect(collector, cid, ctype string, mid uint64) error {
-	mc := &MsgCollect{Collector: collector, To: cid, MsgId: mid, Type: ctype}
+	mc := &MsgCollect{Collector: collector, Cid: cid, MsgId: mid, Type: ctype}
 	return mc.addMsgCollect()
 }
 
