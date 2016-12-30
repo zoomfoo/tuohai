@@ -32,7 +32,7 @@ func (api *Handle) Token() string {
 	return api.token
 }
 
+//com.yunzujia.woke
 func (api *Handle) Topic() string {
-	// return api.topic
-	return "com.yunzujia.woke"
+	return api.topic
 }

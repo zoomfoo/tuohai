@@ -26,6 +26,7 @@ func (n *PNotify) Main(opts *Options) error {
 		return err
 	}
 	n.tlsConfig = config
+	topic := "com.yunzujia.woke"
 
 	//初始化redis连接
 	InitRedis(opts.RedisHost, "")
@@ -55,6 +56,7 @@ func (n *PNotify) Main(opts *Options) error {
 							alert: device.Alert,
 							badge: device.Badge,
 							sound: device.Sound,
+							topic: topic,
 						})
 					}
 				} else {
@@ -63,6 +65,7 @@ func (n *PNotify) Main(opts *Options) error {
 						alert: device.Alert,
 						badge: device.Badge,
 						sound: device.Sound,
+						topic: topic,
 					})
 				}
 			}
