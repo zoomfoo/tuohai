@@ -318,6 +318,10 @@ func DelFriend() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "cid 非法")
 			return
 		}
+		if r.Rtype == 2 {
+			renderJSON(ctx, struct{}{}, 1, "系统好友不能删除")
+			return
+		}
 		var f string
 		if r.BigId == user.Uid {
 			f = r.SmallId
