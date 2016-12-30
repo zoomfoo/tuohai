@@ -17,7 +17,7 @@ type User struct {
 	Avatar       string `gorm:"-" json:"avatar"`
 	Desc         string `gorm:"column:description" json:"desc"` //个性签名
 	Token        string `gorm:"column:token" json:"-"`
-	IsFirstlogin int    `gorm:"column:is_fristlogin" json:"is_firstlogin"`
+	IsFirstlogin int    `gorm:"column:is_firstlogin" json:"is_firstlogin"`
 	Yltype       int    `gorm:"-" json:"yltype"`
 }
 
