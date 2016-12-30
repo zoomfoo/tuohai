@@ -62,8 +62,17 @@ func ValidAndCreate(u *User) error {
 			if err != nil {
 				fmt.Println("add system relation fails")
 			}
+			_, err = createRelation(options.Opts.SysUserClouderwork, user.Uuid, 0, 2, 0, "")
+			if err != nil {
+				fmt.Println("add system relation fails")
+			}
 		}()
 		return err
+	} else {
+		go func() {
+			GetSysRid(options.Opts.SysUserYunliao, user.Uuid)
+			GetSysRid(options.Opts.SysUserClouderwork, user.Uuid)
+		}()
 	}
 	return nil
 }
