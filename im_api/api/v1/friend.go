@@ -361,7 +361,7 @@ func DelFriend() gin.HandlerFunc {
 				Subtype: "e_friend_removed",
 				From:    user.Uid,
 				RcvId:   f,
-				MsgData: []byte("{\"uid\":" + user.Uid + "}"),
+				MsgData: []byte("{\"uid\":\"" + user.Uid + "\"}"),
 			}
 			fmt.Printf("send friend apply event:%s", m)
 			httplib.SendLogicMsg(options.Opts.RPCHost, m)

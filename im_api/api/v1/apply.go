@@ -146,7 +146,7 @@ func FriendRefuseMsg(cid, uid string, user *auth.MainUser) {
 		Subtype: "e_friend_refused",
 		From:    from,
 		RcvId:   uid,
-		MsgData: []byte("{\"uid\":" + from + "}"),
+		MsgData: []byte("{\"uid\":\"" + from + "\"}"),
 	}
 	fmt.Printf("send friend refused event:%s", m)
 	httplib.SendLogicMsg(options.Opts.RPCHost, m)
@@ -200,7 +200,7 @@ func FriendAddMsg(cid, uid string, user *auth.MainUser) {
 		Subtype: "e_friend_added",
 		From:    from,
 		RcvId:   uid,
-		MsgData: []byte("{\"uid\":" + from + "}"),
+		MsgData: []byte("{\"uid\":\"" + from + "\"}"),
 	}
 	fmt.Printf("send friend added event:%s", m)
 	httplib.SendLogicMsg(options.Opts.RPCHost, m)
