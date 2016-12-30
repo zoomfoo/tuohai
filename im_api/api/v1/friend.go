@@ -136,6 +136,7 @@ func AddFriend() gin.HandlerFunc {
 		attach := ctx.PostForm("attach")
 		way := ctx.PostForm("way")
 		num := ctx.PostForm("num")
+		note := ctx.PostForm("note")
 		token := ctx.Query("session_token")
 
 		if uid == "" && num == "" {
@@ -149,6 +150,10 @@ func AddFriend() gin.HandlerFunc {
 		}
 		if way == "" {
 			renderJSON(ctx, struct{}{}, 1, "来源方式缺失")
+			return
+		}
+		if way == "3" && len(note) == 0 {
+			renderJSON(ctx, struct{}{}, 1, "群gid缺失")
 			return
 		}
 
@@ -178,7 +183,7 @@ func AddFriend() gin.HandlerFunc {
 				return
 			}
 
-			res := addFriend(user, uid, way, attach, users[0].Uname)
+			res := addFriend(user, uid, way, attach, users[0].Uname, note)
 			if res == "" {
 				renderJSON(ctx, true)
 				return
@@ -221,7 +226,7 @@ func AddFriend() gin.HandlerFunc {
 				return
 			}
 
-			res := addFriend(user, users[0].Uuid, way, attach, users[0].Uname)
+			res := addFriend(user, users[0].Uuid, way, attach, users[0].Uname, note)
 			if res == "" {
 				renderJSON(ctx, true)
 				return
@@ -255,7 +260,7 @@ func AddFriend() gin.HandlerFunc {
 				return
 			}
 
-			res := addFriend(user, users[0].Uuid, way, attach, users[0].Uname)
+			res := addFriend(user, users[0].Uuid, way, attach, users[0].Uname, note)
 			if res == "" {
 				renderJSON(ctx, true)
 				return
@@ -269,7 +274,7 @@ func AddFriend() gin.HandlerFunc {
 	}
 }
 
-func addFriend(user *auth.MainUser, uid, way, attach, uname string) string {
+func addFriend(user *auth.MainUser, uid, way, attach, uname, note string) string {
 	fa := &models.FriendApply{
 		Fid:         uuid.NewV4().StringMd5(),
 		ApplyUid:    user.Uid,
@@ -279,6 +284,7 @@ func addFriend(user *auth.MainUser, uid, way, attach, uname string) string {
 		Status:      models.UntreatedApply,
 		LaunchTime:  time.Now().Unix(),
 		ConfirmTime: time.Now().Unix(),
+		Note:        note,
 	}
 	res := fa.ValidationField()
 	if res != "" {
@@ -288,7 +294,7 @@ func addFriend(user *auth.MainUser, uid, way, attach, uname string) string {
 	err := models.CreateFriendApply(fa)
 
 	if err != nil {
-		return "远程服务器错误"
+		return "数据存储失败"
 	}
 	go func() {
 		m := &IM_Message.IMMsgData{

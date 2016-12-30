@@ -198,7 +198,7 @@ func MatchFriends(uid string, ps []User) (map[string]interface{}, error) {
 }
 
 type NewPerson struct {
-	Id        int    `json:"id"`
+	Id        string `json:"id"`
 	Uuid      string `json:"uuid"`
 	Name      string `json:"name"`
 	Phone     string `json:"phone"`
@@ -249,7 +249,7 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 				continue
 			}
 			t := &NewPerson{
-				Id:        a.Id,
+				Id:        a.Fid,
 				Uuid:      a.ApplyUid,
 				Name:      ua[0].Uname,
 				Phone:     ua[0].Phone,
@@ -292,7 +292,7 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 				continue
 			}
 			t := &NewPerson{
-				Id:        a.Id,
+				Id:        a.Fid,
 				Uuid:      a.ApplyUid,
 				Name:      ua[0].Uname,
 				Phone:     ua[0].Phone,
