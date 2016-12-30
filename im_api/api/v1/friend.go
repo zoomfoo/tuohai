@@ -50,12 +50,14 @@ func Friends() gin.HandlerFunc {
 			list = append(list, gin.H{
 				"uuid":   u[0].Uuid,
 				"name":   u[0].Uname,
+				"yltype": u[0].Yltype,
 				"cid":    rel.Rid,
 				"avatar": u[0].Avatar,
 				"phone":  u[0].Phone,
 				"desc":   u[0].Desc,
 				"way":    rel.Way,
 				"note":   rel.Note,
+				"rtype":  rel.Rtype,
 			})
 		}
 
