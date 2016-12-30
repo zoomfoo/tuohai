@@ -379,7 +379,7 @@ func CreateTmpFriend() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{}, 1, "该用户不存在")
 			return
 		}
-		rid, err := models.CreateRelation(user.Uid, partner, 1)
+		rid, err := models.CreateRelation(user.Uid, partner, 1, 0, "")
 		if err != nil {
 			renderJSON(ctx, struct{}{}, 1, "临时好友创建错误")
 			return

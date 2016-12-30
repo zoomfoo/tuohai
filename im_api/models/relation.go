@@ -25,6 +25,8 @@ type Relation struct {
 	CreatedAt    int64  `gorm:"column:created_at"`
 	UpatedAt     int64  `gorm:"column:upated_at"`
 	Rtype        int    `gorm:"column:rtype"`
+	Way          int    `gorm:"column:way"`
+	Note         string `gorm:"column:note"`
 }
 
 func (r *Relation) TableName() string {
@@ -70,10 +72,10 @@ func GetMyRelationId(id string) ([]string, error) {
 }
 
 func SyncCreateFriend(small, big string, fid int) (string, error) {
-	return createRelation(small, big, fid, 0)
+	return createRelation(small, big, fid, 0, 0, "")
 }
 
-func createRelation(a, b string, fid, rtype int) (string, error) {
+func createRelation(a, b string, fid, rtype int, way int, note string) (string, error) {
 	small, big := convert.StringSortByRune(a, b)
 	if cid := IsRelation(small, big, rtype); cid != "" {
 		return cid, nil
@@ -93,6 +95,8 @@ func createRelation(a, b string, fid, rtype int) (string, error) {
 		CreatedAt:    time.Now().Unix(),
 		UpatedAt:     time.Now().Unix(),
 		Rtype:        rtype,
+		Way:          way,
+		Note:         note,
 	}
 	tx := db.Begin()
 
@@ -109,8 +113,8 @@ func createRelation(a, b string, fid, rtype int) (string, error) {
 	return cid, tx.Commit().Error
 }
 
-func CreateRelation(a, b string, rtype int) (string, error) {
-	return createRelation(a, b, 0, rtype)
+func CreateRelation(a, b string, rtype int, way int, note string) (string, error) {
+	return createRelation(a, b, 0, rtype, way, note)
 }
 
 func DelRelation(cid string) error {
@@ -194,6 +198,7 @@ func MatchFriends(uid string, ps []User) (map[string]interface{}, error) {
 }
 
 type NewPerson struct {
+	Id        int    `json:"id"`
 	Uuid      string `json:"uuid"`
 	Name      string `json:"name"`
 	Phone     string `json:"phone"`
@@ -244,6 +249,7 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 				continue
 			}
 			t := &NewPerson{
+				Id:        a.Id,
 				Uuid:      a.ApplyUid,
 				Name:      ua[0].Uname,
 				Phone:     ua[0].Phone,
@@ -286,6 +292,7 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 				continue
 			}
 			t := &NewPerson{
+				Id:        a.Id,
 				Uuid:      a.ApplyUid,
 				Name:      ua[0].Uname,
 				Phone:     ua[0].Phone,

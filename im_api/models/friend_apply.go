@@ -38,6 +38,7 @@ type FriendApply struct {
 	Status      ApplyType `gorm:"column:status" json:"status"`
 	LaunchTime  int64     `gorm:"column:launch_time" json:"time"`
 	ConfirmTime int64     `gorm:"column:confirm_time" json:"confirm_time"`
+	Note        string    `gorm:"column:note" json:"note"`
 }
 
 func (fa *FriendApply) TableName() string {
@@ -135,7 +136,7 @@ func ProcessFriendApply(apply *FriendApply) (string, error) {
 			return cid, tx.Commit().Error
 		}
 
-		if cid, err := CreateRelation(small, big, 0); err != nil {
+		if cid, err := CreateRelation(small, big, 0, int(apply.Way), apply.Note); err != nil {
 			tx.Rollback()
 			return "", err
 		} else {
