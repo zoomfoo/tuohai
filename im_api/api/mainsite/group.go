@@ -4,9 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
-	"time"
 
 	"gopkg.in/gin-gonic/gin.v1"
 	"tuohai/im_api/models"
@@ -237,12 +235,11 @@ func SendSystemMsg(ctx *gin.Context) {
 	//RPC通知IM
 	go func() {
 		httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
-			Type:       "message",
-			Subtype:    "m_system",
-			From:       from,
-			To:         rid,
-			MsgData:    []byte("{\"c\":\"" + msg + "\"}"),
-			CreateTime: strconv.Itoa(int(time.Now().Unix())),
+			Type:    "message",
+			Subtype: "m_system",
+			From:    from,
+			To:      rid,
+			MsgData: []byte("{\"c\":\"" + msg + "\"}"),
 		})
 	}()
 	render.RenderJSON(ctx, true)

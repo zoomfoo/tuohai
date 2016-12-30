@@ -902,6 +902,13 @@ func QuitGroupMember() gin.HandlerFunc {
 				To:      gid,
 				MsgData: gg,
 			})
+			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+				Type:    "event",
+				Subtype: "e_group_changed",
+				From:    user.Uid,
+				To:      gid,
+				MsgData: gg,
+			})
 		}()
 		renderJSON(ctx, true)
 		return
