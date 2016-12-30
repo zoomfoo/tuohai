@@ -63,11 +63,10 @@ func AddMsgCollect() gin.HandlerFunc {
 
 func DelMsgCollect() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		cid := ctx.Request.FormValue("cid")
-		mid, _ := strconv.Atoi(ctx.Request.FormValue("mid"))
+		cid := ctx.Query("cid")
+		mid, _ := strconv.Atoi(ctx.Query("mid"))
 		// ctype := ctx.PostForm("type")
 		main_user := ctx.MustGet("user").(*auth.MainUser)
-		fmt.Println(ctx.Request.Form)
 		if cid == "" {
 			render.RenderJSON(ctx, struct{}{}, 1, "cid 不能为空")
 			return
