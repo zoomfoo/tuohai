@@ -132,8 +132,34 @@ func ProcessApplyFriend() gin.HandlerFunc {
 		// 发送通知和消息
 		if status_int == 1 {
 			go FriendAddMsg(cid, fa.ApplyUid, main_user)
+			go func() {
+				// 更新通讯录匹配信息
+				pm := &models.PersonMatched{
+					From:      fa.ApplyUid,
+					Partner:   fa.TargetUid,
+					Status:    3,
+					UpdatedAt: time.Now().Unix(),
+				}
+				err := models.AddPersonMatched(pm)
+				if err != nil {
+					fmt.Printf("update person matched error:%s", err)
+				}
+			}()
 		} else if status_int == 2 {
 			go FriendRefuseMsg(cid, fa.ApplyUid, main_user)
+			go func() {
+				// 更新通讯录匹配信息
+				pm := &models.PersonMatched{
+					From:      fa.ApplyUid,
+					Partner:   fa.TargetUid,
+					Status:    2,
+					UpdatedAt: time.Now().Unix(),
+				}
+				err := models.AddPersonMatched(pm)
+				if err != nil {
+					fmt.Printf("update person matched error:%s", err)
+				}
+			}()
 		}
 		renderJSON(ctx, true)
 	}

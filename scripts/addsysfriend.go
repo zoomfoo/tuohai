@@ -27,7 +27,7 @@ func main() {
 			if u == sys {
 				continue
 			}
-			_, err := models.CreateRelation(u, sys, 2, 0, "")
+			_, err := models.GetSysRid(sys, u)
 			if err != nil {
 				fmt.Printf("error:user[%s],sys[%s]", u, sys)
 			}

@@ -283,7 +283,7 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 				Email:     ua[0].Email,
 				Way:       -1,
 				Attach:    "",
-				Status:    -1,
+				Status:    m.Status,
 				UpdatedAt: m.UpdatedAt,
 			}
 			np = append(np, t)
@@ -333,7 +333,7 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 					Email:     ua[0].Email,
 					Way:       -1,
 					Attach:    "",
-					Status:    -1,
+					Status:    m.Status,
 					UpdatedAt: m.UpdatedAt,
 				}
 				np = append(np, t)

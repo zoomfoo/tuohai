@@ -19,9 +19,12 @@ func (p *PersonMatched) TableName() string {
 
 func AddPersonMatched(pm *PersonMatched) error {
 	tpm := &PersonMatched{}
-	err := db.Find(tpm, "`from` = ? and partner = ? and status = 0", pm.From, pm.Partner).Error
+	err := db.Find(tpm, "`from` = ? and partner = ?", pm.From, pm.Partner).Error
 	if err != nil {
 		return db.Create(pm).Error
+	} else {
+		pm.Id = tpm.Id
+		return db.Save(pm).Error
 	}
 	return nil
 }

@@ -311,6 +311,19 @@ func addFriend(user *auth.MainUser, uid, way, attach, uname, note string) string
 		fmt.Printf("send friend apply event:%s", m)
 		httplib.SendLogicMsg(options.Opts.RPCHost, m)
 	}()
+	go func() {
+		// 更新通讯录匹配信息
+		pm := &models.PersonMatched{
+			From:      user.Uid,
+			Partner:   uid,
+			Status:    1,
+			UpdatedAt: time.Now().Unix(),
+		}
+		err := models.AddPersonMatched(pm)
+		if err != nil {
+			fmt.Printf("update person matched error:%s", err)
+		}
+	}()
 	return ""
 }
 
