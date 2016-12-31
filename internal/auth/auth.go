@@ -67,7 +67,7 @@ func ValidationToken(url string) (*MainUser, error) {
 		MainUser  *MainUser `json:"user"`
 		ErrorCode float64   `json:"error_code"`
 	}
-	//fmt.Println("auth URL: ", url)
+	fmt.Println("auth URL: ", url)
 	if url == "" {
 		return nil, fmt.Errorf("%v", "url is empty")
 	}
@@ -79,7 +79,7 @@ func ValidationToken(url string) (*MainUser, error) {
 	if result.ErrorCode == 0 {
 		return result.MainUser, nil
 	}
-	return nil, fmt.Errorf("%s", result.Msg)
+	return nil, fmt.Errorf("session check ret:%s", result.Msg)
 }
 
 //获取个人profile URL

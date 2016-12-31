@@ -8,6 +8,7 @@ import (
 )
 
 func (api *ImApi) friendLoop() {
+	return
 	err := models.SyncFriends()
 	fmt.Println(err)
 	ticker := time.Tick(10 * time.Minute)

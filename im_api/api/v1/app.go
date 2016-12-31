@@ -677,13 +677,15 @@ func DismissGroup() gin.HandlerFunc {
 				return
 			}
 			//RPC通知IM
-			httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
-				Type:    "message",
-				Subtype: "m_group_changed",
-				From:    user.Uid,
-				To:      gid,
-				MsgData: gg,
-			})
+			for _, mm := range gmb {
+				httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+					Type:    "event",
+					Subtype: "e_group_changed",
+					From:    user.Uid,
+					RcvId:   mm,
+					MsgData: gg,
+				})
+			}
 			// 发送系统通知
 			type sysmsg struct {
 				Content string `json:"c"`
