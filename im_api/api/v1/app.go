@@ -190,7 +190,7 @@ func Groups() gin.HandlerFunc {
 func Group() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		gid := ctx.Param("gid")
-		main_user := ctx.MustGet("user").(*auth.MainUser)
+		user := ctx.MustGet("user").(*auth.MainUser)
 		token := ctx.MustGet("token").(string)
 
 		group, err := models.GetGroupById(gid)
@@ -202,13 +202,8 @@ func Group() gin.HandlerFunc {
 			renderJSON(ctx, struct{}{})
 			return
 		}
-		user, err := models.GetUserById(main_user.Uid)
-		if err != nil {
-			renderJSON(ctx, struct{}{}, 1, "用户获取有误!")
-			return
-		}
 
-		ig, err := models.IsGroupMember(group.Gid, user.Uuid)
+		ig, err := models.IsGroupMember(group.Gid, user.Uid)
 		if err != nil {
 			renderJSON(ctx, struct{}{}, 1, "群成员获取有误!")
 			return

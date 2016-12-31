@@ -42,6 +42,10 @@ func CreateTeamGroup() gin.HandlerFunc {
 		creator := ctx.PostForm("creator")
 		name := ctx.PostForm("name")
 		member := ctx.PostForm("member")
+		if len(creator) == 0 || len(name) == 0 || len(member) == 0 {
+			render.RenderJSON(ctx, struct{}{}, 1, "缺少参数")
+			return
+		}
 		sign := ctx.PostForm("sign")
 		ts := ctx.PostForm("ts")
 		if !CheckSign(ts, sign) {
