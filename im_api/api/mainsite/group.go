@@ -168,7 +168,7 @@ func AddGroupMember(ctx *gin.Context) {
 	ids := strings.Split(ctx.Request.FormValue("member"), ",")
 	gid := ctx.Param("gid")
 	uid := ctx.PostForm("uid")
-	if len(ids) == 0 {
+	if len(ids) == 0 || len(gid) == 0 || len(uid) == 0 {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
 	}
@@ -225,17 +225,18 @@ func SendSystemMsg(ctx *gin.Context) {
 	msg := ctx.PostForm("msg")
 	sign := ctx.PostForm("sign")
 	ts := ctx.PostForm("ts")
-	if !CheckSign(ts, sign) {
+	if len(from) == 0 || len(to) == 0 || !CheckSign(ts, sign) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
+	}
+	if len(msg) == 0 || len(msg) > 1024 {
+		render.RenderJSON(ctx, struct{}{}, 1, "好长的消息")
 	}
 	rid := models.IsRelation(from, to, 2)
 	if rid == "" {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的好友参数")
 	}
-	if len(msg) == 0 || len(msg) > 1024 {
-		render.RenderJSON(ctx, struct{}{}, 1, "好长的消息")
-	}
+
 	//RPC通知IM
 	go func() {
 		httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
