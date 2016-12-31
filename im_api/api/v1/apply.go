@@ -137,7 +137,7 @@ func ProcessApplyFriend() gin.HandlerFunc {
 				pm := &models.PersonMatched{
 					From:      fa.ApplyUid,
 					Partner:   fa.TargetUid,
-					Status:    3,
+					Status:    13,
 					UpdatedAt: time.Now().Unix(),
 				}
 				err := models.AddPersonMatched(pm)
@@ -152,7 +152,7 @@ func ProcessApplyFriend() gin.HandlerFunc {
 				pm := &models.PersonMatched{
 					From:      fa.ApplyUid,
 					Partner:   fa.TargetUid,
-					Status:    2,
+					Status:    12,
 					UpdatedAt: time.Now().Unix(),
 				}
 				err := models.AddPersonMatched(pm)

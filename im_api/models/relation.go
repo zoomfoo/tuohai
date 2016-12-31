@@ -184,7 +184,7 @@ func MatchFriends(uid string, ps []User) (map[string]interface{}, error) {
 				pm := &PersonMatched{
 					From:      uid,
 					Partner:   ps[i].Uuid,
-					Status:    0,
+					Status:    10,
 					CreatedAt: time.Now().Unix(),
 					UpdatedAt: time.Now().Unix(),
 				}

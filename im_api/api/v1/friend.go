@@ -316,7 +316,7 @@ func addFriend(user *auth.MainUser, uid, way, attach, uname, note string) string
 		pm := &models.PersonMatched{
 			From:      user.Uid,
 			Partner:   uid,
-			Status:    1,
+			Status:    11,
 			UpdatedAt: time.Now().Unix(),
 		}
 		err := models.AddPersonMatched(pm)
