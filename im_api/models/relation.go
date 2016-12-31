@@ -213,6 +213,7 @@ type NewPerson struct {
 	Attach    string `json:"attach"`
 	Status    int    `json:"status"`
 	UpdatedAt int64  `json:"updated_at"`
+	IsApply   int    `json:"is_apply"`
 }
 
 type NP []*NewPerson
@@ -264,6 +265,7 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 				Attach:    a.Attach,
 				Status:    int(a.Status),
 				UpdatedAt: a.ConfirmTime,
+				IsApply:   1,
 			}
 			np = append(np, t)
 		}
@@ -281,10 +283,11 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 				Phone:     ua[0].Phone,
 				Avatar:    ua[0].Avatar,
 				Email:     ua[0].Email,
-				Way:       -1,
+				Way:       int(AddressbookWay),
 				Attach:    "",
 				Status:    m.Status,
 				UpdatedAt: m.UpdatedAt,
+				IsApply:   0,
 			}
 			np = append(np, t)
 		}
@@ -307,6 +310,7 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 				Attach:    a.Attach,
 				Status:    int(a.Status),
 				UpdatedAt: a.ConfirmTime,
+				IsApply:   1,
 			}
 			np = append(np, t)
 		}
@@ -331,10 +335,11 @@ func NewPersons(uid, token string) ([]*NewPerson, error) {
 					Phone:     ua[0].Phone,
 					Avatar:    ua[0].Avatar,
 					Email:     ua[0].Email,
-					Way:       -1,
+					Way:       int(AddressbookWay),
 					Attach:    "",
 					Status:    m.Status,
 					UpdatedAt: m.UpdatedAt,
+					IsApply:   0,
 				}
 				np = append(np, t)
 			}
