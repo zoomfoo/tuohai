@@ -472,6 +472,10 @@ func RemoveSession() gin.HandlerFunc {
 		sid := ctx.Param("sid")
 		user := ctx.MustGet("user").(*auth.MainUser)
 		fmt.Println("移除sessionid: ", sid)
+		if len(sid) == 0 {
+			renderJSON(ctx, false)
+			return
+		}
 		//清除session
 		if err := models.RemoveSession(sid, user.Uid); err != nil {
 			console.StdLog.Error(err)
@@ -488,9 +492,13 @@ func RemoveSession() gin.HandlerFunc {
 func CleanSessionUnread() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
-		cid := ctx.PostForm("cid")
+		sid := ctx.Param("sid")
+		if len(sid) == 0 {
+			renderJSON(ctx, false)
+			return
+		}
 		uid := user.Uid
-		if models.CleanSessionUnread(cid, uid) {
+		if models.CleanSessionUnread(sid, uid) {
 			renderJSON(ctx, true)
 		} else {
 			renderJSON(ctx, false)
@@ -523,7 +531,7 @@ func Unreads() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		cid := ctx.Param("cid")
 		user := ctx.MustGet("user").(*auth.MainUser)
-		if models.CleanSessionUnread(cid, user.Uid) {
+		if models.CleanChannelUnread(cid, user.Uid) {
 			renderJSON(ctx, true)
 		} else {
 			renderJSON(ctx, false)

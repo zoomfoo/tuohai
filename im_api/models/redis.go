@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
-	"tuohai/internal/console"
 )
 
 func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
@@ -217,12 +216,25 @@ func ChannelUnreadNum(cid, uid string) int {
 	return i
 }
 
-func CleanSessionUnread(cid, uid string) bool {
+func CleanSessionUnread(sid, uid string) bool {
+	s, err := GetSessionBySid(sid, uid)
+	if err != nil {
+		return true
+	}
+	c := rpool.Get()
+	defer c.Close()
+	_, err = c.Do("hdel", "cnt:unread:"+s.To, uid)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func CleanChannelUnread(cid, uid string) bool {
 	c := rpool.Get()
 	defer c.Close()
 	_, err := c.Do("hdel", "cnt:unread:"+cid, uid)
 	if err != nil {
-		console.StdLog.Error(err)
 		return false
 	}
 	return true

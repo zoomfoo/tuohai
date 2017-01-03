@@ -49,6 +49,12 @@ func RemoveSession(sid, uid string) error {
 	return db.Table(s.TableName()).Where("sid = ?", sid).Updates(map[string]interface{}{"status": deleted, "updated_at": time.Now().Unix()}).Error
 }
 
+func GetSessionBySid(sid, uid string) (*Session, error) {
+	s := &Session{From: uid}
+	err := db.Table(s.TableName()).Where("sid = ?", sid).Scan(s).Error
+	return s, err
+}
+
 func RemoveSessionByCidAndUid(cid, uid string) error {
 	s := &Session{From: uid}
 	return db.Table(s.TableName()).Where("`from` = ? and `to` = ?", uid, cid).Updates(map[string]interface{}{"status": deleted, "updated_at": time.Now().Unix()}).Error
