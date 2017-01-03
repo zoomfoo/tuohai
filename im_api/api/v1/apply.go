@@ -140,7 +140,7 @@ func ProcessApplyFriend() gin.HandlerFunc {
 					Status:    13,
 					UpdatedAt: time.Now().Unix(),
 				}
-				err := models.AddPersonMatched(pm)
+				err := models.UpdatePersonMatched(pm)
 				if err != nil {
 					fmt.Printf("update person matched error:%s", err)
 				}
@@ -155,7 +155,7 @@ func ProcessApplyFriend() gin.HandlerFunc {
 					Status:    12,
 					UpdatedAt: time.Now().Unix(),
 				}
-				err := models.AddPersonMatched(pm)
+				err := models.UpdatePersonMatched(pm)
 				if err != nil {
 					fmt.Printf("update person matched error:%s", err)
 				}

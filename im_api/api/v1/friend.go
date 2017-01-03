@@ -319,7 +319,7 @@ func addFriend(user *auth.MainUser, uid, way, attach, uname, note string) string
 			Status:    11,
 			UpdatedAt: time.Now().Unix(),
 		}
-		err := models.AddPersonMatched(pm)
+		err := models.UpdatePersonMatched(pm)
 		if err != nil {
 			fmt.Printf("update person matched error:%s", err)
 		}

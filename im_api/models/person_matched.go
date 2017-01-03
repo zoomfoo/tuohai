@@ -22,6 +22,15 @@ func AddPersonMatched(pm *PersonMatched) error {
 	err := db.Find(tpm, "`from` = ? and partner = ?", pm.From, pm.Partner).Error
 	if err != nil {
 		return db.Create(pm).Error
+	}
+	return nil
+}
+
+func UpdatePersonMatched(pm *PersonMatched) error {
+	tpm := &PersonMatched{}
+	err := db.Find(tpm, "`from` = ? and partner = ?", pm.From, pm.Partner).Error
+	if err != nil {
+		return db.Create(pm).Error
 	} else {
 		pm.Id = tpm.Id
 		return db.Save(pm).Error

@@ -58,7 +58,6 @@ func (c *MsgCollect) getHistoryMsg() error {
 func getCollect(collector, cid string, mid uint64) (*MsgCollect, error) {
 	mc := &MsgCollect{}
 	err := db.Find(mc, "collector = ? and `cid` = ? and msg_id = ?", collector, cid, mid).Error
-	fmt.Println(mc, err)
 	return mc, err
 }
 
@@ -68,7 +67,7 @@ func (c *MsgCollect) msgCollects(collector string, limit, offset int) ([]MsgColl
 		total int
 	)
 
-	err := db.Limit(limit).Offset(offset).Find(&mc, "`collector` = ?", collector).Error
+	err := db.Order("created desc").Limit(limit).Offset(offset).Find(&mc, "`collector` = ?", collector).Error
 	db.Table(c.TableName()).Where("`collector` = ?", collector).Count(&total)
 	for i, _ := range mc {
 		mc[i].getHistoryMsg()
@@ -82,7 +81,6 @@ func (c *MsgCollect) addMsgCollect() error {
 		return fmt.Errorf("%s", err_msg)
 	}
 	_, err := getCollect(c.Collector, c.Cid, c.MsgId)
-	fmt.Println(err, RecordNotFound, err == RecordNotFound)
 	if err != nil {
 		if err.Error() == RecordNotFound.Error() {
 			c.Created = time.Now().Unix()
@@ -123,7 +121,6 @@ func CollectsByPaging(collector string, pageindex, pagesize int) ([]MsgCollect, 
 	} else {
 		pageindex = (pageindex - 1) * pagesize
 	}
-	fmt.Println("pageindex", pageindex, "pagesize", pagesize)
 	return mc.msgCollects(collector, pagesize, pageindex)
 }
 
