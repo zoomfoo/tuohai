@@ -154,7 +154,12 @@ func Users() gin.HandlerFunc {
 func Groups() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
-		mems_groups, err := models.AssociationGroups(user.Uid)
+		is_admin := ctx.Query("is_admin")
+		var af bool
+		if len(is_admin) > 0 {
+			af = true
+		}
+		mems_groups, err := models.AssociationGroups(user.Uid, af)
 		if err != nil {
 			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, "未找到数据")
@@ -253,7 +258,7 @@ func Group() gin.HandlerFunc {
 func Teams() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
-		mems_groups, err := models.AssociationGroups(user.Uid)
+		mems_groups, err := models.AssociationGroups(user.Uid, false)
 		if err != nil {
 			renderJSON(ctx, []int{}, 0, "未找到数据")
 			return
