@@ -59,11 +59,11 @@ func ValidAndCreate(u *User) error {
 		err := db.Create(u).Error
 		// 自动添加系统好友
 		go func() {
-			_, err := createRelation(options.Opts.SysUserYunliao, user.Uuid, 0, 2, 0, "")
+			_, err := createRelation(options.Opts.SysUserYunliao, u.Uuid, 0, 2, 0, "")
 			if err != nil {
 				fmt.Println("add system relation fails")
 			}
-			_, err = createRelation(options.Opts.SysUserClouderwork, user.Uuid, 0, 2, 0, "")
+			_, err = createRelation(options.Opts.SysUserClouderwork, u.Uuid, 0, 2, 0, "")
 			if err != nil {
 				fmt.Println("add system relation fails")
 			}
