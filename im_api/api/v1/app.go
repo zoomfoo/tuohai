@@ -690,7 +690,7 @@ func DismissGroup() gin.HandlerFunc {
 				Cid     string `json:"cid"`
 			}
 			sm := &sysmsg{
-				Content: fmt.Sprintf("用户<@%s> 解散了群组", user.Uid, ginfo.Gname),
+				Content: fmt.Sprintf("用户<@%s>解散了群组%s", user.Uid, ginfo.Gname),
 				Title:   "群组解散",
 			}
 			gs, err := json.Marshal(sm)
