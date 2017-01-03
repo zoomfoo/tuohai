@@ -154,12 +154,12 @@ func Users() gin.HandlerFunc {
 func Groups() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet("user").(*auth.MainUser)
-		is_admin := ctx.Query("is_admin")
+		admin := ctx.Query("admin")
 		var af bool
-		if len(is_admin) > 0 {
-			af = true
+		if len(admin) != 1 || admin > "2" {
+			admin = "0"
 		}
-		mems_groups, err := models.AssociationGroups(user.Uid, af)
+		mems_groups, err := models.AssociationGroups(user.Uid, admin)
 		if err != nil {
 			renderJSON(ctx, []int{}, 0, "未找到数据")
 			return

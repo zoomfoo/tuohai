@@ -78,13 +78,9 @@ func GroupMemByUid(uid string) ([]GroupMember, error) {
 	return mems, err
 }
 
-func AssociationGroups(uid string, is_admin bool) ([]GroupMember, error) {
+func AssociationGroups(uid, admin string) ([]GroupMember, error) {
 	var mems []GroupMember
-	var role int
-	if is_admin {
-		role = 1
-	}
-	err := db.Table((&GroupMember{}).TableName()).Where("`member` = ? and status = 0 and role > ?", uid, role).Scan(&mems).Error
+	err := db.Table((&GroupMember{}).TableName()).Where("`member` = ? and status = 0 and role >= ?", uid, admin).Scan(&mems).Error
 	return mems, err
 }
 

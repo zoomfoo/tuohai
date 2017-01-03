@@ -50,6 +50,7 @@ func newHTTPServer() *gin.Engine {
 
 		//获取团队群
 		version1.GET("/teams", v1.Teams())
+
 		//反馈
 		version1.POST("/feedback", v1.Feedback())
 
