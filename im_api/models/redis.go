@@ -209,7 +209,7 @@ func SaveBotInfo(key string, info map[string]interface{}) error {
 func ChannelUnreadNum(cid, uid string) int {
 	c := rpool.Get()
 	defer c.Close()
-	res, err := redis.String(c.Do("hmget", "cnt:unread:"+cid, uid))
+	res, err := redis.String(c.Do("hget", "cnt:unread:"+cid, uid))
 	if err != nil {
 		return 0
 	}
