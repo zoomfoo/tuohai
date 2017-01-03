@@ -161,7 +161,6 @@ func Groups() gin.HandlerFunc {
 		}
 		mems_groups, err := models.AssociationGroups(user.Uid, af)
 		if err != nil {
-			console.StdLog.Error(err)
 			renderJSON(ctx, []int{}, 0, "未找到数据")
 			return
 		}
@@ -170,9 +169,6 @@ func Groups() gin.HandlerFunc {
 		for _, mems := range mems_groups {
 			group, err := models.GetGroupById(mems.GroupId)
 			if err != nil {
-				if err != models.RecordNotFound {
-					console.StdLog.Error(err)
-				}
 				continue
 			}
 
