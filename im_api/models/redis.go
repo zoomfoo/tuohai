@@ -97,7 +97,20 @@ func Subscribers(m chan redis.Message, key string) {
 func GetGroupMem(gid string) ([]string, error) {
 	c := rpool.Get()
 	defer c.Close()
-	return redis.Strings(c.Do("hgetall", fmt.Sprintf("channel:member:%s", gid)))
+	ret, err := redis.Strings(c.Do("hgetall", fmt.Sprintf("channel:member:%s", gid)))
+	// 当缓存中有部分群成员数据时就会有bug出现
+	if len(ret) == 0 || err != nil {
+		gms, err := GroupMemsId(gid)
+		var ms []string
+		if err != nil {
+			return ms, err
+		}
+		for i, _ := range gms {
+			ms = append(ms, gms[i].Member)
+		}
+		return ms, nil
+	}
+	return ret, nil
 }
 
 func QuitGroup(gid string, member []string) (bool, error) {
@@ -121,11 +134,22 @@ func IsGroupMember(gid, uid string) (bool, error) {
 	key := fmt.Sprintf("channel:member:%s", gid)
 	fmt.Println("redis key: ", key)
 	res, err := redis.Int64(c.Do("hexists", key, uid))
-	if err != nil {
-		return false, err
+	if err != nil || res != 1 {
+		gms, err := GroupMemsId(gid)
+		if err != nil {
+			return false, err
+		}
+		for i, _ := range gms {
+			if uid == gms[i].Member {
+				// update redis
+				go saveChannelToRedis(gid, []string{uid})
+				return true, nil
+			}
+		}
+		return false, nil
 	}
 	fmt.Println("当前[", uid, "]是否在群", gid, "中", res)
-	return res == 1, nil
+	return true, nil
 }
 
 func saveChannelToRedis(cid string, members []string) error {
