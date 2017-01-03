@@ -225,18 +225,21 @@ func SendSystemMsg(ctx *gin.Context) {
 	msg := ctx.PostForm("msg")
 	sign := ctx.PostForm("sign")
 	ts := ctx.PostForm("ts")
+    fmt.Printf("rcv msg data:from:%s,to:%s,msg:%s\n", from, to, msg)
 	if len(from) == 0 || len(to) == 0 || !CheckSign(ts, sign) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
 	}
 	if len(msg) == 0 || len(msg) > 1024 {
 		render.RenderJSON(ctx, struct{}{}, 1, "好长的消息")
+		return
 	}
 	rid := models.IsRelation(from, to, 2)
 	if rid == "" {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的好友参数")
+		return
 	}
-
+    fmt.Printf("rcv msg data:from:%s,to:%s,msg:%s\n", from, to, msg)
 	//RPC通知IM
 	go func() {
 		httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
