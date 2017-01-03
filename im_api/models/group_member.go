@@ -135,8 +135,7 @@ func AddGroupMember(gid string, GroupMems []string) (*Group, error) {
 	//将数据更新redis中
 	c := rpool.Get()
 	defer c.Close()
-	if _, err := c.Do("hmset", append([]interface{}{fmt.Sprintf("group:member:%s", g.Gid)}, val...)...); err != nil {
-		tx.Rollback()
+	if _, err := c.Do("hmset", append([]interface{}{fmt.Sprintf("channel:member:%s", g.Gid)}, val...)...); err != nil {
 		return nil, err
 	}
 
