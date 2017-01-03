@@ -148,10 +148,6 @@ func AddFriend() gin.HandlerFunc {
 			return
 		}
 
-		if attach == "" {
-			renderJSON(ctx, struct{}{}, 1, "附言缺失")
-			return
-		}
 		if way == "" {
 			renderJSON(ctx, struct{}{}, 1, "来源方式缺失")
 			return
@@ -243,7 +239,6 @@ func AddFriend() gin.HandlerFunc {
 		if email != "" {
 			users, err := auth.GetBatchUsers(token, options.Opts.AuthHost, []string{"user_ids=" + email, "t=email"})
 			if err != nil {
-				console.StdLog.Error(err)
 				renderJSON(ctx, []int{}, 1, "查询有误")
 				return
 			}
