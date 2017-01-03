@@ -45,10 +45,10 @@ func GetLastHistory(cid string) (*Message, error) {
 	var msgs []Message
 	err := db.Table((&Message{To: cid}).TableName()).Where("`to` = ?", cid).
 		Order("msg_id desc").Limit(1).Scan(&msgs).Error
-	if len(msgs) == 0{
-        return nil,nil
-    }
-    return &msgs[0], err
+	if len(msgs) == 0 {
+		return nil, nil
+	}
+	return &msgs[0], err
 }
 
 func GetMessage(msg *Message) *Message {

@@ -30,7 +30,6 @@ func GetMsgCollect() gin.HandlerFunc {
 			res, total, err = models.CollectsByOffset(main_user.Uid, limit, offset)
 		}
 
-		fmt.Println(total)
 		if err != nil {
 			render.RenderJSON(ctx, struct{}{})
 		} else {
