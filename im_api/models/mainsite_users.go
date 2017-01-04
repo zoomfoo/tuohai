@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +17,25 @@ import (
 //批量获取用户信息
 func GetBatchUsersUrl(token, url string, params []string) string {
 	return fmt.Sprintf("%s/api/v1.1/users/info?%s", url, SignStr(token, params...))
+}
+
+//获取主站好友列表URL
+func GetFriendsUrl(url, start_at string) string {
+	now := strconv.Itoa(int(time.Now().Unix()))
+	sign := getSign("stamp=" + now + "start_at=" + start_at + "cloudwork")
+	query := "start_at=" + start_at + "&sign=" + sign + "&stamp=" + now
+	return fmt.Sprintf("%s/api/i/friends?%s", url, query)
+}
+
+func GetFrindFromMainSite(url, start_at string) ([]byte, error) {
+	ru := GetFriendsUrl(url, start_at)
+	fmt.Println("Friend URL: ", ru)
+	res, err := httplib.Get(ru).Bytes()
+	if err != nil {
+		return nil, err
+	}
+	//fmt.Println("res: ", string(res))
+	return res, err
 }
 
 func GetBatchUsersFromMain(token, url string, params []string) ([]User, error) {

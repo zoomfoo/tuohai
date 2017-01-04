@@ -93,8 +93,8 @@ func GetUpdateUserInfoUrl(token, url string, params []string) string {
 }
 
 //获取主站好友列表URL
-func GetFriendsUrl(token, url string) string {
-	return fmt.Sprintf("%s/api/i/friends?%s", url, SignStr(token))
+func GetFriendsUrl(token, url string, params []string) string {
+	return fmt.Sprintf("%s/api/i/friends?%s", url, SignStr(token, params...))
 }
 
 //批量获取用户信息

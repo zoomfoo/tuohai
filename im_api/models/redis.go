@@ -10,6 +10,28 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+func GetSyncTime() (int, error) {
+	c := rpool.Get()
+	defer c.Close()
+	key := "mainsite:sync:time"
+	cc, err := redis.Int(c.Do("GET", key))
+	if err != nil {
+		return 0, err
+	}
+	return cc, nil
+}
+
+func SetSyncTime(ts string) (int, error) {
+	c := rpool.Get()
+	defer c.Close()
+	key := "mainsite:sync:time"
+	cc, err := redis.Int(c.Do("SET", key, ts))
+	if err != nil {
+		return 0, err
+	}
+	return cc, nil
+}
+
 func MsgReadInfo(cid, msgid, origin string) (int, map[string][]string, error) {
 	// TODO 需要校验origin是否是当前用户，如果不是则返回空
 	res := make(map[string][]string)

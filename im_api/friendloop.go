@@ -8,13 +8,11 @@ import (
 )
 
 func (api *ImApi) friendLoop() {
-	err := models.SyncFriends()
-	fmt.Println(err)
-	ticker := time.Tick(10 * time.Minute)
+	ticker := time.Tick(1 * time.Minute)
 	for {
 		select {
 		case <-ticker:
-			fmt.Println(models.SyncFriends())
+			models.SyncFriends()
 		case <-api.exitChan:
 			goto exit
 		}
