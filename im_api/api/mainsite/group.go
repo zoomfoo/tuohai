@@ -247,7 +247,7 @@ func SendSystemMsg(ctx *gin.Context) {
 			Subtype: "m_system",
 			From:    from,
 			To:      rid,
-			MsgData: []byte("{\"c\":\"" + msg + "\"}"),
+			MsgData: []byte("{\"c\":" + msg + "}"),
 		}
 		fmt.Printf("send sysmsg %s:", m)
 		httplib.SendLogicMsg(options.Opts.RPCHost, m)
