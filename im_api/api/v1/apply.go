@@ -216,7 +216,7 @@ func FriendAddMsg(cid, uid string, user *auth.MainUser) {
 		Subtype: "m_friend_added",
 		From:    from,
 		To:      cid,
-		MsgData: []byte("{\"c\":\"我们已经成为好友了，开始聊天吧\"}"),
+		MsgData: []byte("{\"c\":\"我们已经成为好友了，开始聊天吧\",\"type\":\"new_friend\"}"),
 	}
 	fmt.Printf("send friend added msg:%s", m)
 	httplib.SendLogicMsg(options.Opts.RPCHost, m)
