@@ -110,12 +110,13 @@ func GetGroupMem(gid string) ([]string, error) {
 		go saveChannelToRedis(gid, ms)
 		return ms, nil
 	}
+	var ms []string
 	for i, _ := range ret {
-		if i%2 == 1 {
-			ret = append(ret[:i], ret[i+1:]...)
+		if i%2 == 0 {
+			ms = append(ms, ret[i])
 		}
 	}
-	return ret, nil
+	return ms, nil
 }
 
 func QuitGroup(gid string, member []string) (bool, error) {
