@@ -26,7 +26,8 @@ func (n *PNotify) Main(opts *Options) error {
 		return err
 	}
 	n.tlsConfig = config
-	topic := "com.yunzujia.woke"
+	//topic := "com.yunzujia.woke"
+    topic := "com.kamy.im"
 
 	//初始化redis连接
 	InitRedis(opts.RedisHost, "")
@@ -40,11 +41,10 @@ func (n *PNotify) Main(opts *Options) error {
 			var api Notification
 			err := json.Unmarshal(sub.Data, &api)
 			if err != nil {
-				fmt.Println(err)
+			    fmt.Println("从消息中间件中序列化数据错误: ", err)
 				continue
 			}
 
-			fmt.Println("从消息中间件中序列化数据错误: ", err)
 			fmt.Println("反序列化后内容: ", api)
 			fmt.Printf("为序列化json串: %s", sub.Data)
 
