@@ -670,7 +670,7 @@ func DismissGroup() gin.HandlerFunc {
 		}
 
 		go func() {
-			tip := "<@" + user.Uid + "> 已将本群解散"
+			tip := "" + user.Nickname + "已将本群解散"
 			gcn := &GroupChangeNotify{
 				Uid:  user.Uid,
 				Gid:  gid,
@@ -700,7 +700,7 @@ func DismissGroup() gin.HandlerFunc {
 				Cid     string `json:"cid"`
 			}
 			sm := &sysmsg{
-				Content: fmt.Sprintf("用户<@%s>解散了群组%s", user.Uid, ginfo.Gname),
+				Content: fmt.Sprintf("用户%s解散了群组%s", user.Nickname, ginfo.Gname),
 				Title:   "群组解散",
 			}
 			gs, err := json.Marshal(sm)
