@@ -15,18 +15,17 @@ const (
 )
 
 type Relation struct {
-	Id           int    `gorm:"column:id"`
-	Rid          string `gorm:"column:rid"`
-	SmallId      string `gorm:"column:small_id"`
-	BigId        string `gorm:"column:big_id"`
-	OriginId     string `gorm:"column:origin_id"`
-	Status       int    `gorm:"column:status"`
-	SyncFriendId int    `gorm:"column:sync_friend_id"`
-	CreatedAt    int64  `gorm:"column:created_at"`
-	UpatedAt     int64  `gorm:"column:upated_at"`
-	Rtype        int    `gorm:"column:rtype"`
-	Way          int    `gorm:"column:way"`
-	Note         string `gorm:"column:note"`
+	Id        int    `gorm:"column:id"`
+	Rid       string `gorm:"column:rid"`
+	SmallId   string `gorm:"column:small_id"`
+	BigId     string `gorm:"column:big_id"`
+	OriginId  string `gorm:"column:origin_id"`
+	Status    int    `gorm:"column:status"`
+	CreatedAt int64  `gorm:"column:created_at"`
+	UpatedAt  int64  `gorm:"column:upated_at"`
+	Rtype     int    `gorm:"column:rtype"`
+	Way       int    `gorm:"column:way"`
+	Note      string `gorm:"column:note"`
 }
 
 func (r *Relation) TableName() string {
@@ -71,11 +70,11 @@ func GetMyRelationId(id string) ([]string, error) {
 	return ids, nil
 }
 
-func SyncCreateFriend(small, big string, fid int) (string, error) {
-	return createRelation(small, big, fid, 0, 0, "")
+func SyncCreateFriend(small, big string) (string, error) {
+	return createRelation(small, big, 0, 0, "")
 }
 
-func createRelation(a, b string, fid, rtype int, way int, note string) (string, error) {
+func createRelation(a, b string, rtype int, way int, note string) (string, error) {
 	small, big := convert.StringSortByRune(a, b)
 	if cid := IsRelation(small, big, rtype); cid != "" {
 		return cid, nil
@@ -86,17 +85,16 @@ func createRelation(a, b string, fid, rtype int, way int, note string) (string, 
 	}
 	cid := prefix + uuid.NewV4().StringMd5()
 	r := &Relation{
-		Rid:          cid,
-		SmallId:      small,
-		BigId:        big,
-		OriginId:     small,
-		Status:       0,
-		SyncFriendId: fid,
-		CreatedAt:    time.Now().Unix(),
-		UpatedAt:     time.Now().Unix(),
-		Rtype:        rtype,
-		Way:          way,
-		Note:         note,
+		Rid:       cid,
+		SmallId:   small,
+		BigId:     big,
+		OriginId:  small,
+		Status:    0,
+		CreatedAt: time.Now().Unix(),
+		UpatedAt:  time.Now().Unix(),
+		Rtype:     rtype,
+		Way:       way,
+		Note:      note,
 	}
 	tx := db.Begin()
 
@@ -114,7 +112,7 @@ func createRelation(a, b string, fid, rtype int, way int, note string) (string, 
 }
 
 func CreateRelation(a, b string, rtype int, way int, note string) (string, error) {
-	return createRelation(a, b, 0, rtype, way, note)
+	return createRelation(a, b, rtype, way, note)
 }
 
 func DelRelation(cid string) error {
@@ -161,7 +159,7 @@ func GetSysRid(sys, x string) string {
 	r := &Relation{}
 	err := db.Find(r, "small_id = ? and big_id = ? and status = 0 and rtype = 2", small, big).Error
 	if err != nil || r == nil {
-		rid, err := createRelation(sys, x, 0, 2, 0, "")
+		rid, err := createRelation(sys, x, 2, 0, "")
 		if err != nil {
 			fmt.Println("create system friend fails,sys:%s,uid:%s", sys, x)
 			return ""
