@@ -216,7 +216,7 @@ func FriendAddMsg(cid, uid string, user *auth.MainUser) {
 		Subtype: "m_friend_added",
 		From:    from,
 		To:      cid,
-		MsgData: []byte("{\"c\":\"我们已经成为好友了，开始聊天吧\",\"type\":\"new_friend\"}"),
+		MsgData: []byte("{\"c\":\"我们已经成为好友了，开始聊天吧\"}"),
 	}
 	fmt.Printf("send friend added msg:%s", m)
 	httplib.SendLogicMsg(options.Opts.RPCHost, m)
@@ -236,11 +236,13 @@ func FriendAddMsg(cid, uid string, user *auth.MainUser) {
 		Content string `json:"c"`
 		Title   string `json:"title"`
 		Cid     string `json:"cid"`
+		Type    string `json:"type"`
 	}
 	sm := &sysmsg{
 		Content: fmt.Sprintf("用户【%s】通过了您的好友申请，你们可以开始沟通啦", user.Nickname),
 		Title:   "好友申请通过",
 		Cid:     cid,
+		Type:    "new_friend",
 	}
 	srid := models.GetSysRid(options.Opts.SysUserYunliao, uid)
 	if srid == "" {
