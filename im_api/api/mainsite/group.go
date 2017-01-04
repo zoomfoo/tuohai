@@ -225,7 +225,7 @@ func SendSystemMsg(ctx *gin.Context) {
 	msg := ctx.PostForm("msg")
 	sign := ctx.PostForm("sign")
 	ts := ctx.PostForm("ts")
-	fmt.Printf("rcv msg data:from:%s,to:%s,msg:%s\n", from, to, msg)
+	fmt.Printf("rcv sysmsg data:from:%s,to:%s,msg:%s\n", from, to, msg)
 	if len(from) == 0 || len(to) == 0 || !CheckSign(ts, sign) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的参数")
 		return
@@ -239,16 +239,18 @@ func SendSystemMsg(ctx *gin.Context) {
 		render.RenderJSON(ctx, struct{}{}, 1, "无效的好友参数")
 		return
 	}
-	fmt.Printf("rcv msg data:from:%s,to:%s,msg:%s\n", from, to, msg)
+
 	//RPC通知IM
 	go func() {
-		httplib.SendLogicMsg(options.Opts.RPCHost, &IM_Message.IMMsgData{
+		m := &IM_Message.IMMsgData{
 			Type:    "message",
 			Subtype: "m_system",
 			From:    from,
 			To:      rid,
 			MsgData: []byte("{\"c\":\"" + msg + "\"}"),
-		})
+		}
+		fmt.Printf("send sysmsg %s:", m)
+		httplib.SendLogicMsg(options.Opts.RPCHost, m)
 	}()
 	render.RenderJSON(ctx, true)
 	return
