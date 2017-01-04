@@ -110,6 +110,11 @@ func GetGroupMem(gid string) ([]string, error) {
 		go saveChannelToRedis(gid, ms)
 		return ms, nil
 	}
+	for i, _ := range ret {
+		if i%2 == 1 {
+			ret = append(ret[:i], ret[i+1:]...)
+		}
+	}
 	return ret, nil
 }
 
