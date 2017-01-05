@@ -350,7 +350,7 @@ func DelFriend() gin.HandlerFunc {
 			return
 		}
 		if f == "" {
-			renderJSON(ctx, struct{}{}, 1, "cid 不能为空")
+			renderJSON(ctx, struct{}{}, 1, "cid 非法")
 			return
 		}
 
@@ -373,9 +373,9 @@ func DelFriend() gin.HandlerFunc {
 				Subtype: "e_friend_removed",
 				From:    user.Uid,
 				RcvId:   f,
-				MsgData: []byte("{\"uid\":\"" + user.Uid + "\"}"),
+				MsgData: []byte("{\"uid\":\"" + user.Uid + "\",\"rid\":\"" + cid + "\"}"),
 			}
-			fmt.Printf("send friend apply event:%s", m)
+			fmt.Printf("send friend removed event:%s", m)
 			httplib.SendLogicMsg(options.Opts.RPCHost, m)
 		}()
 		//聊天记录标记
